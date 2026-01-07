@@ -1,0 +1,643 @@
+{
+    "Ketersediaan PAUD/ TK/ Sederajat di Desa": {
+        "1": "Perlu menyediakan PAUD/TK/Sederajat sebanyak 5",
+        "2": "Perlu penambahan PAUD/TK/Sederajat sebanyak 4",
+        "3": "Perlu penambahan PAUD/TK/Sederajat sebanyak 3",
+        "4": "Perlu penambahan PAUD/TK/Sederajat sebanyak 1",
+        "5": null
+    },
+    "Kemudahan Akses menuju PAUD/ TK/ Sederajat terdekat di Desa": {
+        "1": "Akses Menuju PAUD/TK/Sederajat Sangat Sulit, Perlu Penambahan PAUD",
+        "2": "Akses Menuju PAUD/TK/Sederajat Sulit, Perlu Penambahan PAUD",
+        "3": "Akses Menuju PAUD/TK/Sederajat Sedang, Perlu Penambahan PAUD",
+        "4": "Akses Menuju PAUD/TK/Sederajat Mudah, Perlu Penambahan PAUD",
+        "5": null
+    },
+    "Angka Partisipasi Murni (APM) anak usia 3 - 6 tahun yang bersekolah PAUD/ TK/ Sederajat di desa": {
+        "1": "APM 0-20%, Perlu partisipasi anak usia 3-6 tahun bersekolah PAUD/TK/Seserajat",
+        "2": "APM >20-40%, Perlu partisipasi anak usia 3-6 tahun bersekolah PAUD/TK/Seserajat",
+        "3": "APM >40-60%, Perlu partisipasi anak usia 3-6 tahun bersekolah PAUD/TK/Seserajat",
+        "4": "APM >60-80%, Perlu partisipasi anak usia 3-6 tahun bersekolah PAUD/TK/Seserajat",
+        "5": null
+    },
+    "Kemudahan Akses menuju SD/ MI/ Sederajat terdekat di Desa?": {
+        "1": "Akses Menuju SD/MI/Sederajat Sangat Sulit, Perlu Pembangunan Sekolah",
+        "2": "Akses Menuju SD/MI/Sederajat Sulit, Perlu Pembangunan Sekolah",
+        "3": "Akses Menuju SD/MI/Sederajat Sedang, Perlu Pembangunan Sekolah",
+        "4": "Akses Menuju SD/MI/Sederajat Mudah, Perlu Pembangunan Sekolah",
+        "5": null
+    },
+    "Angka Partisipasi Murni (APM) anak usia 7-12 tahun yang bersekolah SD/ MI/ Sederajat di desa": {
+        "1": "APM 0-20%, Perlu partisipasi anak usia 7-12 tahun bersekolah SD/MI/Seserajat",
+        "2": "APM >20-40%, Perlu partisipasi anak usia 7-12 tahun bersekolah SD/MI/Seserajat",
+        "3": "APM >40-60%, Perlu partisipasi anak usia 7-12 tahun bersekolah SD/MI/Seserajat",
+        "4": "APM >60-80%, Perlu partisipasi anak usia 7-12 tahun bersekolah SD/MI/Seserajat",
+        "5": null
+    },
+    "Kemudahan Akses menuju SMP/MTs/Sederajat terdekat di Desa?": {
+        "1": "Akses Menuju SMP/MTs/Sederajat Sangat Sulit, Perlu Pembangunan Sekolah",
+        "2": "Akses Menuju SMP/MTs/Sederajat Sulit, Perlu Pembangunan Sekolah",
+        "3": "Akses Menuju SMP/MTs/Sederajat Sedang, Perlu Pembangunan Sekolah",
+        "4": "Akses Menuju SMP/MTs/Sederajat Mudah, Perlu Pembangunan Sekolah",
+        "5": null
+    },
+    "Angka Partisipasi Murni (APM) anak usia 13-15 tahun yang bersekolah SMP/ MTs/ Sederajat di desa": {
+        "1": "APM 0-20%, Perlu partisipasi anak usia 13-15 tahun bersekolah SMP/MTs/Seserajat",
+        "2": "APM >20-40%, Perlu partisipasi anak usia 13-15 tahun bersekolah SMP/MTs/Seserajat",
+        "3": "APM >40-60%, Perlu partisipasi anak usia 13-15 tahun bersekolah SMP/MTs/Seserajat",
+        "4": "APM >60-80%, Perlu partisipasi anak usia 13-15 tahun bersekolah SMP/MTs/Seserajat",
+        "5": null
+    },
+    "Kemudahan Akses menuju SMA/ SMK/ MA/ MAK/ Sederajat terdekat di Desa?": {
+        "1": "Akses Menuju SMA/SMK/MA/MAK/Sederajat Sangat Sulit, Perlu Pembangunan Sekolah",
+        "2": "Akses Menuju SMA/SMK/MA/MAK/Sederajat Sulit, Perlu Pembangunan Sekolah",
+        "3": "Akses Menuju SMA/SMK/MA/MAK/Sederajat Sedang, Perlu Pembangunan Sekolah",
+        "4": "Akses Menuju SMA/SMK/MA/MAK/Sederajat Mudah, Perlu Pembangunan Sekolah",
+        "5": null
+    },
+    "Angka Partisipasi Murni (APM) anak usia 16-18 tahun yang bersekolah SMA/ SMK/ MA/ MAK/ Sederajat di desa": {
+        "1": "APM 0-20%, Perlu partisipasi anak usia 16-18 tahun bersekolah SMA/SMK/MA/MAK/Seserajat",
+        "2": "APM >20-40%, Perlu partisipasi anak usia 16-18 tahun bersekolah SMA/SMK/MA/MAK/Seserajat",
+        "3": "APM >40-60%, Perlu partisipasi anak usia 16-18 tahun bersekolah SMA/SMK/MA/MAK/Seserajat",
+        "4": "APM >60-80%, Perlu partisipasi anak usia 16-18 tahun bersekolah SMA/SMK/MA/MAK/Seserajat",
+        "5": null
+    },
+    "Kemudahan akses menuju Sarana Kesehatan": {
+        "1": "Akses Menuju Sarana Kesesahan Sangat Sulit, Perlu Pembangunan Sarana Kesehatan",
+        "2": "Akses Menuju Sarana Kesesahan Sulit, Perlu Pembangunan Sarana Kesehatan",
+        "3": "Akses Menuju Sarana Kesesahan Sedang, Perlu Pembangunan Sarana Kesehatan",
+        "4": "Akses Menuju Sarana Kesesahan Mudah, Perlu Pembangunan Sarana Kesehatan",
+        "5": null
+    },
+    "Ketersediaan Fasilitas Kesehatan Pustu/ Poskesdes/ Polindes di Desa": {
+        "1": "Tidak Ada Poskesdes/Polindes, Perlu Menyediakan Fasilitas Puskesmas Pembantu/Poskesdes/Polindes",
+        "5": null
+    },
+    "Kemudahan akses menuju Fasilitas Kesehatan Pustu/ Poskesdes/ Polindes": {
+        "1": "Akses Menuju Fasilitas Puskesmas Pembantu (Poskesdes/Polindes) Sangat Sulit, Perlu Menyediakan Kemudahan Akses Fasilitas Puskesmas Pembantu/Poskesdes/Polindes, ",
+        "2": "Akses Menuju Fasilitas Puskesmas Pembantu (Poskesdes/Polindes) Sulit, Perlu Menyediakan Kemudahan Akses Fasilitas Puskesmas Pembantu/Poskesdes/Polindes, ",
+        "3": "Akses Menuju Fasilitas Puskesmas Pembantu (Poskesdes/Polindes) Sedang, Perlu Menyediakan Kemudahan Akses Fasilitas Puskesmas Pembantu/Poskesdes/Polindes, ",
+        "4": "Akses Menuju Fasilitas Puskesmas Pembantu (Poskesdes/Polindes) Mudah, Perlu Menyediakan Kemudahan Akses Fasilitas Puskesmas Pembantu/Poskesdes/Polindes, ",
+        "5": null
+    },
+    "Ketersediaan Fasilitas Posyandu di Desa": {
+        "1": "Tidak Ada Posyandu, Perlu Menyediakan Posyandu",
+        "5": null
+    },
+    "Terdapat Aktivitas Posyandu": {
+        "1": "Tidak Ada Aktivitas Poyandu, Perlu Peningkatan Aktivitas Posyandu",
+        "2": "Aktivitas Posyandu Ada dan Rutin 1 Kali Per Tahun, Perlu Peningkatan Aktivitas Posyandu",
+        "3": "Aktivitas Posyandu Ada dan Rutin 2-4 Kali Per Tahun, Perlu Peningkatan Aktivitas Posyandu",
+        "4": "Aktivitas Posyandu Ada dan Rutin 5-7 Kali Per Tahun, Perlu Peningkatan Aktivitas Posyandu",
+        "5": null
+    },
+    "Kemudahan akses menuju Fasilitas Posyandu": {
+        "1": "Akses Menuju Fasilitas Posyandu Sangat Sulit, Perlu Menyediakan Kemudahan Akses Fasilitas Posyandu",
+        "2": "Akses Menuju Fasilitas Posyandu Sulit, Perlu Menyediakan Kemudahan Akses Fasilitas Posyandu",
+        "3": "Akses Menuju Fasilitas Posyandu Sedang, Perlu Menyediakan Kemudahan Akses Fasilitas Posyandu",
+        "4": "Akses Menuju Fasilitas Posyandu Mudah, Perlu Menyediakan Kemudahan Akses Fasilitas Posyandu",
+        "5": null
+    },
+    "Apakah tersedia layanan dokter di desa?": {
+        "1": "Tidak Tersedia Layanan Dokter di Desa, Perlu Tersedia Layanan Dokter di Desa",
+        "5": null
+    },
+    "Berapa lama/ hari ketersediaan layanan dokter di desa?": {
+        "1": "Layanan Dokter Tidak Memiliki Waktu Operasional Tetap, Perlu Ketersediaan Layanan Dokter di Desa Minimal 1 Kali dalam Seminggu",
+        "3": "Layanan Dokter Tersedia 1 Kali lebih dari Seminggu, Perlu Ketersediaan Layanan Dokter di Desa Minimal 1 Kali dalam Seminggu",
+        "5": null
+    },
+    "Penyedia layanan dokter di desa berasal dari?": {
+        "1": "Tidak Tersedia Dokter di desa, Perlu Ketersediaan Layanan Dokter di Desa",
+        "3": "Penyedia Layanan Dokter berasal dari Yayasan/Swasta/Masyarakat, Penyedia Layanan Dokter disarankan Berasal dari Pemerintah",
+        "5": null
+    },
+    "Terdapat Penyedia Transportasi penunjang menuju layanan Dokter": {
+        "1": "Tidak Tersedia Sarana Transportasi Penunjang Menuju Layanan Dokter, Perlu Tersedia Sarana Transportasi Penunjang Layanan Dokter",
+        "5": null
+    },
+    "Apakah Tersedia layanan Bidan di Desa?": {
+        "1": "Tidak Tersedia Layanan Bidan di Desa, Perlu Tersedia Layanan Bidan di Desa",
+        "5": null
+    },
+    "Berapa lama/ hari ketersediaan layanan Bidan di desa?": {
+        "1": "Layanan Bidan Tidak Memiliki Waktu Operasional Tetap, Perlu Ketersediaan Layanan Bidan di Desa Minimal 1 Kali dalam Seminggu",
+        "3": "Layanan Bidan Tersedia 1 Kali lebih dari Seminggu, Perlu Ketersediaan Layanan Bidan di Desa Minimal 1 Kali dalam Seminggu",
+        "5": null
+    },
+    "Penyedia layanan Bidan di desa berasal dari?": {
+        "1": "Tidak Tersedia Bidan di desa, Perlu Ketersediaan Layanan Bidan di Desa",
+        "3": "Penyedia Layanan Bidan berasal dari Yayasan/Swasta/Masyarakat, Penyedia Layanan Bidan disarankan Berasal dari Pemerintah",
+        "5": null
+    },
+    "Terdapat Penyedia Transportasi penunjang menuju layanan Bidan": {
+        "1": "Tidak Tersedia Sarana Transportasi Penunjang Menuju Layanan Bidan, Perlu Tersedia Sarana Transportasi Penunjang Layanan Bidan",
+        "5": null
+    },
+    "Apakah Tersedia layanan Tenaga Kesehatan di Desa?": {
+        "1": "Tidak Tersedia Layanan Tenaga Kesehatan Lainnya di Desa, Perlu Tersedia Layanan Tenaga Kesehatan Lainnya di Desa",
+        "5": null
+    },
+    "Berapa lama/ hari ketersediaan layanan Tenaga Kesehatan di desa?": {
+        "1": "Layanan Tenaga Kesehatan Lainnya Tidak Memiliki Waktu Operasional Tetap, Perlu Ketersediaan Layanan Tenaga Kesehatan Lainnya di Desa Minimal 1 Kali dalam Seminggu",
+        "3": "Layanan Tenaga Kesehatan Lainnya Tersedia 1 Kali lebih dari Seminggu, Perlu Ketersediaan Layanan Tenaga Kesehatan Lainnya di Desa Minimal 1 Kali dalam Seminggu",
+        "5": null
+    },
+    "Penyedia layanan Tenaga Kesehatan di desa berasal dari?": {
+        "1": "Tidak Tersedia Tenaga Kesehatan Lainnya di desa, Perlu Ketersediaan Layanan Tenaga Kesehatan Lainnya di Desa",
+        "3": "Penyedia Layanan Tenaga Kesehatan Lainnya berasal dari Yayasan/Swasta/Masyarakat, Penyedia Layanan Tenaga Kesehatan Lainnya disarankan Berasal dari Pemerintah",
+        "5": null
+    },
+    "Terdapat Penyedia Transportasi penunjang menuju layanan Nakes": {
+        "1": "Tidak Tersedia Sarana Transportasi Penunjang Menuju Layanan Tenaga Kesehatan Lainnya, Perlu Tersedia Sarana Transportasi Penunjang Layanan Tenaga Kesehatan Lainnya",
+        "5": null
+    },
+    "Persentase keanggotaan BPJS": {
+        "1": "Persentase Keanggotaan BPJS 0-20%, Perlu Sosialisasi BPJS",
+        "2": "Persentase Keanggotaan BPJS >20-40%, Perlu Sosialisasi BPJS",
+        "3": "Persentase Keanggotaan BPJS >40-60%, Perlu Sosialisasi BPJS",
+        "4": "Persentase Keanggotaan BPJS >60-80%, Perlu Sosialisasi BPJS",
+        "5": null
+    },
+    "Apakah terdapat kegiatan sosialisasi dan/ atau advokasi terkait program jaminan kesehatan nasional di desa?": {
+        "1": "Tidak Terdapat Kegiatan Sosialisasi dan/atau Advokasi terkait Program Jaminan Kesehatan Nasional di Desa, Perlu Mengadakan Kegiatan Sosialisasi dan/atau Advokasi terkait Program Jaminan Kesehatan Nasional di Desa",
+        "5": null
+    },
+    "Hari operasional penyediaan Air Minum di Desa dalam kurun waktu satu minggu": {
+        "1": "Air Minum Tersedia <4 Hari, Perlu Ketersediaan Air Minum di Desa Setiap Hari",
+        "3": "Desa Air Minum Tersedia 4-6 Hari, Perlu Ketersediaan Air Minum di Desa Setiap Hari",
+        "5": null
+    },
+    "Ketersediaan Air Minum untuk warga desa": {
+        "1": "Sangat Sedikit Warga di Desa yang Bisa Mengakses Air Minum (<50% Terakses), Perlu Ketersediaan Akses Air Minum untuk Warga Desa",
+        "3": "Desa Sebagian Warga di Desa yang Bisa Mengakses Air Minum (50-100% Terakses), Perlu Ketersediaan Akses Air Minum untuk Warga Desa",
+        "5": null
+    },
+    "Kemudahan akses Air Minum untuk warga di desa": {
+        "1": "Akses Air Minum Sulit (Masih Menggunakan 1 Sumber Mata Air/Masih Menggunakan Air Tanah), Perlu Kemudahan Akses Air Minum untuk Warga Desa",
+        "3": "Akses Air Minum Sedang (Sebagian Sudah Terlayani PDAM dan Sebagian Lainnya Menggunakan Air Tanah), Perlu Kemudahan Akses Air Minum untuk Warga Desa",
+        "5": null
+    },
+    "Bagaimana Kualitas Air Minum di Desa (Tidak untuk Berbau Berwarna & Berasa)": {
+        "1": "Kualitas Air Minum Tidak Layak (Berbau, Berwarna & Berasa), Perlu Peningkatan Kualitas Air Minum Layak di Desa",
+        "5": null
+    },
+    "Persentase Rumah Tidak Layak Huni": {
+        "1": "Persentase Rumah Tidak Layak Huni >80-100%",
+        "2": "Persentase Rumah Tidak Layak Huni >60-80%",
+        "3": "Persentase Rumah Tidak Layak Huni >40-60%",
+        "4": "Persentase Rumah Tidak Layak Huni >20-40%",
+        "5": null
+    },
+    "Apakah terdapat kearifan budaya/ sosial yang ada/ menjadi ciri khas desa?": {
+        "1": "Tidak Terdapat Kearifan Budaya/Sosial/Keagamaan yang Ada/Menjadi Ciri Khas Desa, Perlu Mengadakan Kearifan Budaya/Sosial/Keagamaan yg ada/Menjadi Ciri Khas Desa",
+        "5": null
+    },
+    "Apakah kearifan budaya/ sosial tersebut masih dipertahankan/ dilestarikan?": {
+        "1": "Tidak Ada Kearifan Budaya/Sosial yang Dipertahankan, Perlu Mempertahankan/Melestarikan Kearifan Budaya/Sosial",
+        "3": "Kurang dari 3 Kearifan Budaya/Sosial yang Dipertahankan, Perlu Mempertahankan/Melestarikan Kearifan Budaya/Sosial",
+        "5": null
+    },
+    "Apakah terdapat kegiatan gotong royong di Desa?": {
+        "1": "Tidak Ada Kegiatan Gotong Royong di Desa, Perlu Mengadakan Kegiatan Gotong Royong di Desa",
+        "5": null
+    },
+    "Frekuensi Kegiatan Gotong Royong di desa": {
+        "1": "Tidak Terdapat Kegiatan Gotong Royong di Desa, Perlu Mengadakan Kegiatan Gotong Royong",
+        "3": "Terdapat 1-2 Kegiatan Gotong Royong di Desa dalam 1 Bulan, Perlu Meningkatkan Kegiatan Gotong Royong",
+        "5": null
+    },
+    "Keterlibatan warga dalam kegiatan gotong royong": {
+        "1": "Tidak Ada Kearifan Budaya/Sosial yang Dipertahankan, Perlu Melibatkan Warga dalam Kegiatan Gotong Royong",
+        "3": "Sebagian Kecil Warga Terlibat (<50% Warga Terlibat), Perlu Melibatkan Warga Sebagian Besar dalam Kegiatan Gotong Royong",
+        "5": null
+    },
+    "Frekuensi kegiatan tersebut dilakukan dalam satu bulan": {
+        "1": "Rata-rata Tidak Terdapat kegiatan Olahraga dalam 1 Bulan, Perlu Mengadakan Kegiatan Olahraga dalam 1 Bulan",
+        "2": "Terdapat 1 Kali Kegiatan Olahraga dalam 1 Bulan, Perlu Menambahkan Kegiatan Olahraga dalam 1 Bulan",
+        "3": "Terdapat 2-3 Kali Kegiatan Olahraga dalam 1 Bulan, Perlu Menambahkan Kegiatan Olahraga dalam 1 Bulan",
+        "4": "Terdapat 4-5 Kali Kegiatan Olahraga dalam 1 Bulan, Perlu Menambahkan Kegiatan Olahraga dalam 1 Bulan",
+        "5": null
+    },
+    "i Penyelesaian Konflik secara damai": {
+        "1": "Tidak Ada Penyelesaian Konflik Secara Damai, Perlu Adanya Penyelesaian Konflik Secara Tuntas",
+        "3": "Ada Penyelesaian Konflik Tetapi Tidak Tuntas, Perlu Adanya Penyelesaian Konflik Secara Tuntas",
+        "5": null
+    },
+    "ii Peranan aparat keamanan menjadi mediator / penengah dalam penyelesaian Konflik": {
+        "1": "Tidak Ada Peranan Aparat Keamanan menjadi Mediator/ Penengah dalam Penyelesaian Konflik, Perlu Adanya Peran Aparat Keamanan menjadi Mediator/Penengah dalam Penyelesaian Konflik",
+        "5": null
+    },
+    "iii Peranan aparat pemerintah menjadi mediator / penengah dalam penyelesaian Konflik": {
+        "1": "Tidak Ada Peranan Pemerintah menjadi Mediator/ Penengah dalam Penyelesaian Konflik, Perlu Adanya Peran Pemerintah menjadi Mediator/Penengah dalam Penyelesaian Konflik",
+        "5": null
+    },
+    "iv Peranan tokoh masyarakat menjadi mediator / penengah dalam penyelesaian Konflik": {
+        "1": "Tidak Ada Peranan Tokoh Masyarakat menjadi Mediator/ Penengah dalam Penyelesaian Konflik, Perlu Adanya Peran Tokoh Masyarakat menjadi Mediator/Penengah dalam Penyelesaian Konflik",
+        "5": null
+    },
+    "v Peranan tokoh agama menjadi mediator / penengah dalam penyelesaian Konflik": {
+        "1": "Tidak Ada Peranan Tokoh Agama menjadi Mediator/ Penengah dalam Penyelesaian Konflik, Perlu Adanya Peran Tokoh Agama menjadi Mediator/Penengah dalam Penyelesaian Konflik",
+        "5": null
+    },
+    "Apakah terdapat Satuan Keamanan Lingkungan (Satkamling) di Desa": {
+        "1": "Tidak Ada Satuan Keamanan Lingkungan (Satkamling) di Desa, Perlu Pembentukan Satuan Keamanan Lingkungan (Satkamling) di Desa",
+        "5": null
+    },
+    "Apakah terdapat aktivitas Satuan Keamanan Lingkungan (Satkamling) di Desa": {
+        "1": "Tidak Ada Aktivitas Satkamling di Desa, Perlu Mengadakan Aktivitas Satuan Keamanan Lingkungan (Satkamling)",
+        "2": "Terdapat 1 Kali Aktivitas Satkamling di Desa, Perlu Meningkatkan Aktivitas Satuan Keamanan Lingkungan (Satkamling)",
+        "3": "Terdapat 2 Kali Aktivitas Satkamling di Desa, Perlu Meningkatkan Aktivitas Satuan Keamanan Lingkungan (Satkamling)",
+        "4": "Terdapat 1 Kali Aktivitas Satkamling di Desa, Perlu Meningkatkan Aktivitas Satuan Keamanan Lingkungan (Satkamling)",
+        "5": null
+    },
+    "Apakah terdapat Taman Bacaan Masyarakat/ Perpustakaan Desa": {
+        "1": "Tidak Ada Taman Bacaan Masyarakat/ Perpustakaan Desa, Perlu Pembentukan Taman Bacaan Masyarakat/ Perpustakaan di Desa",
+        "5": null
+    },
+    "Hari operasional Taman Bacaan Masyarakat/ Perpustakaan Desa": {
+        "1": "Taman Bacaan Masyarakat/ Perpustakaan Tidak Beroperasi, Perlu Peningkatan Operasional Taman Bacaan Masyarakat/ Perpustakaan Desa",
+        "2": "Taman Bacaan Masyarakat/ Perpustakaan Desa Beroperasi Selama 1 Hari, Perlu Penambahan Hari Operasional Taman Bacaan Masyarakat/ Perpustakaan Desa",
+        "3": "Taman Bacaan Masyarakat/ Perpustakaan Desa Beroperasi Selama 2-3 Hari, Perlu Penambahan Hari Operasional Taman Bacaan Masyarakat/ Perpustakaan Desa",
+        "4": "Taman Bacaan Masyarakat/ Perpustakaan Desa Beroperasi Selama 4-5 Hari, Perlu Penambahan Hari Operasional Taman Bacaan Masyarakat/ Perpustakaan Desa",
+        "5": null
+    },
+    "SKOR Ketersediaan Fasilitas dan kondisi/keadaan sebagian besar Fasilitas olahraga di Desa": {
+        "1": "Rata-rata Tidak Terdapat Fasilitas Olahraga di Desa, Perlu Pengadaan Fasilitas Lapangan Olahraga, Perlu Pengadaan Fasilitas Lapangan Olahraga",
+        "2": "Rata-rata Kondisi/ Keadaan Sebagian Besar Fasilitas Olahraga di Desa dalam Kondisi Rusak Parah, Perlu Melakukan Rekonstruksi Fasilitas Lapangan Olahraga",
+        "3": "Rata-rata Kondisi/ Keadaan Sebagian Besar Fasilitas Olahraga di Desa dalam Kondisi Rusak Sedang, Perlu Melakukan Renovasi Fasilitas Lapangan Olahraga",
+        "4": "Rata-rata Kondisi/ Keadaan Sebagian Besar Fasilitas Olahraga di Desa dalam Kondisi Rusak Ringan, Perlu Melakukan Renovasi Ringan Fasilitas Lapangan Olahraga",
+        "5": null
+    },
+    "SKOR Keberadaan ruang publik terbuka/keadaan sebagian besar Fasilitas Ruang Publik Terbuka di Desa": {
+        "1": "Rata-rata Tidak Terdapat Fasilitas Ruang Publik Terbuka di Desa, Perlu Pengadaan Fasilitas Ruang Publik Terbuka",
+        "2": "Rata-rata Kondisi/ Keadaan Sebagian Besar Fasilitas Ruang Publik Terbuka di Desa dalam Kondisi Rusak Parah, Perlu Melakukan Rekonstruksi Fasilitas Ruang Publik Terbuka",
+        "3": "Rata-rata Kondisi/ Keadaan Sebagian Besar Fasilitas Ruang Publik Terbuka di Desa dalam Kondisi Rusak Sedang, Perlu Melakukan Renovasi Fasilitas Ruang Publik Terbuka",
+        "4": "Rata-rata Kondisi/ Keadaan Sebagian Besar Fasilitas Ruang Publik Terbuka di Desa dalam Kondisi Rusak Ringan, Perlu Melakukan Renovasi Ringan Fasilitas Ruang Publik Terbuka",
+        "5": null
+    },
+    "Keragaman Aktivitas Ekonomi di Desa": {
+        "1": "Terdapat 1 Keragaman Sektor/ Aktivitas Ekonomi, Perlu Penambahan Keragaman Aktivitas Ekonomi",
+        "3": "Terdapat 2 Keragaman Sektor/ Aktivitas Ekonomi, Perlu Penambahan Keragaman Aktivitas Ekonomi",
+        "5": null
+    },
+    "Keaktifan Aktivitas Ekonomi di Desa": {
+        "1": "Keaktifan Aktivitas Ekonomi di Desa Tidak Aktif (Tidak Memiliki Produk/ Jasa yang Dihasilkan), Perlu Menghasilkan Produk/Jasa yang dihasilkan Desa",
+        "5": null
+    },
+    "Ketersediaan Produk Unggulan Desa": {
+        "1": "Tidak Ada Produk Unggulan Desa, Perlu Memiliki Produk Unggulan Desa",
+        "5": null
+    },
+    "Cakupan pasar Produk Unggulan Desa": {
+        "1": "Cakupan Penjualan Produk Unggulan Desa Masih di Dalam Desa, Perlu Pemasaran Produk Hingga ke luar Desa",
+        "5": null
+    },
+    "Ketersediaan merek dagang": {
+        "1": "Merek Dagang Produk Unggulan Desa Tidak Terdaftar, Perlu Membentuk Merek Dagang yang Sudah Terdaftar",
+        "5": null
+    },
+    "Terdapat Kearifan lokal atau kebudayaan lokal yang di jadikan sebagai kegiatan ekonomi dalam menunjang penghidupan masyarakat di desa?": {
+        "1": "Tidak Terdapat Kearifan Lokal atau Kebudayaan Lokal yang dijadikan Sebagai Kegiatan Ekonomi dalam Menunjang Penghidupan Masyarakat di Desa, Perlu Menjadikan Kearifan Lokal/ Kebudayaan Lokal sebagai Penunjang Kegiatan Ekonomi Desa",
+        "5": null
+    },
+    "Apakah telah dilakukan kerjasama desa dengan desa lainnya?": {
+        "1": "Belum dilakukannya Kerjasama Desa dengan Desa Lainnya, Perlu Menjalin Hubungan Kerjasama dengan Desa Lainnya",
+        "5": null
+    },
+    "Apakah telah dilakukan kerjasama desa dengan pihak ketiga?": {
+        "1": "Belum dilakukannya Kerjasama Desa dengan Pihak Ketiga, Perlu Menjalin Hubungan Kerjasama dengan Pihak Ketiga",
+        "5": null
+    },
+    "Ketersediaan Pendidikan Non-formal/ Pusat Keterampilan/ Kursus": {
+        "1": "Tidak Tersedia Pendidikan Non-Formal/ Pusat Keterampilan/ Kursus di Desa, Perlu Menyediakan Pendidikan Non-Formal/Pusat Keterampilan/Kursus",
+        "5": null
+    },
+    "Keterlibatan Pendidikan Non-formal/ Pusat Keterampilan/ Kursus": {
+        "1": "Pendidikan Non-Formal/ Pusat Keterampilan/ Kursus Tidak Aktif, Perlu Perlu Adanya Operasional Pendidikan Non-Formal/Pusat Keterampilan/Kursus",
+        "3": "Pendidikan Non-Formal/ Pusat Keterampilan/ Kursus Melibatkan Sebagian Kecil/ <50% Angkatan Kerja yang Tidak Bekerja di Desa, Perlu Melibatkan Sebagian Besar Angkatan Kerja yang Ada di Desa pada Pendidikan Non-Formal/Pusat Keterampilan/Kursus ",
+        "5": null
+    },
+    "Ketersediaan Pasar di Desa": {
+        "1": "Desa Tidak Tersedia Pasar di Desa, Perlu Menyediakan Pasar di Desa",
+        "5": null
+    },
+    "Kemudahan akses menuju pasar di Desa": {
+        "1": "Akses Menuju Pasar di Desa Sangat Sulit, Perlu Menyediakan Pasar di Desa",
+        "2": "Akses Menuju Pasar di Desa Sulit, Perlu Menyediakan Pasar/ Transportasi Penunjang di Desa",
+        "3": "Desa Akses Menuju Pasar di Desa Sedang, Perlu Menyediakan Pasar/ Transportasi Penunjang di Desa",
+        "4": "Akses Menuju Pasar di Desa Mudah, Perlu Menyediakan Transportasi Penunjang di Desa",
+        "5": null
+    },
+    "Ketersediaan Toko/ Pertokoan di Desa": {
+        "1": "Tidak Tersedia Toko/ Pertokoan di Desa, Perlu Menyediakan Toko/Pertokoan di Desa",
+        "5": null
+    },
+    "Kemudahan akses menuju toko/ pertokoan di Desa": {
+        "1": "Akses Menuju Toko/ Pertokoan di Desa Sangat Sulit, Perlu Menyediakan Kemudahan Akses Menuju Toko/Pertokoan di Desa",
+        "2": "Akses Menuju Toko/ Pertokoan di Desa Sulit, Perlu Menyediakan Kemudahan Akses Menuju Toko/Pertokoan di Desa",
+        "3": "Akses Menuju Toko/ Pertokoan di Desa Sedang, Perlu Menyediakan Kemudahan Akses Menuju Toko/Pertokoan di Desa",
+        "4": "Akses Menuju Toko/ Pertokoan di Desa Mudah, Perlu Menyediakan Kemudahan Akses Menuju Toko/Pertokoan di Desa",
+        "5": null
+    },
+    "Ketersediaan Kedai/ Rumah Makan di Desa": {
+        "1": "Tidak Tersedia Kedai/ Rumah Makan di Desa, Perlu Menyediakan Kedai/Rumah Makan di Desa",
+        "5": null
+    },
+    "Kemudahan akses menuju Kedai/ Rumah Makan di Desa": {
+        "1": "Akses Menuju Kedai/ Rumah Makan di Desa Sangat Sulit, Perlu Menyediakan Kemudahan Akses Menuju Kedai/Rumah Makan di Desa",
+        "2": "Akses Menuju Kedai/ Rumah Makan di Desa Sulit, Perlu Menyediakan Kemudahan Akses Menuju Kedai/Rumah Makan di Desa",
+        "3": "Akses Menuju Kedai/ Rumah Makan di Desa Sedang, Perlu Menyediakan Kemudahan Akses Menuju Kedai/Rumah Makan di Desa",
+        "4": "Akses Menuju Kedai/ Rumah Makan di Desa Mudah, Perlu Menyediakan Kemudahan Akses Menuju Kedai/Rumah Makan di Desa",
+        "5": null
+    },
+    "Ketersediaan Penginapan di Desa": {
+        "1": "Tidak Tersedia Penginapan di Desa, Perlu Menyediakan Penginapan di Desa",
+        "5": null
+    },
+    "Kemudahan akses menuju Penginapan di Desa": {
+        "1": "Akses Menuju Penginapan di Desa Sangat Sulit, Perlu Menyediakan Kemudahan Akses Menuju Penginapan di Desa, ",
+        "2": "Akses Menuju Penginapan di Desa Sulit, Perlu Menyediakan Kemudahan Akses Menuju Penginapan di Desa, ",
+        "3": "Akses Menuju Penginapan di Desa Sedang, Perlu Menyediakan Kemudahan Akses Menuju Penginapan di Desa, ",
+        "4": "Akses Menuju Penginapan di Desa Mudah, Perlu Menyediakan Kemudahan Akses Menuju Penginapan di Desa, ",
+        "5": null
+    },
+    "Ketersediaan Layanan Pos dan/ Logistik di Desa": {
+        "1": "Desa Tidak Tersedia Layanan Pos dan Logistik di Desa, Perlu Menyediakan Pos dan Logistik di Desa",
+        "5": null
+    },
+    "Kemudahan akses menuju Layanan Pos dan Logistik di Desa": {
+        "1": "Akses Menuju Layanan Pos dan Logistik di Desa Sangat Sulit, Perlu Menyediakan Kemudahan Akses Menuju Pos dan Logistik di Desa",
+        "2": "Akses Menuju Layanan Pos dan Logistik di Desa Sulit, Perlu Menyediakan Kemudahan Akses Menuju Pos dan Logistik di Desa",
+        "3": "Akses Menuju Layanan Pos dan Logistik di Desa Sedang, Perlu Menyediakan Kemudahan Akses Menuju Pos dan Logistik di Desa",
+        "4": "Akses Menuju Layanan Pos dan Logistik di Desa Mudah, Perlu Menyediakan Kemudahan Akses Menuju Pos dan Logistik di Desa",
+        "5": null
+    },
+    "Apakah terdapat BUM Desa/ BUM Desa Bersama di Desa?": {
+        "1": "Tidak Terdapat BUMDesa/ Bumdesa Bersama di Desa, Perlu Pembentukan Bumdesa/ Bumdesa Bersama di Desa",
+        "5": null
+    },
+    "Apakah BUM Desa/ BUM Desa Bersama tersebut sudah berbadan hukum?": {
+        "1": "BUMDesa/ Bumdesa Bersama di Desa Belum Berbadan Hukum, Perlu Pembentukan Badan Hukum Bumdesa/ Bumdesa Bersama ",
+        "5": null
+    },
+    "Hari Operasional BUM Desa/ BUM Desa Bersama": {
+        "1": "Tidak Terdapat Lembaga Ekonomi, Perlu Pengadaan Lembaga Ekonomi di Desa",
+        "2": "Waktu Pelayanan BUMDes/ BUMDESMA Tidak Pasti, Perlu Penetapan Layanan Operasional",
+        "3": "Waktu Pelayanan BUMDes/ BUMDESMA Beroperasi 1-3 Hari Seminggu, Perlu Peningkatan Layanan Operasional hingga >5 Hari dalam Seminggu",
+        "4": "Waktu Pelayanan BUMDes/ BUMDESMA Beroperasi 4-5 Hari Seminggu, Perlu Peningkatan Layanan Operasional hingga >5 Hari dalam Seminggu",
+        "5": null
+    },
+    "Ketersediaan Lembaga Ekonomi lainnya di Desa (selain BUM Desa/ BUM Desa bersama): ": {
+        "1": "Tidak Tersedia Lembaga Ekonomi Lainnya (Selain BUMDes/ BUMDESMA) di Desa, Perlu Adanya Lembaga Ekonomi Lainnya selain Bumdesa/ Bumdesa Bersama di Desa",
+        "5": null
+    },
+    "i. Ketersediaan KUD": {
+        "1": "Tidak Tersedia KUD di Desa, Perlu Penyediaan KUD di Desa",
+        "5": null
+    },
+    "ii. Ketersediaan UMKM": {
+        "1": "Tidak Tersedia UMKM di Desa, Perlu Penyediaan UMKM di Desa",
+        "5": null
+    },
+    "Ketersediaan layanan perbankan di desa": {
+        "1": "Tidak Tersedia Layanan Perbankan di Desa, Perlu Penyediaan Layanan Perbankan di Desa",
+        "5": null
+    },
+    "i. Hari operasional layanan perbankan": {
+        "1": "Tidak Terdapat Layanan Perbankan, Perlu Pengadaan Layanan Perbankan di Desa",
+        "2": "Waktu Pelayanan Pebankan Tidak Pasti, Perlu Penetapan Layanan Operasional",
+        "3": "Waktu Pelayanan Perbankan Beroperasi 1-3 Hari Seminggu, Perlu Peningkatan Layanan Operasional hingga >5 Hari dalam Seminggu",
+        "4": "Waktu Pelayanan Perbankan Beroperasi 4-5 Hari Seminggu, Perlu Peningkatan Layanan Operasional hingga >5 Hari dalam Seminggu",
+        "5": null
+    },
+    "i. Terdapat Layanan Fasilitas Kredit Berupa KUR": {
+        "1": "Tidak Terdapat Layanan Fasilitas Kredit Berupa KUR di Desa, Perlu Penyediaan Layanan Fasilitas Kredit KUR di Desa",
+        "5": null
+    },
+    "ii. Terdapat Layanan Fasilitas Kredit Berupa KKP-E ": {
+        "1": "Tidak Terdapat Layanan Fasilitas Kredit Berupa KKP-E di Desa, Perlu Penyediaan Layanan Fasilitas Kredit KKP-E di Desa",
+        "5": null
+    },
+    "iii. Terdapat Layanan Fasilitas Kredit Berupa KUK ": {
+        "1": "Tidak Terdapat Layanan Fasilitas Kredit Berupa KUK di Desa, Perlu Penyediaan Layanan Fasilitas Kredit KUK di Desa",
+        "5": null
+    },
+    "Status Layanan Fasilitas Kredit ": {
+        "1": "Status Layanan Fasilitas Kredit Tidak Resmi, Penyediaan Layanan Fasilitas Kredit di Desa harus bersifat Resmi",
+        "5": null
+    },
+    "Apakah terdapat upaya menjaga/ mempertahankan/ melestarikan kearifan lingkungan berupa atraksi alam/ sumberdaya alam/ keindahan alam yang ada di desa": {
+        "1": "Tidak Terdapat Upaya Menjaga/ Mempertahankan/ Melestarikan Kearifan Lingkungan di Desa, Perlu Adanya Upaya Menjaga/ Mempertahankan/ Melestarikan Kearifan Lingkungan yang ada di Desa",
+        "3": "Hanya Terdapat 1 Kearifan Lingkungan yang Dijaga/ DIpertahankan/ Dilestarikan, Perlu Mengembangkan/ Menambah Kearifan Lingkungan yang dijaga/ dipertahankan/ dilestarikan di Desa",
+        "5": null
+    },
+    "Apakah terdapat peraturan/ regulasi yang mengatur terkait pelestarian lingkungan di Desa?": {
+        "1": "Tidak Terdapat Kegiatan Pelestarian Lingkungan Berbasis Kearifan Lokal Bidang Lingkungan di Desa, Perlu Adanya Kegiatan Terkait Pelestarian Lingkungan  Berbasis Lokal di Desa",
+        "5": null
+    },
+    "Apakah terdapat kegiatan pelestarian lingkungan berbasis kearifan lokal di bidang lingkungan di Desa (seperti Awik-awik)?": {
+        "1": "Tidak Terdapat Kegiatan Pelestarian Lingkungan Berbasis Kearifan Lokal Bidang Lingkungan di Desa, Perlu Adanya Kegiatan Terkait Pelestarian Lingkungan Berbasis Lokal di Desa ",
+        "5": null
+    },
+    "\"Apakah terdapat pemanfaatan Energi Baru Terbarukan di desa? (tenaga surya/angin/mikrohidro/biogas/biomassa/pasang surut/arus laut)\"": {
+        "1": "Tidak Terdapat Pemanfaatan Energi Baru Terbarukan (EBT) di Desa, Perlu Pemanfaatan Energi Baru Terbarukan di Desa",
+        "5": null
+    },
+    "Tempat pembuangan sampah di Desa": {
+        "1": "Sampah Tidak Dibuang ke Tempat Penampungan Sampah, Perlu Pengadaan Penampungan Sampah di Desa",
+        "5": null
+    },
+    "Dilakukan pengolahan sampah di desa": {
+        "1": "Tidak Dilakukan Pengolahan Sampah di Desa, Perlu Pengadaan Penampungan Sampah di Desa, Perlu Adanya Pengolahan Sampah di Desa",
+        "5": null
+    },
+    "Dilakukan pemanfaatan sampah di desa": {
+        "1": "Tidak Dilakukan Pemanfaatan Sampah di Desa, Perlu Adanya Pemanfaatan Sampah di Desa",
+        "5": null
+    },
+    "Rata-rata kejadian pencemaran lingkungan": {
+        "1": "Skor Kejadian Pencemaran Lingkungan Bernilai 1, Perlu Penanganan Pencemaran Lingkungan di Desa",
+        "2": "Skor Kejadian Pencemaran Lingkungan Bernilai >=0.5, Perlu Penanganan Pencemaran Lingkungan di Desa",
+        "4": "Skor Kejadian Pencemaran Lingkungan Bernilai <0.5, Perlu Penanganan Pencemaran Lingkungan di Desa",
+        "5": null
+    },
+    "i. Ketersediaan dan kepemilikan Jamban di Desa": {
+        "1": "Masih Menggunakan Jamban Komunal, Perlu Adanya Sosialisasi Kepemilikan Jamban Individu Tiap Rumah Tangga di Desa",
+        "3": "Sebagian Kecil Rumah Tangga Sudah Memiliki Jamban Individu (<50%), Perlu Adanya Sosialisasi Kepemilikan Jamban Individu Tiap Rumah Tangga di Desa",
+        "5": null
+    },
+    "ii. Keberfungsian jamban": {
+        "1": "Jamban tidak berfungsi, Perlu Melakukan Perbaikan Jamban Individu di Desa",
+        "5": null
+    },
+    "i. Ketersediaan Septic Tank (Pilihan: Komunal / Individual)": {
+        "1": "Tidak Tersedia Tangki Septic Tank, Perlu Adanya Pembangunan Septic Tank Per Rumah Tangga di Desa",
+        "3": "Tersedia Tangki Septic Tank Bersama/ Komunal, Perlu Adanya Pembangunan Septic Tank Per Rumah Tangga di Desa",
+        "5": null
+    },
+    "ii. Keberfungsian Septic Tank": {
+        "1": "Tangki Septic Tank Tidak Berfungsi, Perlu adanya perbaikan fungsi Septic Tank",
+        "5": null
+    },
+    "Pembuangan Air Limbah Cair Rumah Tangga": {
+        "1": "Pembuangan Air Limbah Cair Rumah Tidak Memiliki Aliran Khusus/ Langsung Dibuang ke Tanah/ Sungai/ Danau/ Saluran Irigasi/ Laut, Perlu Adanya Aliran Khusus Pembuangan Limbah Cair",
+        "5": null
+    },
+    "Ketersediaan aspek informasi kebencanaan": {
+        "1": "Tidak Tersedia Aspek Informasi Kebencanaan seperti Data Kejadian Bencana, Indeks Resiko Bencana dan Peta Rawan Bencana, Perlu Ketersediaan Data Kejadian Bencana, Indeks Resiko Bencana dan Peta Rawan Bencana di Desa",
+        "5": null
+    },
+    "Ketersediaan Fasilitas Mitigasi Bencana ": {
+        "1": "Tidak Tersedia Fasilitas Mitigasi Bencana, Perlu Adanya Fasilitas Mitigasi Bencana di Desa",
+        "5": null
+    },
+    "Kemudahan akses menuju fasilitas mitigasi bencana": {
+        "1": "Akses Menuju Fasilitas Mitigasi Bencana di Desa Sangat Sulit, Perlu Menyediakan Kemudahan Akses Menuju Fasilitas Mitigasi Bencana di Desa",
+        "2": "Akses Menuju Fasilitas Mitigasi Bencana di Desa Sulit, Perlu Menyediakan Kemudahan Akses Menuju Fasilitas Mitigasi Bencana di Desa",
+        "3": "Akses Menuju Fasilitas Mitigasi Bencana di Desa Sedang, Perlu Menyediakan Kemudahan Akses Menuju Fasilitas Mitigasi Bencana di Desa",
+        "4": "Akses Menuju Fasilitas Mitigasi Bencana di Desa Mudah, Perlu Menyediakan Kemudahan Akses Menuju Fasilitas Mitigasi Bencana di Desa",
+        "5": null
+    },
+    "Terdapat aktivitas Mitigasi dan atau Rehabilitasi bencana di Desa": {
+        "1": "Tidak Ada Program Penaggulangan Bencana, Perlu Adanya Program Penanggulangan Bencana dalam Dokumen Perencanaan Desa dan Terealisasi",
+        "3": "Ada Program Penanggulangan Bencana dalam Dokumen Perencanaan Desa dan Tidak Terealisasi, Perlu Adanya Program Penanggulangan Bencana dalam Dokumen Perencanaan Desa dan Terealisasi",
+        "5": null
+    },
+    "Ketersediaan fasilitas aspek tanggap darurat bencana": {
+        "1": "Tidak Tersedia Titik Evakuasi, Pos Keamanan Bencana dan Alat Kesiasiagaan Bencana, Perlu Adanya Fasilitas Mitigasi Bencana di Desa",
+        "5": null
+    },
+    "Jenis Permukaan Jalan sebagian besar di desa": {
+        "1": "Tidak Terdapat Akses Jalan Apapun, Perlu Pembukaan Akses Jalan Aspal/ Beton di Desa ",
+        "2": "Akses Jalan Lainnya, Perlu Peningkatan Kualitas Akses Jalan Aspal/Beton di Desa ",
+        "3": "Jenis Permukaan Jalan Sebagian Besar di Desa Berupa Tanah, Perlu Peningkatan Kualitas Akses Jalan Aspal/Beton di Desa ",
+        "4": "Jenis Permukaan Jalan Sebagian Besar di Desa Diperkeras (Kerikil, Batu, dll), Perlu Peningkatan Kualitas Akses Jalan Aspal/Beton di Desa",
+        "5": null
+    },
+    "Kualitas sebagian besar jalan di Desa": {
+        "1": "Kualitas Sebagian Besar Jalan di Desa Rusak Berat, Tidak Dapat Dilalui Setiap Hari, Perlu Perbaikan Jalan di Desa agar dapat dilalui Setiap Hari ",
+        "2": "Kualitas Sebagian Besar Jalan di Desa Rusak Sedang, Tidak Dapat Dilalui Setiap Hari, Perlu Perbaikan Jalan di Desa agar dapat dilalui Setiap Hari ",
+        "4": "Kualitas Sebagian Besar Jalan di Desa Rusak Sedang, Dapat Dilalui Setiap Hari, Perlu Perbaikan Jalan di Desa agar dapat dilalui Setiap Hari ",
+        "5": null
+    },
+    "Ketersediaan penerangan di jalan-jalan utama di desa": {
+        "1": "Tidak Tersedia Penerangan Jalan Umum (PJU) di Jalan Utama Desa, Pengadaan Penerangan Jalan Utama di Desa",
+        "5": null
+    },
+    "Operasional desa dalam penyediaan penerangan di jalan-jalan utama di desa": {
+        "1": "Tidak Teraliri Listrik, Perlu Adanya Penerangan Jalan Utama minimal >12 Jam perhari di Desa ",
+        "2": "PJU Beroperasi <6 Jam dalam 1 Hari, Perlu Adanya Penerangan Jalan Utama minimal >12 Jam perhari di Desa ",
+        "4": "PJU Beroperasi 6-12 Jam dalam 1 Hari, Perlu Adanya Penerangan Jalan Utama minimal >12 Jam perhari di Desa ",
+        "5": null
+    },
+    "Apakah terdapat Angkutan Perdesaan/ Angkutan Lokal/ Sejenis di Desa (angkot/ taksi/ ojek/ becak/ bentor/ perahu/ kapal/ dan sejenisnya)?": {
+        "1": "Tidak Terdapat Angkutan Umum di Desa, Perlu Ada Angkutan Perdesaan/Lokal/Sejenis yang beroperasi",
+        "5": null
+    },
+    "Bagaimana hari operasional Angkutan Perdesaan/ Angkutan Lokal/ Sejenis di Desa?": {
+        "1": "Tidak Ada Transportasi Umum yang Beroperasi di Desa, Perlu Adanya Angkutan Perdesaan/ Lokal/ Sejenis di Desa Beroperasi Setiap Hari dalam Seminggu",
+        "2": "Transportasi Umum Beroperasi 1-3 Hari dalam, Seminggu, Perlu Adanya Angkutan Perdesaan/ Lokal/ Sejenis di Desa Beroperasi Setiap Hari dalam Seminggu",
+        "4": "Transportasi Umum Beroperasi 4-6 Hari dalam, Seminggu, Perlu Adanya Angkutan Perdesaan/ Lokal/ Sejenis di Desa Beroperasi Setiap Hari dalam Seminggu",
+        "5": null
+    },
+    "Ketersediaan pelayanan listrik untuk rumah di desa?": {
+        "1": "Tidak Tersedia Pelayanan Listrik untuk Rumah di Desa, Perlu Terlayani Sebagian Besar Akses Pelayanan Listrik Rumah Tangga di Desa",
+        "3": "Ada Sebagian Kecil (<=50%)Tersedia pelayanan Listrik Untuk Rumah di Desa, Perlu Terlayani Sebagian Besar Akses Pelayanan Listrik Rumah Tangga di Desa",
+        "5": null
+    },
+    "Berapa Lama Durasi layanan Listrik di Desa?": {
+        "1": "Tidak Tersedia Layanan Listrik di Desa, Durasi Layanan Listrik di Desa Tersedia Minimal >12 Jam perhari",
+        "2": "Tersedia <6 Jam Layanan Listrik di Desa, Durasi Layanan Listrik di Desa Tersedia Minimal >12 Jam perhari",
+        "4": "Tersedia 6-12 Jam Layanan Listrik di Desa, Durasi Layanan Listrik di Desa Tersedia Minimal >12 Jam perhari",
+        "5": null
+    },
+    "Ketersediaan Akses Telepon di sebagian besar wilayah Desa": {
+        "1": "Tidak Tersedia Akses Sinyal Telepon di Wilayah Desa, Perlu Ketersediaan Akses Sinyal Kuat Telepon Sebagian Besar di Wilayah Desa",
+        "3": "Tersedia Akses Sinyal Telepon Lemah, Perlu Ketersediaan Akses Sinyal Kuat Telepon Sebagian Besar di Wilayah Desa",
+        "5": null
+    },
+    "Ketersediaan Akses Internet di sebagian besar wilayah Desa": {
+        "1": "Tidak Tersedia Akses Sinyal Internet di Wilayah Desa, Perlu Minimal Ketersediaan Akses Sinyal 4G di Desa",
+        "2": "Terdapat Akses Sinyal 2G dan Lainnya di Wilayah Desa, Perlu Minimal Ketersediaan Akses Sinyal 4G di Desa",
+        "4": "Terdapat Akses Sinyal 2G dan Lainnya di Wilayah Desa, Perlu Minimal Ketersediaan Akses Sinyal 4G di Desa",
+        "5": null
+    },
+    "Apakah layanan diberikan setiap hari/ hari kerja/ kurang dari jumlah hari kerja?": {
+        "1": "Pelaksanaan Pelayanan dan Administrasi diberikan Kurang dari Hari Kerja, Pelaksanaan Layanan dan Administrasi Desa dilakukan Setiap Hari",
+        "3": "Pelaksanaan Pelayanan dan Administrasi diberikan Hanya di Hari Kerja, Pelaksanaan Layanan dan Administrasi Desa dilakukan Setiap Hari",
+        "5": null
+    },
+    "Apakah sudah dilaksanakan publikasi informasi pelayanan kepada masyarakat desa?": {
+        "1": "Belum Dilaksanakan Publikasi Informasi Pelayanan Kepada Masyarakat Desa, Mengadakan Publikasi Informasi Pelayanan Kepada masyarakat Desa",
+        "5": null
+    },
+    "Apakah sudah dilaksanakan pelayanan administrasi untuk masyarakat desa?": {
+        "1": "Belum Dilaksanakan Pelayanan Administrasi untuk Masyarakat Desa, Mengadakan Pelayanan Admisitrasi untuk masyarakat Desa",
+        "5": null
+    },
+    "Apakah sudah dilaksanakan pelayanan pengaduan untuk masyarakat desa?": {
+        "1": "Belum Dilaksanakan Pelayanan Pengaduan untuk Masyarakat Desa, Perlu Mengadakan Pelayanan Pengaduan untuk masyarakat Desa",
+        "5": null
+    },
+    "Apakah sudah dilaksanakan pelayanan lainnya untuk masyarakat desa?": {
+        "1": "Belum Dilaksanakan Pelayanan Lainnya untuk Masyarakat Desa, Perlu Mengadakan Pelayanan Lainnya untuk masyarakat Desa",
+        "5": null
+    },
+    "Berapa Kali musyawarah Desa selama setahun terakhir?": {
+        "1": "Musdes Terlaksana 0-2 Kali dalam Setahun Terakhir, Perlu Meningkatkan Frekuensi Pelaksanaan Musdes Minimal 10 kali PerTahun",
+        "2": "Musdes Terlaksana 3-4 Kali dalam Setahun Terakhir, Perlu Meningkatkan Frekuensi Pelaksanaan Musdes Minimal 10 kali PerTahun",
+        "3": "Musdes Terlaksana 5-6 Kali dalam Setahun Terakhir, Perlu Meningkatkan Frekuensi Pelaksanaan Musdes Minimal 10 kali PerTahun",
+        "4": "Musdes Terlaksana 7-9 Kali dalam Setahun Terakhir, Perlu Meningkatkan Frekuensi Pelaksanaan Musdes Minimal 10 kali PerTahun",
+        "5": null
+    },
+    "Apakah Musyawarah Desa dihadiri oleh unsur masyarakat (tokoh adat/ tokoh agama/ tokoh masyarakat/ tokoh pendidikan/ kelompok tani/ kelompok nelayan/ kelompok perajin/ ) atau unsur masyarakat lainnya (kelompok perempuan / kelompok penyandang disabilitas/ kelompok lanjut usia/ kelompok masyarakat miskin);": {
+        "1": "Musdes Tidak Dihadiri oleh Unsur Masyarakat atau Unsur Masyarakat Lainnya, Pelaksanaan Musdes Perlu dihadiri oleh Unsur Masyarakat atau unsur Masyarakat Lainnya",
+        "5": null
+    },
+    "Apakah terdapat Pendapatan Asli Desa?": {
+        "1": "Tidak Terdapat Pendapan Asli Desa (PADes), Perlu Memperoleh Pendapatan Asli Desa",
+        "5": null
+    },
+    "Peningkatan PADes": {
+        "1": "PADes Turun, Perlu Adanya Peningkatan PADes",
+        "2": "PADes Tetap, Perlu Adanya Peningkatan PADes",
+        "4": "PADes Meningkat 0-1%, Perlu Adanya Peningkatan PADes",
+        "5": null
+    },
+    "Apakah dilakukan penyertaan modal dari Dana Desa kepada BUMDesa?": {
+        "1": "Tidak dilakukan Penyertaan Modal dari Dana Desa Kepada BUMDes, Perlu Pernyertaan Modal dari Dana Desa Kepada Bumdesa",
+        "5": null
+    },
+    "i. Desa memiliki Aset berupa Tanah Desa": {
+        "1": "Tidak Memilki Aset Tanah Desa, Perlu Memiliki Aset Tanah Desa yang Produktif untuk Kepentingan Masyarakat",
+        "3": "Terdapat Aset Tanah Desa, Namun Tidak Produktif untuk Kepentingan Masyarakat, Perlu Memiliki Aset Tanah Desa yang Produktif untuk Kepentingan Masyarakat",
+        "5": null
+    },
+    "ii. Desa memiliki Aset berupa Kantor Desa": {
+        "1": "Tidak Memilki Aset Kantor Desa, Perlu Memiliki Aset Kantor Desa yang Produktif untuk Kepentingan Masyarakat",
+        "3": "Desa Terdapat Aset Kantor Desa, Namun Tidak Produktif untuk Kepentingan Masyarakat, Perlu Memiliki Aset Kantor Desa yang Produktif untuk Kepentingan Masyarakat",
+        "5": null
+    },
+    "iii. Desa memiliki Aset berupa Pasar Desa": {
+        "1": "Tidak Memilki Aset Pasar Desa, Perlu Memiliki Aset Pasar Desa yang Produktif untuk Kepentingan Masyarakat",
+        "3": "Terdapat Aset Pasar Desa, Namun Tidak Produktif untuk Kepentingan Masyarakat, Perlu Memiliki Aset Pasar Desa yang Produktif untuk Kepentingan Masyarakat",
+        "5": null
+    },
+    "iv. Desa memiliki Aset Lainnya": {
+        "1": "Tidak Memilki Aset Desa Lainnya, Perlu Memiliki Aset Lainnya yang Produktif untuk Kepentingan Masyarakat",
+        "3": "Terdapat Aset Desa Lainnya, Namun Tidak Produktif untuk Kepentingan Masyarakat, Perlu Memiliki Aset Lainnya yang Produktif untuk Kepentingan Masyarakat",
+        "5": null
+    },
+    "Produktivitas Kepemilikan Aset Desa": {
+        "1": "Perlu menyediakan PAUD/TK/Sederajat sebanyak 5",
+        "2": "Perlu penambahan PAUD/TK/Sederajat sebanyak 4",
+        "3": "Perlu penambahan PAUD/TK/Sederajat sebanyak 3",
+        "4": "Perlu penambahan PAUD/TK/Sederajat sebanyak 1",
+        "5": null
+    },
+    "Apakah telah dilakukan inventarisasi aset desa?": {
+        "1": "Belum Dilakukan Inventaris Aset Desa, Perlu Melakukan Inventarisasi Aset Desa",
+        "5": null
+    }
+}
