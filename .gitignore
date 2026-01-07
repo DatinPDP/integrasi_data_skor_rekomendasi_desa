@@ -1,0 +1,18 @@
+*.csv
+*.xlsb
+*.duckdb
+
+# ignore Python cache files
+__pycache__/
+*/__pycache__/
+**/__pycache__/
+.pytest_cache/
+*/.pytest_cache/
+**/.pytest_cache/
+*.pyc
+*.pyo
+*.pyd
+__pycache__
+*.egg-info/
+dist/
+build/
