@@ -2,10 +2,11 @@ import os
 import shutil
 import math
 import traceback
+import json
 
 import duckdb
 import polars as pl
-from fastapi import FastAPI, UploadFile, File, BackgroundTasks, Query, HTTPException
+from fastapi import FastAPI, UploadFile, File, BackgroundTasks, Query, Request, HTTPException
 from fastapi.responses import JSONResponse, FileResponse
 
 # /root
@@ -24,6 +25,7 @@ app = FastAPI()
 # ==========================================
 # PATH CONFIGURATION (ABSOLUTE PATHS)
 # ==========================================
+
 # Get the directory where server.py is located (e.g., C:/.../desa_db)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -32,17 +34,65 @@ DB_FOLDER = os.path.join(BASE_DIR, "dbs")
 
 # Header File: inside .config/headers.txt (sibling of desa_db)
 # We go up one level (..) to root, then into .config
-HEADER_FILE = os.path.abspath(os.path.join(BASE_DIR, "../.config/headers.txt"))
+CONFIG_DIR = os.path.abspath(os.path.join(BASE_DIR, "../.config"))
+HEADER_FILE = os.path.join(CONFIG_DIR, "headers.txt")
 
 # Data Structure Constants
 # ID_COL acts as the Primary Key for deduplication and version control.
 ID_COL = "Kode Wilayah Administrasi Desa" 
 
-# Ensure storage directory exists
+# Ensure directories exist
 os.makedirs(DB_FOLDER, exist_ok=True)
+os.makedirs(CONFIG_DIR, exist_ok=True)
 
-# Ensure .config directory exists (just in case)
-os.makedirs(os.path.dirname(HEADER_FILE), exist_ok=True)
+# ==========================================
+# CACHE HELPER FUNCTIONS (NEW)
+# ==========================================
+def get_cache_path(year: str):
+    """Returns the absolute path for the cache file for a specific year."""
+    return os.path.join(CONFIG_DIR, f"unique_cache_{year}.json")
+
+def refresh_filter_cache(year: str):
+    """
+    Runs HEAVY queries (SELECT DISTINCT) once and saves result to JSON.
+    This runs only during upload.
+    """
+    con, _ = get_db_connection(year)
+    cache_data = {}
+    
+    # Columns we want to cache for dropdowns
+    # You can add more here if needed
+    target_columns = ["Provinsi", "Kabupaten/ Kota", "Kecamatan"]
+    
+    try:
+        # Check if table exists
+        tables = con.execute("SHOW TABLES").fetchall()
+        if not tables or ('main',) not in tables:
+            return
+            
+        for col in target_columns:
+            # Check if column exists in table to avoid crashing
+            try:
+                # Get unique values, sorted alphabetically
+                query = f'SELECT DISTINCT "{col}" FROM main WHERE "{col}" IS NOT NULL ORDER BY "{col}" ASC'
+                rows = con.execute(query).fetchall()
+                # Convert list of tuples [('Aceh',), ('Bali',)] -> list of strings ['Aceh', 'Bali']
+                cache_data[col] = [r[0] for r in rows]
+            except:
+                print(f"⚠️ Warning: Column '{col}' not found in DB, skipping cache.")
+                cache_data[col] = []
+        
+        # Write to disk
+        cache_path = get_cache_path(year)
+        with open(cache_path, "w", encoding="utf-8") as f:
+            json.dump(cache_data, f, ensure_ascii=False)
+            
+        print(f"✅ Cache refreshed: {cache_path}")
+        
+    except Exception as e:
+        print(f"❌ Error refreshing cache: {e}")
+    finally:
+        con.close()
 
 # ==========================================
 # Database Helper Functions
@@ -95,6 +145,30 @@ def init_db(con: duckdb.DuckDBPyConnection, headers: list[str]):
         )
     """)
 
+# --- Dynamic Filter Builder ---
+def build_dynamic_query(con, base_query, request_params):
+    """
+    Dynamically adds WHERE clauses based on URL parameters.
+    Ignores system params like 'limit', 'translate', 'year'.
+    """
+    # Get valid column names from the 'main' table to prevent SQL injection
+    valid_cols = [r[0] for r in con.execute("DESCRIBE main").fetchall()]
+    
+    filters = []
+    values = []
+    
+    # Iterate over all query parameters
+    for key, val in request_params.items():
+        # Map URL friendly names if necessary, or use direct keys
+        # We assume frontend sends specific column names like "Provinsi"
+        if key in valid_cols and val:
+            filters.append(f'"{key}" ILIKE ?')
+            values.append(f"%{val}%")
+            
+    if filters:
+        base_query += " WHERE " + " AND ".join(filters)
+        
+    return base_query, values
 
 # ==========================================
 # API Endpoints
@@ -234,8 +308,52 @@ async def upload_xlsb(year: str, file: UploadFile = File(...)):
         if os.path.exists(temp_xlsb):
             os.remove(temp_xlsb)
 
+@app.get("/unique/{year}") 
+def get_unique_values(year: str, column: str = Query(...)):
+    """
+    Retrieves distinct values for a specified column from the 'main' table.
+    Basically this is the endpoint to populate dropdown filters dynamically.
+    first tries to read from cache, if cache miss then queries DB directly.
+    Cache File: .config/unique_cache_{year}.json
+    """
+    cache_path = get_cache_path(year)
+    
+    # 1. Try to read from Cache File
+    if os.path.exists(cache_path):
+        try:
+            with open(cache_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                
+            # If the column exists in our cache, return it immediately
+            if column in data:
+                return data[column]
+        except Exception as e:
+            print(f"Cache read error: {e}")
+            # If cache is corrupted, we fall through to the fallback below
+            
+    # Fallback: If cache missing or column not in cache (e.g. first run)
+    # We query the DB directly. This ensures the app never breaks even if cache is gone.
+    print(f"Cache miss for {column}. Querying DB...")
+
+    con, _ = get_db_connection(year)
+    try:
+        # Check if table/column exists to be safe
+        try:
+            con.execute(f'SELECT "{column}" FROM main LIMIT 1')
+        except:
+            return [] # Return empty if column invalid
+
+        # Fetch distinct values for the dropdown
+        query = f'SELECT DISTINCT "{column}" FROM main WHERE "{column}" IS NOT NULL ORDER BY "{column}" ASC'
+        result = con.execute(query).fetchall()
+        return [r[0] for r in result]
+    except:
+        return []
+    finally:
+        con.close()
+
 @app.get("/query/{year}")
-def query_data(year: str, limit: int = 100, filter_col: str = None, filter_val: str = None, translate: bool = Query(False)):
+def query_data(year: str, request: Request, limit: int = 100, filter_col: str = None, filter_val: str = None, translate: bool = Query(False)):
     """
     'last_updated' is automatically the first column (Left Most).
     Retrieves the latest data snapshot from the 'main' table.
@@ -246,21 +364,23 @@ def query_data(year: str, limit: int = 100, filter_col: str = None, filter_val: 
         # Ensure database is initialized before querying
         tables = con.execute("SHOW TABLES").fetchall()
         if not tables or ('main',) not in tables:
-             return {"error": "Table 'main' not found. Please upload data first."}
+            return JSONResponse(
+             status_code=404, 
+             content={"error": "Table 'main' not found. Please upload data first."}
+            )
 
         # Build Query
-        query = "SELECT * FROM main"
-        params = []
+        base_query = "SELECT * FROM main"
+        # Convert query_params to dict
+        params_dict = dict(request.query_params)
         
-        # Optional: Add ILIKE (case-insensitive) filtering
-        if filter_col and filter_val:
-            query += f' WHERE "{filter_col}" ILIKE ?'
-            params.append(f"%{filter_val}%")
-            
-        query += f" ORDER BY last_updated DESC LIMIT {limit}"
+        final_query, values = build_dynamic_query(con, base_query, params_dict)
+        # Add Sort and Limit
+        final_query += f" ORDER BY last_updated DESC LIMIT {limit}"
+
         
         # Execute and return Polars DataFrame
-        result = con.execute(query, params).pl()
+        result = con.execute(final_query, values).pl()
         
         # Formatting:
         # 1. Cast Timestamp to String (JSON doesn't support native datetime objects)
@@ -275,6 +395,7 @@ def query_data(year: str, limit: int = 100, filter_col: str = None, filter_val: 
         # 3. Sanitize NaNs:
         # JSON standard forbids NaN. Python's `json` module allows it but frontend JS will crash.
         # We manually iterate to replace float('nan') with None (which becomes JSON null).
+        data_dict = result.to_dict(as_series=False)
         clean_data = {}
         for k, v_list in data_dict.items():
             clean_list = []
@@ -295,7 +416,7 @@ def query_data(year: str, limit: int = 100, filter_col: str = None, filter_val: 
         con.close()
 
 @app.get("/download/{year}")
-def download_data(year: str, background_tasks: BackgroundTasks, translate: bool = False):
+def download_data(year: str, background_tasks: BackgroundTasks, request: Request, translate: bool = False):
     """
     Export Endpoint:
     1. Reads DuckDB.
@@ -311,13 +432,20 @@ def download_data(year: str, background_tasks: BackgroundTasks, translate: bool 
         if not tables or ('main',) not in tables:
              return JSONResponse(status_code=404, content={"error": "No data found for this year."})
 
-        # Fetch data
-        df = con.execute("SELECT * FROM main ORDER BY last_updated DESC").pl()
+        # Build Query with SAME filters as View
+        base_query = "SELECT * FROM main"
+        params_dict = dict(request.query_params)
         
-        # Remove internal columns for export
-        cols_to_drop = [c for c in ["last_updated", "source_file"] if c in df.columns]
-        if cols_to_drop:
-            df = df.drop(cols_to_drop)
+        final_query, values = build_dynamic_query(con, base_query, params_dict)
+        
+        # Add Sort
+        final_query += " ORDER BY last_updated DESC"
+
+        # Execute
+        df = con.execute(final_query, values).pl()
+        
+        if "last_updated" in df.columns:
+            df = df.drop(["last_updated", "source_file"])
 
         # OPTIONAL Middleware
         if translate:

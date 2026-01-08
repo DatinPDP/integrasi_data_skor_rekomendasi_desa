@@ -74,10 +74,10 @@
         "5": null
     },
     "Kemudahan akses menuju Fasilitas Kesehatan Pustu/ Poskesdes/ Polindes": {
-        "1": "Akses Menuju Fasilitas Puskesmas Pembantu (Poskesdes/Polindes) Sangat Sulit, Perlu Menyediakan Kemudahan Akses Fasilitas Puskesmas Pembantu/Poskesdes/Polindes, ",
-        "2": "Akses Menuju Fasilitas Puskesmas Pembantu (Poskesdes/Polindes) Sulit, Perlu Menyediakan Kemudahan Akses Fasilitas Puskesmas Pembantu/Poskesdes/Polindes, ",
-        "3": "Akses Menuju Fasilitas Puskesmas Pembantu (Poskesdes/Polindes) Sedang, Perlu Menyediakan Kemudahan Akses Fasilitas Puskesmas Pembantu/Poskesdes/Polindes, ",
-        "4": "Akses Menuju Fasilitas Puskesmas Pembantu (Poskesdes/Polindes) Mudah, Perlu Menyediakan Kemudahan Akses Fasilitas Puskesmas Pembantu/Poskesdes/Polindes, ",
+        "1": "Akses Menuju Fasilitas Puskesmas Pembantu (Poskesdes/Polindes) Sangat Sulit, Perlu Menyediakan Kemudahan Akses Fasilitas Puskesmas Pembantu/Poskesdes/Polindes,",
+        "2": "Akses Menuju Fasilitas Puskesmas Pembantu (Poskesdes/Polindes) Sulit, Perlu Menyediakan Kemudahan Akses Fasilitas Puskesmas Pembantu/Poskesdes/Polindes,",
+        "3": "Akses Menuju Fasilitas Puskesmas Pembantu (Poskesdes/Polindes) Sedang, Perlu Menyediakan Kemudahan Akses Fasilitas Puskesmas Pembantu/Poskesdes/Polindes,",
+        "4": "Akses Menuju Fasilitas Puskesmas Pembantu (Poskesdes/Polindes) Mudah, Perlu Menyediakan Kemudahan Akses Fasilitas Puskesmas Pembantu/Poskesdes/Polindes,",
         "5": null
     },
     "Ketersediaan Fasilitas Posyandu di Desa": {
@@ -356,10 +356,10 @@
         "5": null
     },
     "Kemudahan akses menuju Penginapan di Desa": {
-        "1": "Akses Menuju Penginapan di Desa Sangat Sulit, Perlu Menyediakan Kemudahan Akses Menuju Penginapan di Desa, ",
-        "2": "Akses Menuju Penginapan di Desa Sulit, Perlu Menyediakan Kemudahan Akses Menuju Penginapan di Desa, ",
-        "3": "Akses Menuju Penginapan di Desa Sedang, Perlu Menyediakan Kemudahan Akses Menuju Penginapan di Desa, ",
-        "4": "Akses Menuju Penginapan di Desa Mudah, Perlu Menyediakan Kemudahan Akses Menuju Penginapan di Desa, ",
+        "1": "Akses Menuju Penginapan di Desa Sangat Sulit, Perlu Menyediakan Kemudahan Akses Menuju Penginapan di Desa,",
+        "2": "Akses Menuju Penginapan di Desa Sulit, Perlu Menyediakan Kemudahan Akses Menuju Penginapan di Desa,",
+        "3": "Akses Menuju Penginapan di Desa Sedang, Perlu Menyediakan Kemudahan Akses Menuju Penginapan di Desa,",
+        "4": "Akses Menuju Penginapan di Desa Mudah, Perlu Menyediakan Kemudahan Akses Menuju Penginapan di Desa,",
         "5": null
     },
     "Ketersediaan Layanan Pos dan/ Logistik di Desa": {
@@ -378,7 +378,7 @@
         "5": null
     },
     "Apakah BUM Desa/ BUM Desa Bersama tersebut sudah berbadan hukum?": {
-        "1": "BUMDesa/ Bumdesa Bersama di Desa Belum Berbadan Hukum, Perlu Pembentukan Badan Hukum Bumdesa/ Bumdesa Bersama ",
+        "1": "BUMDesa/ Bumdesa Bersama di Desa Belum Berbadan Hukum, Perlu Pembentukan Badan Hukum Bumdesa/ Bumdesa Bersama",
         "5": null
     },
     "Hari Operasional BUM Desa/ BUM Desa Bersama": {
@@ -388,7 +388,7 @@
         "4": "Waktu Pelayanan BUMDes/ BUMDESMA Beroperasi 4-5 Hari Seminggu, Perlu Peningkatan Layanan Operasional hingga >5 Hari dalam Seminggu",
         "5": null
     },
-    "Ketersediaan Lembaga Ekonomi lainnya di Desa (selain BUM Desa/ BUM Desa bersama): ": {
+    "Ketersediaan Lembaga Ekonomi lainnya di Desa (selain BUM Desa/ BUM Desa bersama):": {
         "1": "Tidak Tersedia Lembaga Ekonomi Lainnya (Selain BUMDes/ BUMDESMA) di Desa, Perlu Adanya Lembaga Ekonomi Lainnya selain Bumdesa/ Bumdesa Bersama di Desa",
         "5": null
     },
@@ -415,15 +415,15 @@
         "1": "Tidak Terdapat Layanan Fasilitas Kredit Berupa KUR di Desa, Perlu Penyediaan Layanan Fasilitas Kredit KUR di Desa",
         "5": null
     },
-    "ii. Terdapat Layanan Fasilitas Kredit Berupa KKP-E ": {
+    "ii. Terdapat Layanan Fasilitas Kredit Berupa KKP-E": {
         "1": "Tidak Terdapat Layanan Fasilitas Kredit Berupa KKP-E di Desa, Perlu Penyediaan Layanan Fasilitas Kredit KKP-E di Desa",
         "5": null
     },
-    "iii. Terdapat Layanan Fasilitas Kredit Berupa KUK ": {
+    "iii. Terdapat Layanan Fasilitas Kredit Berupa KUK": {
         "1": "Tidak Terdapat Layanan Fasilitas Kredit Berupa KUK di Desa, Perlu Penyediaan Layanan Fasilitas Kredit KUK di Desa",
         "5": null
     },
-    "Status Layanan Fasilitas Kredit ": {
+    "Status Layanan Fasilitas Kredit": {
         "1": "Status Layanan Fasilitas Kredit Tidak Resmi, Penyediaan Layanan Fasilitas Kredit di Desa harus bersifat Resmi",
         "5": null
     },
@@ -437,10 +437,10 @@
         "5": null
     },
     "Apakah terdapat kegiatan pelestarian lingkungan berbasis kearifan lokal di bidang lingkungan di Desa (seperti Awik-awik)?": {
-        "1": "Tidak Terdapat Kegiatan Pelestarian Lingkungan Berbasis Kearifan Lokal Bidang Lingkungan di Desa, Perlu Adanya Kegiatan Terkait Pelestarian Lingkungan Berbasis Lokal di Desa ",
+        "1": "Tidak Terdapat Kegiatan Pelestarian Lingkungan Berbasis Kearifan Lokal Bidang Lingkungan di Desa, Perlu Adanya Kegiatan Terkait Pelestarian Lingkungan Berbasis Lokal di Desa",
         "5": null
     },
-    "\"Apakah terdapat pemanfaatan Energi Baru Terbarukan di desa? (tenaga surya/angin/mikrohidro/biogas/biomassa/pasang surut/arus laut)\"": {
+    "Apakah terdapat pemanfaatan Energi Baru Terbarukan di desa? (tenaga surya/angin/mikrohidro/biogas/biomassa/pasang surut/arus laut)": {
         "1": "Tidak Terdapat Pemanfaatan Energi Baru Terbarukan (EBT) di Desa, Perlu Pemanfaatan Energi Baru Terbarukan di Desa",
         "5": null
     },
@@ -488,7 +488,7 @@
         "1": "Tidak Tersedia Aspek Informasi Kebencanaan seperti Data Kejadian Bencana, Indeks Resiko Bencana dan Peta Rawan Bencana, Perlu Ketersediaan Data Kejadian Bencana, Indeks Resiko Bencana dan Peta Rawan Bencana di Desa",
         "5": null
     },
-    "Ketersediaan Fasilitas Mitigasi Bencana ": {
+    "Ketersediaan Fasilitas Mitigasi Bencana": {
         "1": "Tidak Tersedia Fasilitas Mitigasi Bencana, Perlu Adanya Fasilitas Mitigasi Bencana di Desa",
         "5": null
     },
@@ -509,16 +509,16 @@
         "5": null
     },
     "Jenis Permukaan Jalan sebagian besar di desa": {
-        "1": "Tidak Terdapat Akses Jalan Apapun, Perlu Pembukaan Akses Jalan Aspal/ Beton di Desa ",
-        "2": "Akses Jalan Lainnya, Perlu Peningkatan Kualitas Akses Jalan Aspal/Beton di Desa ",
-        "3": "Jenis Permukaan Jalan Sebagian Besar di Desa Berupa Tanah, Perlu Peningkatan Kualitas Akses Jalan Aspal/Beton di Desa ",
+        "1": "Tidak Terdapat Akses Jalan Apapun, Perlu Pembukaan Akses Jalan Aspal/ Beton di Desa",
+        "2": "Akses Jalan Lainnya, Perlu Peningkatan Kualitas Akses Jalan Aspal/Beton di Desa",
+        "3": "Jenis Permukaan Jalan Sebagian Besar di Desa Berupa Tanah, Perlu Peningkatan Kualitas Akses Jalan Aspal/Beton di Desa",
         "4": "Jenis Permukaan Jalan Sebagian Besar di Desa Diperkeras (Kerikil, Batu, dll), Perlu Peningkatan Kualitas Akses Jalan Aspal/Beton di Desa",
         "5": null
     },
     "Kualitas sebagian besar jalan di Desa": {
-        "1": "Kualitas Sebagian Besar Jalan di Desa Rusak Berat, Tidak Dapat Dilalui Setiap Hari, Perlu Perbaikan Jalan di Desa agar dapat dilalui Setiap Hari ",
-        "2": "Kualitas Sebagian Besar Jalan di Desa Rusak Sedang, Tidak Dapat Dilalui Setiap Hari, Perlu Perbaikan Jalan di Desa agar dapat dilalui Setiap Hari ",
-        "4": "Kualitas Sebagian Besar Jalan di Desa Rusak Sedang, Dapat Dilalui Setiap Hari, Perlu Perbaikan Jalan di Desa agar dapat dilalui Setiap Hari ",
+        "1": "Kualitas Sebagian Besar Jalan di Desa Rusak Berat, Tidak Dapat Dilalui Setiap Hari, Perlu Perbaikan Jalan di Desa agar dapat dilalui Setiap Hari",
+        "2": "Kualitas Sebagian Besar Jalan di Desa Rusak Sedang, Tidak Dapat Dilalui Setiap Hari, Perlu Perbaikan Jalan di Desa agar dapat dilalui Setiap Hari",
+        "4": "Kualitas Sebagian Besar Jalan di Desa Rusak Sedang, Dapat Dilalui Setiap Hari, Perlu Perbaikan Jalan di Desa agar dapat dilalui Setiap Hari",
         "5": null
     },
     "Ketersediaan penerangan di jalan-jalan utama di desa": {
@@ -526,9 +526,9 @@
         "5": null
     },
     "Operasional desa dalam penyediaan penerangan di jalan-jalan utama di desa": {
-        "1": "Tidak Teraliri Listrik, Perlu Adanya Penerangan Jalan Utama minimal >12 Jam perhari di Desa ",
-        "2": "PJU Beroperasi <6 Jam dalam 1 Hari, Perlu Adanya Penerangan Jalan Utama minimal >12 Jam perhari di Desa ",
-        "4": "PJU Beroperasi 6-12 Jam dalam 1 Hari, Perlu Adanya Penerangan Jalan Utama minimal >12 Jam perhari di Desa ",
+        "1": "Tidak Teraliri Listrik, Perlu Adanya Penerangan Jalan Utama minimal >12 Jam perhari di Desa",
+        "2": "PJU Beroperasi <6 Jam dalam 1 Hari, Perlu Adanya Penerangan Jalan Utama minimal >12 Jam perhari di Desa",
+        "4": "PJU Beroperasi 6-12 Jam dalam 1 Hari, Perlu Adanya Penerangan Jalan Utama minimal >12 Jam perhari di Desa",
         "5": null
     },
     "Apakah terdapat Angkutan Perdesaan/ Angkutan Lokal/ Sejenis di Desa (angkot/ taksi/ ojek/ becak/ bentor/ perahu/ kapal/ dan sejenisnya)?": {
@@ -591,7 +591,7 @@
         "4": "Musdes Terlaksana 7-9 Kali dalam Setahun Terakhir, Perlu Meningkatkan Frekuensi Pelaksanaan Musdes Minimal 10 kali PerTahun",
         "5": null
     },
-    "Apakah Musyawarah Desa dihadiri oleh unsur masyarakat (tokoh adat/ tokoh agama/ tokoh masyarakat/ tokoh pendidikan/ kelompok tani/ kelompok nelayan/ kelompok perajin/ ) atau unsur masyarakat lainnya (kelompok perempuan / kelompok penyandang disabilitas/ kelompok lanjut usia/ kelompok masyarakat miskin);": {
+    "Apakah Musyawarah Desa dihadiri oleh unsur masyarakat (tokoh adat/ tokoh agama/ tokoh masyarakat/ tokoh pendidikan/ kelompok tani/ kelompok nelayan/ kelompok perajin/ ) atau unsur masyarakat lainnya (kelompok perempuan / kelompok penyandang disabilitas/ kelompok lanjut usia/ kelompok masyarakat miskin)": {
         "1": "Musdes Tidak Dihadiri oleh Unsur Masyarakat atau Unsur Masyarakat Lainnya, Pelaksanaan Musdes Perlu dihadiri oleh Unsur Masyarakat atau unsur Masyarakat Lainnya",
         "5": null
     },

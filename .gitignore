@@ -1,6 +1,7 @@
 *.csv
 *.xlsb
 *.duckdb
+installed.txt
 
 # ignore Python cache files
 __pycache__/

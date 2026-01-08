@@ -9,13 +9,13 @@ YEAR = "2025"
 # Page Layout
 st.set_page_config(page_title="Desa Data Manager", layout="wide", page_icon="📊")
 
-st.title(f"📊 Dashboard Data Desa {YEAR}")
-st.markdown("Database management system with version control logic.")
-
 # ==========================================
 # SIDEBAR
 # ==========================================
 with st.sidebar:
+    st.caption(f"Connected to: {API_URL}")
+    st.markdown("---")
+
     # --- 1. UPLOAD SECTION ---
     st.header("📤 Upload Data")
     st.info("Upload .xlsb files here to update the database.")
@@ -59,19 +59,67 @@ with st.sidebar:
 
     st.markdown("---")
 
-    # --- 3. DOWNLOAD SECTION  ---
-    st.header("📥 Export Data")
-    
-    # We use a button to trigger the API call to fetch the file
-    if st.button("📄 Generate Excel Report"):
+# ==========================================
+# MAIN AREA: DATA VIEWER
+# ==========================================
+
+# Helper to get options for dropdowns
+@st.cache_data(ttl=600) # Cache results for 10 minutes to prevent DB spamming
+def get_options(column_name):
+    try:
+        # Backend expects: /unique/{year}?column={column_name}
+        resp = requests.get(f"{API_URL}/unique/{YEAR}", params={"column": column_name})
+        if resp.status_code == 200:
+            return resp.json()
+    except:
+        pass
+    return []
+
+# --- FORM START ---
+# Wrapping filters in a form prevents the app from reloading/querying 
+# every time you type a character or select an option.
+with st.form("filter_form"):
+    col1, col2, col3, col4, col5 = st.columns([3, 3, 3, 3, 1], vertical_alignment="bottom")
+
+    # Dictionary to hold our filters
+    filter_params = {}
+
+    with col1:
+        prov_opts = get_options("Provinsi")
+        sel_prov = st.selectbox("Provinsi", options=[""] + prov_opts, index=0)
+        if sel_prov: filter_params["Provinsi"] = sel_prov
+
+    with col2:
+        kab_opts = get_options("Kabupaten/ Kota") 
+        sel_kab = st.selectbox("Kabupaten/Kota", options=[""] + kab_opts, index=0)
+        if sel_kab: filter_params["Kabupaten/ Kota"] = sel_kab
+
+    with col3:
+        kec_opts = get_options("Kecamatan")
+        sel_kec = st.selectbox("Kecamatan", options=[""] + kec_opts, index=0)
+        if sel_kec: filter_params["Kecamatan"] = sel_kec
+
+    with col4:
+        desa_val = st.text_input("Desa / Kode Wilayah", "", placeholder="Search value")
+        if desa_val: filter_params["Kode Wilayah Administrasi Desa"] = desa_val
+
+    with col5:
+        # The API will ONLY be called when this button is clicked
+        submitted = st.form_submit_button("Search")
+
+# --- DOWNLOAD BUTTON LOGIC ---
+if st.sidebar.button("📄 Generate Filtered Report"):
+    with st.sidebar:
         with st.spinner("Generating Excel file..."):
             try:
-                # We pass the same 'translate' param to the download endpoint
+                # Base Params
                 dl_params = {"translate": translate_on}
+                # Add Active Filters
+                dl_params.update(filter_params) 
+                
                 dl_response = requests.get(f"{API_URL}/download/{YEAR}", params=dl_params)
                 
                 if dl_response.status_code == 200:
-                    # Create a download button for the binary content
                     st.download_button(
                         label="⬇️ Click to Download",
                         data=dl_response.content,
@@ -80,56 +128,30 @@ with st.sidebar:
                         type="primary"
                     )
                 else:
-                    st.error("Could not generate file. Is the database empty?")
+                    st.error("Download failed.")
             except Exception as e:
-                st.error(f"Error downloading: {e}")
-
-    st.markdown("---")
-    st.caption(f"Connected to: {API_URL}")
-
-
-# ==========================================
-# MAIN AREA: DATA VIEWER
-# ==========================================
-
-# Filter Section
-st.header("🔍 Data Browser")
-
-col1, col2, col3 = st.columns([1, 2, 1])
-
-with col1:
-    filter_col = st.selectbox(
-        "Filter By Column:",
-        ["Provinsi", "Kabupaten/ Kota", "Kecamatan", "Desa", "Kode Wilayah Administrasi Desa"],
-        index=0
-    )
-
-with col2:
-    filter_val = st.text_input(f"Search value in '{filter_col}'...", "")
-
-with col3:
-    st.write("##") # Spacer
-    refresh_btn = st.button("🔄 Refresh Data")
+                st.error(f"Error: {e}")
 
 # Fetch Data Logic
 try:
     # Build Query Params
-    params = {
+    api_params = {
         "limit": 500,
         "translate": translate_on
     }
-
-    if filter_val:
-        params["filter_col"] = filter_col
-        params["filter_val"] = filter_val
+    api_params.update(filter_params) # Merge filter selections
 
     # Call API
-    response = requests.get(f"{API_URL}/query/{YEAR}", params=params)
+    response = requests.get(f"{API_URL}/query/{YEAR}", params=api_params)
 
     if response.status_code == 200:
         data = response.json()
         
-        if data and len(next(iter(data.values()))) > 0:
+        # FIX: Check if "error" key exists in the successful response
+        if "error" in data:
+            st.warning(data["error"])
+            
+        elif data and len(next(iter(data.values()))) > 0:
             # Convert JSON dict to Pandas DataFrame for display
             df = pd.DataFrame(data)
             
@@ -151,6 +173,10 @@ try:
             )
         else:
             st.warning("No data found matching your criteria.")
+    
+    elif response.status_code == 404:
+        st.info("Database is empty. Please upload an Excel file.")
+        
     else:
         st.error(f"Server Error ({response.status_code}): {response.text}")
 
