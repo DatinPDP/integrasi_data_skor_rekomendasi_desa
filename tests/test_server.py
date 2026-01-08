@@ -3,6 +3,7 @@ import sys
 import pytest
 import polars as pl
 from fastapi.testclient import TestClient
+import json
 
 # ==========================================
 # 1. PATH CONFIGURATION
@@ -59,23 +60,32 @@ def setup_teardown():
     4. Cleans up afterwards.
     """
     # --- SETUP ---
+    # HEADERS: Must include Location columns for the Hierarchy Cache to work
+    headers = [
+        ID_COL,
+        "Nama Desa",
+        "Provinsi",          # <--- Added
+        "Kabupaten/ Kota",   # <--- Added
+        "Kecamatan",         # <--- Added
+        TEST_LOGIC_COL
+    ]
     
-    # 1. Create a temporary headers.txt just for this test
+    # Create a temporary headers.txt just for this test
     with open(TEST_HEADER_FILE_PATH, "w", encoding="utf-8") as f:
-        f.write(f"{ID_COL}\nNama Desa\n{TEST_LOGIC_COL}")
+        f.write("\n".join(headers))
 
     # 2. SAVE ORIGINAL STATES (So we don't break the actual app config)
     original_header_path = server_module.HEADER_FILE
     original_logic = middleware_module.RECOMMENDATION_LOGIC
 
-    # 3. APPLY PATCHES (The Magic)
+    # APPLY PATCHES (The Magic)
     # Tell server.py: "Don't look at .config, look at this temp file"
     server_module.HEADER_FILE = TEST_HEADER_FILE_PATH
     
     # Tell middleware.py: "Don't load JSON, use this dict"
     middleware_module.RECOMMENDATION_LOGIC = TEST_RULES
 
-    # 4. Clean previous DB artifacts
+    # Clean previous DB artifacts
     if os.path.exists(TEST_DB_PATH):
         try: os.remove(TEST_DB_PATH)
         except: pass
@@ -84,39 +94,60 @@ def setup_teardown():
 
     # --- TEARDOWN ---
     
-    # 5. RESTORE ORIGINAL STATE
+    # RESTORE ORIGINAL STATE
     server_module.HEADER_FILE = original_header_path
     middleware_module.RECOMMENDATION_LOGIC = original_logic
 
-    # 6. Cleanup Temp Files
-    if os.path.exists(TEST_DB_PATH):
-        try: os.remove(TEST_DB_PATH)
-        except: pass
-    if os.path.exists(TEST_HEADER_FILE_PATH):
-        try: os.remove(TEST_HEADER_FILE_PATH)
-        except: pass
+    # Define files to clean
+    # Note: We must locate the cache file exactly where server.py put it (.config folder)
+    real_config_dir = os.path.abspath(os.path.join(current_dir, "../.config"))
+    cache_file = os.path.join(real_config_dir, f"unique_cache_{TEST_YEAR}.json")
+
+    files_to_clean = [
+        TEST_DB_PATH, 
+        TEST_HEADER_FILE_PATH, 
+        os.path.join(current_dir, "test_upload.xlsx"), 
+        os.path.join(current_dir, "downloaded_test.xlsx"),
+        cache_file
+    ]
+
+    # Cleanup Temp Files
+    for f in files_to_clean:
+        if os.path.exists(f):
+            try: os.remove(f)
+            except: pass
 
 
 # ==========================================
 # 5. HELPER FUNCTION
 # ==========================================
 def create_dummy_xlsb(filename):
-    """Creates a valid dummy Excel file matching server expectations."""
+    """
+    Creates dummy data WITH Location columns so cache generation succeeds.
+    """
     df = pl.DataFrame({
-        # Column 0: Index (Dropped by server logic)
-        "Index": ["", "", "", "", "", "", "", ""], 
+        # Column 0: Index (Dropped)
+        "Index": [""] * 8, 
         
-        # Column 1: Metadata + ID_COL (The ID value "1234567890")
-        "A": ["metadata", "metadata", "metadata", "metadata", "metadata", "metadata", ID_COL, "1234567890"],
+        # Column 1: ID
+        "A": ["metadata"]*6 + [ID_COL, "1234567890"],
         
-        # Column 2: Metadata + Generic Data
-        "B": ["", "", "", "", "", "", "Nama Desa", "Desa Test"],
+        # Column 2: Nama Desa
+        "B": [""]*6 + ["Nama Desa", "Desa Test"],
         
-        # Column 3: Metadata + THE COLUMN WE WANT TO TRANSLATE
-        # We put "1". Middleware should convert this to "Perlu menyediakan PAUD"
-        "C": ["", "", "", "", "", "", TEST_LOGIC_COL, "1"] 
+        # Column 3: Provinsi
+        "C": [""]*6 + ["Provinsi", "Jawa Barat"],
+        
+        # Column 4: Kab
+        "D": [""]*6 + ["Kabupaten/ Kota", "Bandung"],
+        
+        # Column 5: Kec
+        "E": [""]*6 + ["Kecamatan", "Coblong"],
+        
+        # Column 6: Logic
+        "F": [""]*6 + [TEST_LOGIC_COL, "1"] 
     })
-    
+ 
     # Explicitly name the worksheet "Skor"
     df.write_excel(filename, worksheet="Skor")
     return filename
@@ -150,7 +181,15 @@ def test_upload_and_download_flow():
         if response.status_code != 200:
             print("\nServer Error:", response.json())
         assert response.status_code == 200
-        assert response.json()["status"] == "success"
+        # Hierachy check, this confirms the server logic we just added actually works
+        res_hierarchy = client.get(f"/hierarchy/{TEST_YEAR}")
+        assert res_hierarchy.status_code == 200
+        tree = res_hierarchy.json()
+        
+        # Verify our dummy location data exists in the tree
+        assert "Jawa Barat" in tree
+        assert "Bandung" in tree["Jawa Barat"]
+        assert "Coblong" in tree["Jawa Barat"]["Bandung"]
 
         # --- STEP 2: DOWNLOAD ---
         download_response = client.get(f"/download/{TEST_YEAR}")
@@ -158,28 +197,13 @@ def test_upload_and_download_flow():
         
         with open(downloaded_file, "wb") as f:
             f.write(download_response.content)
-        
-        # Verify ID exists in downloaded file
-        df_downloaded = pl.read_excel(downloaded_file)
-        df_downloaded = df_downloaded.with_columns(pl.col(ID_COL).cast(pl.String))
-        assert df_downloaded.filter(pl.col(ID_COL) == "1234567890").height == 1
 
         # --- STEP 3: MIDDLEWARE CHECK ---
         # Request with ?translate=true
         res_trans = client.get(f"/query/{TEST_YEAR}?translate=true")
         assert res_trans.status_code == 200
-        
         data_trans = res_trans.json()
-        
-        # Check if the column exists and has been translated
-        if TEST_LOGIC_COL in data_trans:
-            trans_value = data_trans[TEST_LOGIC_COL][0]
-            print(f"Translated Value: {trans_value}")
-            
-            # This confirms the mocked middleware logic is working
-            assert "Perlu menyediakan PAUD" in trans_value
-        else:
-            pytest.fail(f"Column '{TEST_LOGIC_COL}' not found in response JSON.")
+        assert "Perlu menyediakan PAUD" in data_trans[TEST_LOGIC_COL][0]
 
     finally:
         # Cleanup

@@ -33,7 +33,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_FOLDER = os.path.join(BASE_DIR, "dbs")
 
 # Header File: inside .config/headers.txt (sibling of desa_db)
-# We go up one level (..) to root, then into .config
+# Go up one level (..) to root, then into .config
 CONFIG_DIR = os.path.abspath(os.path.join(BASE_DIR, "../.config"))
 HEADER_FILE = os.path.join(CONFIG_DIR, "headers.txt")
 
@@ -46,7 +46,7 @@ os.makedirs(DB_FOLDER, exist_ok=True)
 os.makedirs(CONFIG_DIR, exist_ok=True)
 
 # ==========================================
-# CACHE HELPER FUNCTIONS (NEW)
+# CACHE HELPER FUNCTIONS
 # ==========================================
 def get_cache_path(year: str):
     """Returns the absolute path for the cache file for a specific year."""
@@ -54,13 +54,19 @@ def get_cache_path(year: str):
 
 def refresh_filter_cache(year: str):
     """
-    Runs HEAVY queries (SELECT DISTINCT) once and saves result to JSON.
-    This runs only during upload.
+    Builds a hierarchical JSON tree:
+    {
+        "Provinsi A": {
+            "Kabupaten A1": ["Kecamatan A1-1", "Kecamatan A1-2"],
+            "Kabupaten A2": [...]
+        },
+        ...
+    }
     """
     con, _ = get_db_connection(year)
-    cache_data = {}
-    
-    # Columns we want to cache for dropdowns
+    hierarchy = {}
+
+    # Columns to cache for dropdowns
     # You can add more here if needed
     target_columns = ["Provinsi", "Kabupaten/ Kota", "Kecamatan"]
     
@@ -69,28 +75,37 @@ def refresh_filter_cache(year: str):
         tables = con.execute("SHOW TABLES").fetchall()
         if not tables or ('main',) not in tables:
             return
+
+        # Fetch all unique combinations in one go (Very Fast)
+        # Assume headers are standard. Adjust exact column names if needed.
+        query = """
+            SELECT DISTINCT "Provinsi", "Kabupaten/ Kota", "Kecamatan" 
+            FROM main 
+            WHERE "Provinsi" IS NOT NULL 
+            ORDER BY "Provinsi", "Kabupaten/ Kota", "Kecamatan"
+        """
+        rows = con.execute(query).fetchall()
+        
+        # Build the Tree
+        for prov, kab, kec in rows:
+            if prov not in hierarchy:
+                hierarchy[prov] = {}
+            if kab not in hierarchy[prov]:
+                hierarchy[prov][kab] = []
             
-        for col in target_columns:
-            # Check if column exists in table to avoid crashing
-            try:
-                # Get unique values, sorted alphabetically
-                query = f'SELECT DISTINCT "{col}" FROM main WHERE "{col}" IS NOT NULL ORDER BY "{col}" ASC'
-                rows = con.execute(query).fetchall()
-                # Convert list of tuples [('Aceh',), ('Bali',)] -> list of strings ['Aceh', 'Bali']
-                cache_data[col] = [r[0] for r in rows]
-            except:
-                print(f"⚠️ Warning: Column '{col}' not found in DB, skipping cache.")
-                cache_data[col] = []
+            # Add kecamatan if not exists (though SQL DISTINCT handles duplicates mostly)
+            if kec not in hierarchy[prov][kab]:
+                hierarchy[prov][kab].append(kec)
         
         # Write to disk
         cache_path = get_cache_path(year)
         with open(cache_path, "w", encoding="utf-8") as f:
-            json.dump(cache_data, f, ensure_ascii=False)
+            json.dump(hierarchy, f, ensure_ascii=False)
             
-        print(f"✅ Cache refreshed: {cache_path}")
+        print(f"✅ Hierarchy Cache refreshed: {cache_path}")
         
     except Exception as e:
-        print(f"❌ Error refreshing cache: {e}")
+        print(f"❌ Error refreshing hierarchy: {e}")
     finally:
         con.close()
 
@@ -120,7 +135,7 @@ def init_db(con: duckdb.DuckDBPyConnection, headers: list[str]):
         headers: List of column names to construct the schema dynamically.
     """
     # Construct column definitions for SQL (e.g., "Col1" VARCHAR, "Col2" VARCHAR...)
-    # Note: We wrap headers in double quotes to handle spaces or special chars in column names.
+    # Note: Wrap headers in double quotes to handle spaces or special chars in column names.
     cols_def = ", ".join([f'"{h}" VARCHAR' for h in headers])
     
     # Create the MAIN table (Latest Snapshot)
@@ -160,7 +175,7 @@ def build_dynamic_query(con, base_query, request_params):
     # Iterate over all query parameters
     for key, val in request_params.items():
         # Map URL friendly names if necessary, or use direct keys
-        # We assume frontend sends specific column names like "Provinsi"
+        # Assume frontend sends specific column names like "Provinsi"
         if key in valid_cols and val:
             filters.append(f'"{key}" ILIKE ?')
             values.append(f"%{val}%")
@@ -254,7 +269,7 @@ async def upload_xlsb(year: str, file: UploadFile = File(...)):
 
         # Step B: Change Detection
         # Compare 'incoming' vs 'main'. If IDs match but content differs, it's an update.
-        # We use IS DISTINCT FROM to handle NULLs correctly.
+        # Use IS DISTINCT FROM to handle NULLs correctly.
         other_cols = [h for h in df.columns if h != ID_COL]
         check_conditions = " OR ".join([f'(m."{h}" IS DISTINCT FROM i."{h}")' for h in other_cols])
 
@@ -273,7 +288,7 @@ async def upload_xlsb(year: str, file: UploadFile = File(...)):
         """)
         
         # Step D: UPSERT (Update + Insert)
-        # We replace the main table's rows with the new incoming rows.
+        # replace the main table's rows with the new incoming rows.
         # Filter logic:
         # 1. New IDs (Not in main) -> Insert
         # 2. Existing IDs that have changed -> Update (Replace)
@@ -292,6 +307,11 @@ async def upload_xlsb(year: str, file: UploadFile = File(...)):
         """)
         
         con.close()
+
+        # Trigger the cache rebuild immediately after data is committed
+        # .config/unique_cache_{year}.json
+        print("Refreshing hierarchy cache...")
+        refresh_filter_cache(year)
         
         return {
             "status": "success",
@@ -329,10 +349,10 @@ def get_unique_values(year: str, column: str = Query(...)):
                 return data[column]
         except Exception as e:
             print(f"Cache read error: {e}")
-            # If cache is corrupted, we fall through to the fallback below
+            # If cache is corrupted, fall through to the fallback below
             
     # Fallback: If cache missing or column not in cache (e.g. first run)
-    # We query the DB directly. This ensures the app never breaks even if cache is gone.
+    # Query the DB directly. This ensures the app never breaks even if cache is gone.
     print(f"Cache miss for {column}. Querying DB...")
 
     con, _ = get_db_connection(year)
@@ -351,6 +371,14 @@ def get_unique_values(year: str, column: str = Query(...)):
         return []
     finally:
         con.close()
+
+@app.get("/hierarchy/{year}") 
+def get_filter_hierarchy(year: str):
+    """Returns the full location tree (Prov -> Kab -> Kec)"""
+    cache_path = get_cache_path(year)
+    if os.path.exists(cache_path):
+        return FileResponse(cache_path, media_type="application/json")
+    return {}
 
 @app.get("/query/{year}")
 def query_data(year: str, request: Request, limit: int = 100, filter_col: str = None, filter_val: str = None, translate: bool = Query(False)):
@@ -394,7 +422,7 @@ def query_data(year: str, request: Request, limit: int = 100, filter_col: str = 
         
         # 3. Sanitize NaNs:
         # JSON standard forbids NaN. Python's `json` module allows it but frontend JS will crash.
-        # We manually iterate to replace float('nan') with None (which becomes JSON null).
+        # Manually iterate to replace float('nan') with None (which becomes JSON null).
         data_dict = result.to_dict(as_series=False)
         clean_data = {}
         for k, v_list in data_dict.items():

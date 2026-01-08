@@ -64,48 +64,56 @@ with st.sidebar:
 # ==========================================
 
 # Helper to get options for dropdowns
-@st.cache_data(ttl=600) # Cache results for 10 minutes to prevent DB spamming
-def get_options(column_name):
+@st.cache_data(ttl=3600) # Cache the tree for 1 hour to prevent DB spamming
+def get_hierarchy():
     try:
-        # Backend expects: /unique/{year}?column={column_name}
-        resp = requests.get(f"{API_URL}/unique/{YEAR}", params={"column": column_name})
+        resp = requests.get(f"{API_URL}/hierarchy/{YEAR}")
         if resp.status_code == 200:
             return resp.json()
     except:
         pass
-    return []
+    return {}
 
-# --- FORM START ---
-# Wrapping filters in a form prevents the app from reloading/querying 
-# every time you type a character or select an option.
-with st.form("filter_form"):
-    col1, col2, col3, col4, col5 = st.columns([3, 3, 3, 3, 1], vertical_alignment="bottom")
+# Load Hierarchy (One time fetch)
+location_tree = get_hierarchy()
 
-    # Dictionary to hold our filters
-    filter_params = {}
+# --- FILTER CONTROLS ---
+# searchable dropdowns for hierarchical location selection
+col1, col2, col3, col4, col5 = st.columns([3, 3, 3, 3, 1], vertical_alignment="bottom")
+filter_params = {}
 
-    with col1:
-        prov_opts = get_options("Provinsi")
-        sel_prov = st.selectbox("Provinsi", options=[""] + prov_opts, index=0)
-        if sel_prov: filter_params["Provinsi"] = sel_prov
+with col1:
+    # Level 1: Provinsi keys
+    prov_options = sorted(list(location_tree.keys()))
+    sel_prov = st.selectbox("Provinsi", options=[""] + prov_options, index=0)
+    if sel_prov: filter_params["Provinsi"] = sel_prov
 
-    with col2:
-        kab_opts = get_options("Kabupaten/ Kota") 
-        sel_kab = st.selectbox("Kabupaten/Kota", options=[""] + kab_opts, index=0)
-        if sel_kab: filter_params["Kabupaten/ Kota"] = sel_kab
+with col2:
+    # Level 2: Get keys of the selected Provinsi
+    kab_options = []
+    if sel_prov and sel_prov in location_tree:
+        kab_options = sorted(list(location_tree[sel_prov].keys()))
+    
+    sel_kab = st.selectbox("Kabupaten/Kota", options=[""] + kab_options, index=0)
+    if sel_kab: filter_params["Kabupaten/ Kota"] = sel_kab
 
-    with col3:
-        kec_opts = get_options("Kecamatan")
-        sel_kec = st.selectbox("Kecamatan", options=[""] + kec_opts, index=0)
-        if sel_kec: filter_params["Kecamatan"] = sel_kec
+with col3:
+    # Level 3: Get list from selected Kabupaten
+    kec_options = []
+    if sel_prov and sel_kab and sel_kab in location_tree.get(sel_prov, {}):
+        kec_options = sorted(location_tree[sel_prov][sel_kab])
+        
+    sel_kec = st.selectbox("Kecamatan", options=[""] + kec_options, index=0)
+    if sel_kec: filter_params["Kecamatan"] = sel_kec
 
-    with col4:
-        desa_val = st.text_input("Desa / Kode Wilayah", "", placeholder="Search value")
-        if desa_val: filter_params["Kode Wilayah Administrasi Desa"] = desa_val
+with col4:
+    desa_val = st.text_input("Desa / Kode Wilayah", "", placeholder="Search value")
+    if desa_val: filter_params["Kode Wilayah Administrasi Desa"] = desa_val
 
-    with col5:
-        # The API will ONLY be called when this button is clicked
-        submitted = st.form_submit_button("Search")
+with col5:
+    # This button triggers the ACTUAL DB Query
+    if st.button("Search"):
+        st.rerun()
 
 # --- DOWNLOAD BUTTON LOGIC ---
 if st.sidebar.button("📄 Generate Filtered Report"):
@@ -147,7 +155,7 @@ try:
     if response.status_code == 200:
         data = response.json()
         
-        # FIX: Check if "error" key exists in the successful response
+        # Check if "error" key exists in the successful response
         if "error" in data:
             st.warning(data["error"])
             
