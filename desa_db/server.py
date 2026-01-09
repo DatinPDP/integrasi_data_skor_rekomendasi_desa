@@ -229,8 +229,8 @@ async def upload_xlsb(year: str, file: UploadFile = File(...)):
         )
         
         # Structure Cleaning:
-        # 1. Slice: Skip the first 6 rows (assumed to be report titles/metadata)
-        df = df.slice(6, None)
+        # 1. Slice: Skip the first 4 rows (assumed to be report titles/metadata)
+        df = df.slice(4, None)
         
         # 2. Slice: Cap width to prevent reading infinite empty Excel columns
         max_col = min(df.width, 262) 
