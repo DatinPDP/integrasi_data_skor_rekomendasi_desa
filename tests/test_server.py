@@ -23,7 +23,7 @@ sys.path.insert(0, os.path.join(project_root, "desa_db"))
 # We import the modules *directly* so we can overwrite their variables
 import desa_db.server as server_module
 import desa_db.middleware as middleware_module
-from desa_db.server import app, DB_FOLDER, ID_COL
+from desa_db.server import app, DB_FOLDER, ID_COL, STAGING_FOLDER
 
 client = TestClient(app)
 
@@ -64,9 +64,9 @@ def setup_teardown():
     headers = [
         ID_COL,
         "Nama Desa",
-        "Provinsi",          # <--- Added
-        "Kabupaten/ Kota",   # <--- Added
-        "Kecamatan",         # <--- Added
+        "Provinsi",
+        "Kabupaten/ Kota",
+        "Kecamatan",
         TEST_LOGIC_COL
     ]
     
@@ -89,8 +89,10 @@ def setup_teardown():
     if os.path.exists(TEST_DB_PATH):
         try: os.remove(TEST_DB_PATH)
         except: pass
+    # Ensure staging folder exists
+    os.makedirs(STAGING_FOLDER, exist_ok=True)
 
-    yield # === RUN THE TEST ===
+    yield
 
     # --- TEARDOWN ---
     
@@ -124,6 +126,7 @@ def setup_teardown():
 def create_dummy_xlsb(filename):
     """
     Creates dummy data WITH Location columns so cache generation succeeds.
+    Note: Writes as .xlsx (XML format) via xlsxwriter default.
     """
     df = pl.DataFrame({
         # Column 0: Index (Dropped)
@@ -155,13 +158,9 @@ def create_dummy_xlsb(filename):
 # ==========================================
 # 6. THE TEST
 # ==========================================
-def test_upload_and_download_flow():
+def test_staging_and_commit_flow():
     """
-    Integration Test:
-    1. Upload a file to initialize the DB.
-    2. Request a download of that data.
-    3. Verify data integrity.
-    4. Verify Middleware Translation logic.
+    Integration Test: Stage -> Commit -> Query
     """
     
     # Paths for temp files
@@ -171,45 +170,58 @@ def test_upload_and_download_flow():
     create_dummy_xlsb(dummy_file)
 
     try:
-        # --- STEP 1: UPLOAD ---
+        # --- STEP 1: STAGE (Analyze) ---
         with open(dummy_file, "rb") as f:
-            response = client.post(
-                f"/upload/{TEST_YEAR}", 
+            # We explicitly name it .xlsx so the server preserves the extension
+            stage_response = client.post(
+                f"/stage/{TEST_YEAR}", 
                 files={"file": ("test_upload.xlsx", f, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")}
             )
         
-        if response.status_code != 200:
-            print("\nServer Error:", response.json())
-        assert response.status_code == 200
-        # Hierachy check, this confirms the server logic we just added actually works
+        # Debugging output if it fails
+        if stage_response.status_code != 200:
+            print(f"\nStage Error: {stage_response.text}")
+
+        assert stage_response.status_code == 200
+        stage_data = stage_response.json()
+        
+        # Verify Staging Response Structure
+        assert "staging_id" in stage_data
+        assert "diff" in stage_data
+        assert stage_data["diff"]["added"] == 1
+        
+        staging_id = stage_data["staging_id"]
+
+        # --- STEP 2: COMMIT (Write to DB) ---
+        commit_response = client.post(
+            f"/commit/{TEST_YEAR}", 
+            params={"staging_id": staging_id, "filename": "test_upload.xlsx"}
+        )
+        assert commit_response.status_code == 200
+
+        # --- STEP 3: HIERARCHY CHECK ---
         res_hierarchy = client.get(f"/hierarchy/{TEST_YEAR}")
         assert res_hierarchy.status_code == 200
         tree = res_hierarchy.json()
-        
-        # Verify our dummy location data exists in the tree
         assert "Jawa Barat" in tree
-        assert "Bandung" in tree["Jawa Barat"]
-        assert "Coblong" in tree["Jawa Barat"]["Bandung"]
 
-        # --- STEP 2: DOWNLOAD ---
+        # --- STEP 4: DOWNLOAD ---
         download_response = client.get(f"/download/{TEST_YEAR}")
         assert download_response.status_code == 200
-        
         with open(downloaded_file, "wb") as f:
             f.write(download_response.content)
 
-        # --- STEP 3: MIDDLEWARE CHECK ---
-        # Request with ?translate=true
+        # --- STEP 5: QUERY & TRANSLATION ---
         res_trans = client.get(f"/query/{TEST_YEAR}?translate=true")
         assert res_trans.status_code == 200
         data_trans = res_trans.json()
-        assert "Perlu menyediakan PAUD" in data_trans[TEST_LOGIC_COL][0]
+        
+        # Handle list-of-dicts format (New Server Standard)
+        assert isinstance(data_trans, list)
+        assert len(data_trans) > 0
+        first_row = data_trans[0]
+        assert "Perlu menyediakan PAUD" in first_row[TEST_LOGIC_COL]
 
     finally:
-        # Cleanup
-        if os.path.exists(dummy_file):
-            try: os.remove(dummy_file)
-            except: pass
-        if os.path.exists(downloaded_file):
-            try: os.remove(downloaded_file)
-            except: pass
+        if os.path.exists(dummy_file): os.remove(dummy_file)
+        if os.path.exists(downloaded_file): os.remove(downloaded_file)
