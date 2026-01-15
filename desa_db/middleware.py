@@ -6,15 +6,24 @@ import os
 # CONFIGURATION
 # ==========================================
 # /root
+#   /.config/rekomendasi.json
+#   /root
+#   /.config/headers.txt
+#   /.config/intervensi_kegiatan.json
 #   /.config/recommendation.json
+#   /.config/table_structure.csv
 #   /desa_db/server.py
 #   /desa_db/middleware.py
+#   /front_end/web.py
+#   /front_end/templates/admin.html
+#   /front_end/templates/login.html
+
 
 # Get the directory where THIS file (middleware.py) is located
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# Point to ../.config/recommendation.json relative to this file
-JSON_PATH = os.path.abspath(os.path.join(BASE_DIR, "../.config/recommendation.json"))
+# Point to ../.config/rekomendasi.json relative to this file
+JSON_PATH = os.path.abspath(os.path.join(BASE_DIR, "../.config/rekomendasi.json"))
 
 def load_logic():
     if not os.path.exists(JSON_PATH):
@@ -39,7 +48,7 @@ RECOMMENDATION_LOGIC = load_logic()
 # ==========================================
 # OPTIMIZED BATCH EXECUTION
 # ==========================================
-def apply_recommendations(df: pl.DataFrame) -> pl.DataFrame:
+def apply_rekomendasis(df: pl.DataFrame) -> pl.DataFrame:
     """
     Apply all 120+ rules in a SINGLE pass (Batch Execution).
     This allows Polars to optimize the plan and execute in parallel.
@@ -65,3 +74,4 @@ def apply_recommendations(df: pl.DataFrame) -> pl.DataFrame:
         return df.with_columns(exprs)
     
     return df
+

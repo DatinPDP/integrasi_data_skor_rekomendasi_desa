@@ -1,12 +1,18 @@
 # Config
 ```
 /root
-/.config/recommendation.json
 /.config/headers.txt
+/.config/intervensi_kegiatan.json
+/.config/recommendation.json
+/.config/table_structure.csv
 ```
 # Requirements
 Python 3.11.9
+
+run this at start
 ```bash
+Python311 -m venv .venv
+source .venv/Scripts/activate
 pip install -r .config/requirements.txt
 ```
 
@@ -14,6 +20,12 @@ pip install -r .config/requirements.txt
 ```bash
 python desa_db/server.py
 ```
+
+or run both front and backend
+```bash
+python run_system.py
+```
+
 # Run mock frontend
 ```bash
 streamlit run tests/test_serverSheets.py

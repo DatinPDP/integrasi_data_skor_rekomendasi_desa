@@ -6,15 +6,26 @@ import json
 import re
 import uuid
 import glob
+import csv
+import numpy as np
+import io
 from datetime import datetime
+from openpyxl import Workbook
+from openpyxl.styles import Font, PatternFill, Alignment
 
 import duckdb
 import polars as pl
 from fastapi import FastAPI, UploadFile, File, BackgroundTasks, Query, Request, HTTPException
 from fastapi.responses import JSONResponse, FileResponse, HTMLResponse
+from fastapi.middleware.cors import CORSMiddleware
 
 # /root
+#   /.config/rekomendasi.json
+#   /root
+#   /.config/headers.txt
+#   /.config/intervensi_kegiatan.json
 #   /.config/recommendation.json
+#   /.config/table_structure.csv
 #   /desa_db/server.py
 #   /desa_db/middleware.py
 #   /front_end/web.py
@@ -26,13 +37,21 @@ from fastapi.responses import JSONResponse, FileResponse, HTMLResponse
 # ==========================================
 # Import the optimized middleware
 try:
-    from middleware import apply_recommendations
+    from middleware import apply_rekomendasis
 except ImportError:
     # Fallback if running from a different context
-    from desa_db.middleware import apply_recommendations
+    from desa_db.middleware import apply_rekomendasis
 
 app = FastAPI()
 
+# CHECK: REMOVE ON PROD;Allow Frontend (8001) to talk to Backend (8000)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In production, specify ["http://localhost:8001"]
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 # ==========================================
 # PATH CONFIGURATION (ABSOLUTE PATHS)
 # ==========================================
@@ -63,7 +82,7 @@ os.makedirs(CONFIG_DIR, exist_ok=True)
 # ==========================================
 # HELPERS
 # ==========================================
-def get_db_connection(year: str):
+def helpers_get_db_connection(year: str):
     """
     Establishes a connection to a specific year's DuckDB database.
     DuckDB runs in-process, saving data to a local file.
@@ -73,12 +92,12 @@ def get_db_connection(year: str):
     con = duckdb.connect(db_path)
     return con, db_path
 
-def get_cache_path(year: str):
+def helpers_get_cache_path(year: str):
     """Returns the absolute path for the cache file for a specific year."""
     get_cache_path_clean_year = os.path.basename(year)
     return os.path.join(CONFIG_DIR, f"unique_cache_{get_cache_path_clean_year}.json")
 
-def init_db(con: duckdb.DuckDBPyConnection, headers: list[str]):
+def helpers_init_db(con: duckdb.DuckDBPyConnection, headers: list[str]):
     """
     SCD Type 2 Schema:
     
@@ -117,7 +136,7 @@ def init_db(con: duckdb.DuckDBPyConnection, headers: list[str]):
         )
     """)
 
-def refresh_filter_cache(year: str):
+def helpers_refresh_filter_cache(year: str):
     """
     Builds a hierarchical JSON tree:
     {
@@ -128,7 +147,7 @@ def refresh_filter_cache(year: str):
         ...
     }
     """
-    con, _ = get_db_connection(year)
+    con, _ = helpers_get_db_connection(year)
     hierarchy = {}
 
     # Columns to cache for dropdowns
@@ -161,7 +180,7 @@ def refresh_filter_cache(year: str):
                 hierarchy[prov][kab].append(kec)
         
         # Write to disk
-        with open(get_cache_path(year), "w", encoding="utf-8") as f:
+        with open(helpers_get_cache_path(year), "w", encoding="utf-8") as f:
             json.dump(hierarchy, f, ensure_ascii=False)
             
         print(f"✅ Hierarchy Cache refreshed: {cache_path}")
@@ -171,7 +190,7 @@ def refresh_filter_cache(year: str):
     finally:
         con.close()
 
-def build_dynamic_query(con, base_query, request_params):
+def helpers_build_dynamic_query(con, base_query, request_params):
     """
     Dynamically adds WHERE or AND clauses based on URL parameters.
     Ignores system params like 'limit', 'translate', 'year'.
@@ -222,10 +241,38 @@ def build_dynamic_query(con, base_query, request_params):
 # ==========================================
 # API Endpoints
 # ==========================================
+# Table Structure Endpoints
+@app.get("/config/table_structure")
+def endpoint_get_table_structure():
+    """
+    Returns the table_structure.csv as JSON for the frontend dashboard.
+    """
+    csv_path = os.path.join(CONFIG_DIR, "table_structure.csv")
+    
+    if not os.path.exists(csv_path):
+        return JSONResponse(status_code=404, content={"error": "Config file not found"})
+        
+    try:
+        # Use standard csv library for safety, handle encoding errors
+        with open(csv_path, "r", encoding="utf-8-sig", errors="replace") as f:
+            # Check delimiter from the first line
+            sample = f.read(1024)
+            f.seek(0)
+            sniffer = csv.Sniffer()
+            # Default to semicolon if sniffer fails
+            try: dialect = sniffer.sniff(sample, delimiters=";,")
+            except: dialect = None
+            
+            reader = csv.DictReader(f, delimiter=dialect.delimiter if dialect else ";")
+            data = list(reader)
+            
+        return JSONResponse(content=data)
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
 
 # STAGE: Upload -> Analyze Diff -> Return Stats
 @app.post("/stage/{year}")
-async def stage_upload(
+async def endpoint_post_stage_upload(
     year: str,
     file: UploadFile = File(...)
     ):
@@ -311,8 +358,8 @@ async def stage_upload(
         df.write_parquet(temp_path)
 
         # --- 4. Database Merge Logic (DuckDB) ---
-        con, db_path = get_db_connection(year)
-        init_db(con, df.columns)
+        con, db_path = helpers_get_db_connection(year)
+        helpers_init_db(con, df.columns)
         
         # Identify Incoming Data
         con.execute(f"CREATE OR REPLACE TEMP TABLE incoming AS SELECT * FROM read_parquet('{temp_path}')")
@@ -368,7 +415,7 @@ async def stage_upload(
 
 # COMMIT: Apply the Staged Changes
 @app.post("/commit/{year}")
-async def commit_stage(
+async def endpoint_post_commit_stage(
     year: str,
     staging_id: str = Query(...),
     filename: str = Query(...)
@@ -388,7 +435,7 @@ async def commit_stage(
     if not os.path.exists(temp_path):
         return JSONResponse(status_code=404, content={"error": "Staging session expired. Please upload again."})
         
-    con, _ = get_db_connection(year)
+    con, _ = helpers_get_db_connection(year)
     try:
         con.execute("BEGIN TRANSACTION")
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -434,7 +481,7 @@ async def commit_stage(
         con.execute(f"INSERT INTO commits VALUES ('{staging_id}', '{now}', '{filename}', '{summary}')")
         
         con.execute("COMMIT")
-        refresh_filter_cache(year)
+        helpers_refresh_filter_cache(year)
         
         return {"status": "success", "message": "Database updated successfully."}
         
@@ -448,7 +495,7 @@ async def commit_stage(
 
 # QUERY: Supports Time Travel via 'version' (Timestamp)
 @app.get("/query/{year}")
-def query_data(
+def endpoint_get_query_data(
     year: str,
     request: Request,
     limit: int = 500,
@@ -462,7 +509,7 @@ def query_data(
     Retrieves the latest data snapshot from the 'master_data' table.
     Includes basic string filtering and JSON NaN sanitization.
     """
-    con, _ = get_db_connection(year)
+    con, _ = helpers_get_db_connection(year)
     try:
         # Ensure database is initialized before querying
         try:
@@ -484,12 +531,12 @@ def query_data(
         
         # Dynamic Filters
         params_dict = dict(request.query_params)
-        final_query, values = build_dynamic_query(con, base_query, params_dict)
+        final_query, values = helpers_build_dynamic_query(con, base_query, params_dict)
         
         final_query += f" LIMIT {limit}"
         
         res = con.execute(final_query, values).pl()
-        if translate: res = apply_recommendations(res)
+        if translate: res = apply_rekomendasis(res)
         
         # Sanitize NaNs
         records = res.to_dicts()
@@ -502,67 +549,14 @@ def query_data(
     finally:
         con.close()
 
-# DOWNLOAD
-@app.get("/download/{year}")
-def download(
-    year: str,
-    background_tasks: BackgroundTasks,
-    request: Request,
-    translate: bool = False,
-    version: str = None
-    ):
-    """
-    Export Endpoint:
-    1. Reads DuckDB.
-    2. Writes to temporary Excel.
-    3. Returns file to user.
-    4. Deletes temporary file after response is sent.
-    """
-    con, db_path = get_db_connection(year)
-    temp_download = f"export_{year}.xlsx"
-    
-    try:
-        if version:
-            time_filter = f"valid_from <= '{version}' AND (valid_to > '{version}' OR valid_to IS NULL)"
-        else:
-            time_filter = "valid_to IS NULL"
-        # Build Query with SAME filters as View
-        base_query = f"SELECT * EXCLUDE (valid_from, valid_to, commit_id) FROM master_data WHERE {time_filter}"
-
-        # Use Helper
-        params_dict = dict(request.query_params)
-        final_query, values = build_dynamic_query(con, base_query, params_dict)
-        
-        df = con.execute(final_query, values).pl()
-        if translate: df = apply_recommendations(df)
-
-        # Write Excel
-        df.write_excel(temp_download)
-
-        # Schedule deletion
-        background_tasks.add_task(os.remove, temp_download)
-
-        return FileResponse(
-            temp_download,
-            filename=f"Data_{year}_{version or 'HEAD'}.xlsx",
-            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
-
-    except Exception as e:
-        traceback.print_exc()
-        if os.path.exists(temp_download):
-            os.remove(temp_download)
-        return JSONResponse(status_code=500, content={"error": str(e)})
-    finally:
-        con.close()
 
 # VERSIONS LIST
 @app.get("/history/versions/{year}")
-def get_history_versions(year: str):
+def endpoint_get_history_versions(year: str):
     """
     Returns list of source files (versions) uploaded
     """
-    con, _ = get_db_connection(year)
+    con, _ = helpers_get_db_connection(year)
     try:
         # Return distinct timestamps from the commits table
         # Format: "2025-01-13 17:00:00"
@@ -576,14 +570,207 @@ def get_history_versions(year: str):
 
 # HIERARCHY
 @app.get("/hierarchy/{year}") 
-def get_filter_hierarchy(year: str):
+def endpoint_get_filter_hierarchy(year: str):
     """
     Returns the full location tree (Prov -> Kab -> Kec)
     """
-    cache_path = get_cache_path(year)
+    cache_path = helpers_get_cache_path(year)
     if os.path.exists(cache_path):
         return FileResponse(cache_path, media_type="application/json")
     return {}
+
+# ==========================================
+# CALCULATION & DASHBOARD LOGIC
+# ==========================================
+INTERVENTION_FILE = os.path.join(CONFIG_DIR, "intervensi_kegiatan.json")
+
+def helpers_get_or_create_intervensi_kegiatan(items: list[str]):
+    """
+    Loads intervention templates. If missing, creates a default file 
+    using the ITEM names as keys.
+    """
+    # 1. Try Load
+    if os.path.exists(INTERVENTION_FILE):
+        try:
+            with open(INTERVENTION_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except: pass # Fallback if corrupt
+
+    # 2. Create Defaults (using rekomendasi.json logic if available, else generic)
+    defaults = {}
+    
+    # Try to load existing rekomendasis to pre-seed
+    recs = {}
+    rec_path = os.path.join(CONFIG_DIR, "rekomendasi.json")
+    if os.path.exists(rec_path):
+        try:
+            with open(rec_path, "r", encoding="utf-8") as f: recs = json.load(f)
+        except: pass
+
+    for item in items:
+        # If we have specific logic in rekomendasi.json, map it. 
+        # Otherwise create a generic placeholder.
+        if item in recs:
+            defaults[item] = recs[item]
+        else:
+            # Generic Fallback Template that is WRONG. 
+            # YOU NEED TO EDIT THE TEMPLATE
+            defaults[item] = {
+                "1": f"Perlu peningkatan {item} (Sangat Kurang)",
+                "2": f"Perlu peningkatan {item} (Kurang)",
+                "3": f"Perlu peningkatan {item} (Cukup)",
+                "4": f"Perlu peningkatan {item} (Baik)",
+                "5": None # No intervention needed
+            }
+            
+    # 3. Save to Disk
+    try:
+        with open(INTERVENTION_FILE, "w", encoding="utf-8") as f:
+            json.dump(defaults, f, indent=4, ensure_ascii=False)
+    except Exception as e:
+        print(f"⚠️ Could not save intervention templates: {e}")
+        
+    return defaults
+
+# CALCULATION
+@app.post("/dashboard/calculate/{year}")
+async def endpoint_post_calculate_dashboard(year: str, request: Request):
+    """
+    1. Applies SAME filters as /query endpoint to get filtered DB subset
+    2. Loads table_structure.csv
+    3. Calculates stats on filtered data
+    4. Returns dashboard rows with calculations
+    """
+    con, _ = helpers_get_db_connection(year)
+    
+    try:
+        # === Filter DB first (same as /query endpoint) ===
+        params_dict = dict(request.query_params)
+        
+        # Build base query with time filter
+        version = params_dict.get("version")
+        if version:
+            time_filter = f"valid_from <= '{version}' AND (valid_to > '{version}' OR valid_to IS NULL)"
+        else:
+            time_filter = "valid_to IS NULL"
+        
+        base_query = f"SELECT * FROM master_data WHERE {time_filter}"
+        
+        # Apply location/id filters (reuse existing helper)
+        filtered_query, values = helpers_build_dynamic_query(con, base_query, params_dict)
+        
+        # Execute query to get filtered dataset
+        df_filtered = con.execute(filtered_query, values).pl()
+        # === End of filtering ===
+        
+        # 1. Load CSV Structure
+        csv_path = os.path.join(CONFIG_DIR, "table_structure.csv")
+        if not os.path.exists(csv_path):
+            return JSONResponse(status_code=404, content={"error": "table_structure.csv missing"})
+            
+        with open(csv_path, "r", encoding="utf-8-sig", errors="replace") as f:
+            sniffer = csv.Sniffer()
+            sample = f.read(1024)
+            f.seek(0)
+            try: dialect = sniffer.sniff(sample, delimiters=";,")
+            except: dialect = None
+            reader = csv.DictReader(f, delimiter=dialect.delimiter if dialect else ";")
+            structure = list(reader)
+
+        # 2. Get Ordered Metric Columns from DB
+        try:
+            # DESCRIBE returns columns in creation order
+            db_cols_info = con.execute("DESCRIBE master_data").fetchall()
+            # Filter out metadata columns
+            metadata_cols = {"valid_from", "valid_to", "commit_id", "source_file"}
+            # Exclude Location/Identity columns so Index 0 is the first Score
+            metadata_cols = {
+                "valid_from", "valid_to", "commit_id", "source_file",
+                "Provinsi", "Kabupaten/ Kota", "Kecamatan", 
+                "Kode Wilayah Administrasi Desa", "Desa", "TAHUN DATA"
+            }
+            
+            # This list preserves the order of metric columns in the DB
+            ordered_db_cols = [r[0] for r in db_cols_info if r[0] not in metadata_cols]
+        except:
+            return JSONResponse(status_code=500, content={"error": "Database not initialized"})
+
+        # 3. Load/Init Templates
+        item_names = [row.get("ITEM", "") for row in structure if row.get("ITEM")]
+        templates = helpers_get_or_create_intervensi_kegiatan(item_names)
+
+        # 4. Calculate Per Row (Using INDEX Matching)
+        calculated_rows = []
+        
+
+        for idx, row in enumerate(structure):
+            csv_item = row.get("ITEM", "Unknown Item")
+
+            # Default Empty Stats
+            stats = {
+                "SKOR Rata-Rata": "",
+                "SKOR 1": "", "SKOR 2": "", "SKOR 3": "", "SKOR 4": "", "SKOR 5": "",
+                "INTERVENSI KEGIATAN": ""
+            }
+
+            # MATCHING LOGIC: Use DB Column at index 'idx'
+            if idx < len(ordered_db_cols):
+                target_col = ordered_db_cols[idx]
+                
+                # Use filtered data if provided, otherwise query DB
+                try:
+                    # Calculate from filtered data
+                    if target_col in df_filtered.columns:
+                        col_data = df_filtered.select(
+                            pl.col(target_col).cast(pl.Int64, strict=False)
+                        ).to_series()
+                        
+                        
+                        avg = col_data.mean()
+                        c1 = (col_data == 1).sum()
+                        c2 = (col_data == 2).sum()
+                        c3 = (col_data == 3).sum()
+                        c4 = (col_data == 4).sum()
+                        c5 = (col_data == 5).sum()
+                        
+                        if avg is not None: stats["SKOR Rata-Rata"] = round(avg, 2)
+                        if c1: stats["SKOR 1"] = f"{c1:,}"
+                        if c2: stats["SKOR 2"] = f"{c2:,}"
+                        if c3: stats["SKOR 3"] = f"{c3:,}"
+                        if c4: stats["SKOR 4"] = f"{c4:,}"
+                        if c5: stats["SKOR 5"] = f"{c5:,}"
+
+                        # Narrative Generation
+                        narrative_parts = []
+                        csv_item_name = row.get("ITEM", "")
+                        t_map = templates.get(csv_item_name, {})
+                        
+                        counts = {1: c1, 2: c2, 3: c3, 4: c4, 5: c5}
+                        for score in [1, 2, 3, 4, 5]:
+                            cnt = counts[score]
+                            txt = t_map.get(str(score))
+                            if cnt and cnt > 0 and txt:
+                                narrative_parts.append(f"{cnt:,} {txt}")
+                        
+                        if narrative_parts:
+                            stats["INTERVENSI KEGIATAN"] = "\n".join(narrative_parts)
+                            
+                except Exception as e:
+                    print(f"Calc Error on index {idx} ({target_col}): {e}")
+            else:
+                print(f"⚠️ [WARNING] Index Mismatch: CSV Row {idx} has no corresponding DB column (Out of Bounds).")
+
+            row.update(stats)
+            calculated_rows.append(row)
+
+        return JSONResponse(content=calculated_rows)
+
+    except Exception as e:
+        traceback.print_exc()
+        return JSONResponse(status_code=500, content={"error": str(e)})
+    finally:
+        con.close()
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -27,15 +27,19 @@
             const u = document.getElementById('user').value;
             const p = document.getElementById('pass').value;
 
-            if (u === 'admin' && p === 'admin') {
-                window.location.href = '/admin';
-            } else if (u === 'user' && p === 'user') {
-                alert("User Dashboard not fully implemented yet, redirecting to Admin for demo.");
+            // Simple hardcoded check
+            if (u === 'admin' && p === 'ubuntuServer2026') {
+                // Set Cookie before redirecting
+                // Expires in 1 day
+                const d = new Date();
+                d.setTime(d.getTime() + (24*60*60*1000));
+                document.cookie = "session_token=admin_secret_123; expires="+ d.toUTCString() +"; path=/";
+                
                 window.location.href = '/admin';
             } else {
-                alert("Invalid Credentials. Try admin/admin");
+                alert("Invalid Credentials");
             }
-        }
+}
     </script>
 </body>
 </html>

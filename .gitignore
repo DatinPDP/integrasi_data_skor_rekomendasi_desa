@@ -1,4 +1,6 @@
 *.csv
+!.config/
+!.config/table_structure.csv
 *.xlsb
 *.duckdb
 *.zip

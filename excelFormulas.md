@@ -133,3 +133,135 @@ c132;iv. Desa memiliki Aset Lainnya;=IF(IX7=1,"Tidak Memilki Aset Desa Lainnya, 
 c133;Produktivitas Kepemilikan Aset Desa;=IF(IZ7=1,"Perlu menyediakan PAUD/TK/Sederajat sebanyak 5",IF(IZ7=2,"Perlu penambahan PAUD/TK/Sederajat sebanyak 4",IF(IZ7=3,"Perlu penambahan PAUD/TK/Sederajat sebanyak 3",IF(IZ7=4,"Perlu penambahan PAUD/TK/Sederajat sebanyak 1",IF(IZ7=5,"")))))
 c134;Apakah telah dilakukan inventarisasi aset desa?;=IF(JB7=1,"Belum Dilakukan Inventaris Aset Desa, Perlu Melakukan Inventarisasi Aset Desa",IF(JB7=5,""))
 ```
+
+# daskboard column
+```csv
+NO;DIMENSI;SUB DIMENSI;INDIKATOR;ITEM
+1;LAYANAN DASAR;SUB-DIMENSI PENDIDIKAN;AKSES TERHADAP PAUD/TK/Sederajat;Keberadaan PAUD/TK/Sederajat di Desa
+1;LAYANAN DASAR;SUB-DIMENSI PENDIDIKAN;AKSES TERHADAP PAUD/TK/Sederajat;Kemudahan Akses menuju PAUD/TK/Sederajat terdekat di Desa
+1;LAYANAN DASAR;SUB-DIMENSI PENDIDIKAN;AKSES TERHADAP PAUD/TK/Sederajat;Angka Partisipasi Murni (APM) anak usia 3 - 6 tahun yang bersekolah PAUD/TK/Sederajat di desa
+1;LAYANAN DASAR;SUB-DIMENSI PENDIDIKAN;AKSES TERHADAP SD/MI/Sederajat;Kemudahan Akses menuju SD/MI/Sederajat terdekat di Desa
+1;LAYANAN DASAR;SUB-DIMENSI PENDIDIKAN;AKSES TERHADAP SD/MI/Sederajat;Angka Partisipasi Murni (APM)  anak usia 7-12 tahun yang bersekolah SD/MI/Sederajat di desa
+1;LAYANAN DASAR;SUB-DIMENSI PENDIDIKAN;AKSES TERHADAP SMP/MTs/Sederajat;Kemudahan Akses menuju SMP/MTs/Sederajat terdekat di Desa
+1;LAYANAN DASAR;SUB-DIMENSI PENDIDIKAN;AKSES TERHADAP SMP/MTs/Sederajat;Angka Partisipasi Murni (APM)  anak usia 13-15 tahun yang bersekolah SMP/MTs/Sederajat di desa
+1;LAYANAN DASAR;SUB-DIMENSI PENDIDIKAN;AKSES TERHADAP SMA/SMK/MA/MAK/Sederajat;Kemudahan Akses menuju SMA/SMK/MA/MAK/Sederajat terdekat di Desa
+1;LAYANAN DASAR;SUB-DIMENSI PENDIDIKAN;AKSES TERHADAP SMA/SMK/MA/MAK/Sederajat;Angka Partisipasi Murni (APM)  anak usia 16-18 tahun yang bersekolah SMA/SMK/MA/MAK/Sederajat di desa
+1;LAYANAN DASAR;SUB-DIMENSI KESEHATAN;Layanan Sarana Kesehatan;Kemudahan akses menuju Sarana Kesehatan
+1;LAYANAN DASAR;SUB-DIMENSI KESEHATAN;Fasilitas Puskesmas Pembantu (Pustu);Keberadaan Fasilitas Puskesmas Pembantu (Pustu) termasuk  Poskesdes/Polindes di Desa
+1;LAYANAN DASAR;SUB-DIMENSI KESEHATAN;Fasilitas Puskesmas Pembantu (Pustu);Kemudahan akses menuju Fasilitas Puskesmas Pembantu (Pustu) termasuk Kesehatan Poskesdes/Polindes
+1;LAYANAN DASAR;SUB-DIMENSI KESEHATAN;Aktivitas Posyandu;Ketersediaan Fasilitas Posyandu di Desa
+1;LAYANAN DASAR;SUB-DIMENSI KESEHATAN;Aktivitas Posyandu;Keberadaan Aktivitas Posyandu
+1;LAYANAN DASAR;SUB-DIMENSI KESEHATAN;Aktivitas Posyandu;Kemudahan akses menuju Fasilitas Posyandu
+1;LAYANAN DASAR;SUB-DIMENSI KESEHATAN;Layanan Dokter;Ketersediaan layanan dokter di desa
+1;LAYANAN DASAR;SUB-DIMENSI KESEHATAN;Layanan Dokter;Operasional ketersediaan layanan dokter di desa
+1;LAYANAN DASAR;SUB-DIMENSI KESEHATAN;Layanan Dokter;Penyedia layanan dokter di desa
+1;LAYANAN DASAR;SUB-DIMENSI KESEHATAN;Layanan Dokter;Keberadaan Penyedia Transportasi penunjang menuju layanan Dokter
+1;LAYANAN DASAR;SUB-DIMENSI KESEHATAN;Layanan Bidan;Ketersediaan layanan Bidan di Desa
+1;LAYANAN DASAR;SUB-DIMENSI KESEHATAN;Layanan Bidan;Operasional ketersediaan layanan Bidan di desa
+1;LAYANAN DASAR;SUB-DIMENSI KESEHATAN;Layanan Bidan;Penyedia layanan Bidan di desa
+1;LAYANAN DASAR;SUB-DIMENSI KESEHATAN;Layanan Bidan;Keberadaan Penyedia Transportasi penunjang menuju layanan Bidan
+1;LAYANAN DASAR;SUB-DIMENSI KESEHATAN;Layanan Tenaga Kesehatan Lainnya;Ketersediaan layanan Tenaga Kesehatan di Desa
+1;LAYANAN DASAR;SUB-DIMENSI KESEHATAN;Layanan Tenaga Kesehatan Lainnya;Operasional ketersediaan layanan Tenaga Kesehatan di desa
+1;LAYANAN DASAR;SUB-DIMENSI KESEHATAN;Layanan Tenaga Kesehatan Lainnya;Penyedia layanan Tenaga Kesehatan di desa
+1;LAYANAN DASAR;SUB-DIMENSI KESEHATAN;Layanan Tenaga Kesehatan Lainnya;Keberadaan Penyedia Transportasi penunjang menuju layanan Nakes
+1;LAYANAN DASAR;SUB-DIMENSI KESEHATAN;Jaminan Kesehatan Nasional;Persentase keanggotaan BPJS
+1;LAYANAN DASAR;SUB-DIMENSI KESEHATAN;Jaminan Kesehatan Nasional;Keberadaan kegiatan sosialisasi dan/atau advokasi terkait program jaminan kesehatan nasional di desa
+1;LAYANAN DASAR;Sub-Dimensi Utilitas Dasar;Rumah Tangga dengan Air Minum Aman;Operasional Ketersediaan Air Minum di Desa dalam seminggu
+1;LAYANAN DASAR;Sub-Dimensi Utilitas Dasar;Rumah Tangga dengan Air Minum Aman;Ketersediaan Air Minum untuk warga desa
+1;LAYANAN DASAR;Sub-Dimensi Utilitas Dasar;Rumah Tangga dengan Air Minum Aman;Kemudahan akses Air Minum untuk warga di desa
+1;LAYANAN DASAR;Sub-Dimensi Utilitas Dasar;Rumah Tangga dengan Air Minum Aman;Kualitas Air Minum di Desa (Tidak untuk Berbau, Berwarna, & Berasa)
+1;LAYANAN DASAR;Sub-Dimensi Utilitas Dasar;Persentase Rumah Tidak Layak Huni;Persentase Rumah Tidak Layak Huni
+2;SOSIAL;SUB-DIMENSI AKTIVITAS;Kearifan Sosial/Budaya dan Keagamaan;Keberadaan kearifan budaya/sosial/keagamaan yang ada/menjadi ciri khas desa
+2;SOSIAL;SUB-DIMENSI AKTIVITAS;Kearifan Sosial/Budaya dan Keagamaan;Jumlah Kearifan budaya/sosial yang masih dipertahankan/dilestarikan
+2;SOSIAL;SUB-DIMENSI AKTIVITAS;Frekuensi Gotong Royong;Keberadaan kegiatan gotong royong di Desa
+2;SOSIAL;SUB-DIMENSI AKTIVITAS;Frekuensi Gotong Royong;Frekuensi Kegiatan Gotong Royong di desa
+2;SOSIAL;SUB-DIMENSI AKTIVITAS;Frekuensi Gotong Royong;Keterlibatan warga dalam kegiatan gotong royong
+2;SOSIAL;SUB-DIMENSI AKTIVITAS;Kegiatan Olahraga;Frekuensi Aktivitas Kegiatan Olahraga dilakukan dalam satu bulan
+2;SOSIAL;SUB-DIMENSI AKTIVITAS;Mitigasi dan Penanganan Konflik Sosial;Penyelesaian Konflik secara damai
+2;SOSIAL;SUB-DIMENSI AKTIVITAS;Mitigasi dan Penanganan Konflik Sosial;Peranan aparat keamanan menjadi mediator / penengah dalam penyelesaian Konflik
+2;SOSIAL;SUB-DIMENSI AKTIVITAS;Mitigasi dan Penanganan Konflik Sosial;Peranan aparat pemerintah menjadi mediator / penengah dalam penyelesaian Konflik
+2;SOSIAL;SUB-DIMENSI AKTIVITAS;Mitigasi dan Penanganan Konflik Sosial;Peranan tokoh masyarakat menjadi mediator / penengah dalam penyelesaian Konflik
+2;SOSIAL;SUB-DIMENSI AKTIVITAS;Mitigasi dan Penanganan Konflik Sosial;Peranan tokoh agama menjadi mediator / penengah dalam penyelesaian Konflik
+2;SOSIAL;SUB-DIMENSI AKTIVITAS;Satkamling;Keberadaan Satuan Keamanan Lingkungan (Satkamling) di Desa
+2;SOSIAL;SUB-DIMENSI AKTIVITAS;Satkamling;Aktivitas Satuan Keamanan Lingkungan (Satkamling) di Desa
+2;SOSIAL;SUB-DIMENSI FASILITAS MASYARAKAT;Taman Bacaan Masyarakat/ Perpustakaan Desa;Keberadaan Taman Bacaan Masyarakat/ Perpustakaan Desa
+2;SOSIAL;SUB-DIMENSI FASILITAS MASYARAKAT;Taman Bacaan Masyarakat/ Perpustakaan Desa;Operasional Taman Bacaan Masyarakat/ Perpustakaan Desa
+2;SOSIAL;SUB-DIMENSI FASILITAS MASYARAKAT;Fasilitas Olahraga;Ketersediaan Fasilitas dan kondisi/keadaan sebagian besar Fasilitas olahraga di Desa
+2;SOSIAL;SUB-DIMENSI FASILITAS MASYARAKAT;Keberadaan Ruang Publik Terbuka;Keberadaan ruang publik terbuka/keadaan sebagian besar Fasilitas Ruang Publik Terbuka di Desa
+3;EKONOMI;SUB-DIMENSI PRODUKSI DESA;Keragaman Aktivitas Ekonomi;Keragaman Aktivitas Ekonomi di Desa
+3;EKONOMI;SUB-DIMENSI PRODUKSI DESA;Keragaman Aktivitas Ekonomi;Keaktifan Aktivitas Ekonomi di Desa
+3;EKONOMI;SUB-DIMENSI PRODUKSI DESA;Produk Unggulan Desa;Keberadaan Produk Unggulan Desa
+3;EKONOMI;SUB-DIMENSI PRODUKSI DESA;Produk Unggulan Desa;Cakupan Penjualan Hasil Produk Unggulan Desa
+3;EKONOMI;SUB-DIMENSI PRODUKSI DESA;Produk Unggulan Desa;Ketersediaan merek dagang
+3;EKONOMI;SUB-DIMENSI PRODUKSI DESA;Ekonomi Kreatif;Keberadaan Kearifan lokal atau kebudayaan lokal yang di jadikan sebagai kegiatan ekonomi dalam menunjang penghidupan masyarakat di desa
+3;EKONOMI;SUB-DIMENSI PRODUKSI DESA;Kerjasama Desa;Kerjasama desa dengan desa lainnya
+3;EKONOMI;SUB-DIMENSI PRODUKSI DESA;Kerjasama Desa;Kerjasama desa dengan pihak ketiga
+3;EKONOMI;SUB-DIMENSI FASILTAS PENDUKUNG EKONOMI;Akses Terhadap Pendidikan Non-formal/Pusat Keterampilan/Kursus;Ketersediaan Pendidikan Non-formal/Pusat Keterampilan/Kursus
+3;EKONOMI;SUB-DIMENSI FASILTAS PENDUKUNG EKONOMI;Akses Terhadap Pendidikan Non-formal/Pusat Keterampilan/Kursus;Keterlibatan Angkatan Kerja pada Pendidikan Non-formal/Pusat Keterampilan/Kursus
+3;EKONOMI;SUB-DIMENSI FASILTAS PENDUKUNG EKONOMI;Pasar Rakyat;Ketersediaan Pasar di Desa
+3;EKONOMI;SUB-DIMENSI FASILTAS PENDUKUNG EKONOMI;Pasar Rakyat;Kemudahan akses menuju pasar di Desa
+3;EKONOMI;SUB-DIMENSI FASILTAS PENDUKUNG EKONOMI;Toko/Pertokoan;Ketersediaan Toko/Pertokoan  di Desa
+3;EKONOMI;SUB-DIMENSI FASILTAS PENDUKUNG EKONOMI;Toko/Pertokoan;Kemudahan akses menuju toko/pertokoan di Desa
+3;EKONOMI;SUB-DIMENSI FASILTAS PENDUKUNG EKONOMI;Kedai/Rumah Makan;Ketersediaan Kedai/Rumah Makan di Desa
+3;EKONOMI;SUB-DIMENSI FASILTAS PENDUKUNG EKONOMI;Kedai/Rumah Makan;Kemudahan akses menuju Kedai/Rumah Makan di Desa
+3;EKONOMI;SUB-DIMENSI FASILTAS PENDUKUNG EKONOMI;Penginapan;Ketersediaan Penginapan di Desa
+3;EKONOMI;SUB-DIMENSI FASILTAS PENDUKUNG EKONOMI;Penginapan;Kemudahan akses menuju Penginapan di Desa
+3;EKONOMI;SUB-DIMENSI FASILTAS PENDUKUNG EKONOMI;Layanan Pos dan Logistik;Ketersediaan Layanan Pos dan Logistik di Desa
+3;EKONOMI;SUB-DIMENSI FASILTAS PENDUKUNG EKONOMI;Layanan Pos dan Logistik;Kemudahan akses menuju Layanan Pos dan Logistik di Desa
+3;EKONOMI;SUB-DIMENSI FASILTAS PENDUKUNG EKONOMI;Lembaga Ekonomi;Keberadaan BUM Desa/BUM Desa Bersama di Desa
+3;EKONOMI;SUB-DIMENSI FASILTAS PENDUKUNG EKONOMI;Lembaga Ekonomi;BUM Desa/BUM Desa Bersama sudah berbadan hukum
+3;EKONOMI;SUB-DIMENSI FASILTAS PENDUKUNG EKONOMI;Lembaga Ekonomi;Operasional BUM Desa/BUM Desa Bersama
+3;EKONOMI;SUB-DIMENSI FASILTAS PENDUKUNG EKONOMI;Lembaga Ekonomi;Ketersediaan Lembaga Ekonomi lainnya di Desa (selain BUM Desa/BUM Desa bersama)
+3;EKONOMI;SUB-DIMENSI FASILTAS PENDUKUNG EKONOMI;Lembaga Ekonomi;Ketersediaan Lembaga Ekonomi KUD
+3;EKONOMI;SUB-DIMENSI FASILTAS PENDUKUNG EKONOMI;Lembaga Ekonomi;Ketersediaan Lembaga Ekonomi UMKM
+3;EKONOMI;SUB-DIMENSI FASILTAS PENDUKUNG EKONOMI;Layanan Keuangan;Ketersediaan layanan perbankan di desa
+3;EKONOMI;SUB-DIMENSI FASILTAS PENDUKUNG EKONOMI;Layanan Keuangan;Operasional layanan perbankan
+3;EKONOMI;SUB-DIMENSI FASILTAS PENDUKUNG EKONOMI;Layanan Keuangan;Keberadaan Layanan Fasilitas Kredit Berupa KUR
+3;EKONOMI;SUB-DIMENSI FASILTAS PENDUKUNG EKONOMI;Layanan Keuangan;Keberadaan Layanan Fasilitas Kredit Berupa KKP-E 
+3;EKONOMI;SUB-DIMENSI FASILTAS PENDUKUNG EKONOMI;Layanan Keuangan;Keberadaan Layanan Fasilitas Kredit Berupa KUK 
+3;EKONOMI;SUB-DIMENSI FASILTAS PENDUKUNG EKONOMI;Layanan Keuangan;Status Layanan Fasilitas Kredit di Desa
+4;LINGKUNGAN;SUB-DIMENSI PENGELOLAAN LINGKUNGAN;Kearifan Lingkungan;Terdapat upaya menjaga/mempertahankan/melestarikan kearifan lingkungan berupa atraksi alam/sumberdaya alam/keindahan alam yang ada di desa
+4;LINGKUNGAN;SUB-DIMENSI PENGELOLAAN LINGKUNGAN;Kearifan Lingkungan;Terdapat peraturan/regulasi yang mengatur terkait pelestarian lingkungan di Desa
+4;LINGKUNGAN;SUB-DIMENSI PENGELOLAAN LINGKUNGAN;Kearifan Lingkungan;Terdapat kegiatan pelestarian lingkungan berbasis kearifan lokal di bidang lingkungan di Desa
+4;LINGKUNGAN;SUB-DIMENSI PENGELOLAAN LINGKUNGAN;Kearifan Lingkungan;Terdapat pemanfaatan Energi Baru Terbarukan di desa
+4;LINGKUNGAN;SUB-DIMENSI PENGELOLAAN LINGKUNGAN;Sistem Pengelolaan Sampah;Ketersediaan Tempat Penampuangan Pembuangan Sampah di Desa
+4;LINGKUNGAN;SUB-DIMENSI PENGELOLAAN LINGKUNGAN;Sistem Pengelolaan Sampah;Ketersediaan Pengolahan Sampah di desa
+4;LINGKUNGAN;SUB-DIMENSI PENGELOLAAN LINGKUNGAN;Sistem Pengelolaan Sampah;Ketersediaan Pemanfaatan Sampah di desa
+4;LINGKUNGAN;SUB-DIMENSI PENGELOLAAN LINGKUNGAN;Tingkat Pencemaran Lingkungan;Rata-rata kejadian pencemaran lingkungan
+4;LINGKUNGAN;SUB-DIMENSI PENGELOLAAN LINGKUNGAN;Rumah Tangga Dengan Akses Sanitasi (Air Limbah Domestik) Aman;Ketersediaan dan kepemilikan Jamban di Desa
+4;LINGKUNGAN;SUB-DIMENSI PENGELOLAAN LINGKUNGAN;Rumah Tangga Dengan Akses Sanitasi (Air Limbah Domestik) Aman;Keberfungsian jamban
+4;LINGKUNGAN;SUB-DIMENSI PENGELOLAAN LINGKUNGAN;Rumah Tangga Dengan Akses Sanitasi (Air Limbah Domestik) Aman;Ketersediaan Tangki Septik (Komunal/ Bersama)
+4;LINGKUNGAN;SUB-DIMENSI PENGELOLAAN LINGKUNGAN;Rumah Tangga Dengan Akses Sanitasi (Air Limbah Domestik) Aman;Keberfungsian Tangki Septik
+4;LINGKUNGAN;SUB-DIMENSI PENGELOLAAN LINGKUNGAN;Rumah Tangga Dengan Akses Sanitasi (Air Limbah Domestik) Aman;Pembuangan Air Limbah Cair Rumah
+4;LINGKUNGAN;SUB-DIMENSI PENANGGULANGAN BENCANA;Penanggulangan Bencana;Ketersediaan Aspek informasi Kebencanaan
+4;LINGKUNGAN;SUB-DIMENSI PENANGGULANGAN BENCANA;Penanggulangan Bencana;Ketersediaan Fasilitas Mitigasi Bencana 
+4;LINGKUNGAN;SUB-DIMENSI PENANGGULANGAN BENCANA;Penanggulangan Bencana;Kemudahan Akses Menuju Fasilitas Mitigasi Bencana
+4;LINGKUNGAN;SUB-DIMENSI PENANGGULANGAN BENCANA;Penanggulangan Bencana;Terdapat aktivitas Mitigasi dan atau Rehabilitasi Bencana di Desa
+4;LINGKUNGAN;SUB-DIMENSI PENANGGULANGAN BENCANA;Penanggulangan Bencana;Ketersediaan Fasilitas Aspek Tanggap Darurat Bencana
+5;AKSESIBILITAS;SUB-DIMENSI KONDISI AKSES JALAN;Kondisi Jalan di desa;Jenis Permukaan Jalan sebagian besar di desa
+5;AKSESIBILITAS;SUB-DIMENSI KONDISI AKSES JALAN;Kondisi Jalan di desa;Kualitas sebagian besar jalan di Desa
+5;AKSESIBILITAS;SUB-DIMENSI KONDISI AKSES JALAN;Kondisi Penerangan Jalan Utama Desa;Ketersediaan penerangan di jalan-jalan utama di desa
+5;AKSESIBILITAS;SUB-DIMENSI KONDISI AKSES JALAN;Kondisi Penerangan Jalan Utama Desa;Operasional desa dalam penyediaan penerangan di jalan-jalan utama di desa
+5;AKSESIBILITAS;SUB-DIMENSI KEMUDAHAN AKSES;Keberadaan Angkutan Perdesaan/Angkutan Lokal/ Sejenis;Keberadaan Angkutan Perdesaan/Angkutan Lokal/ Sejenis di Desa
+5;AKSESIBILITAS;SUB-DIMENSI KEMUDAHAN AKSES;Keberadaan Angkutan Perdesaan/Angkutan Lokal/ Sejenis;Operasional Angkutan Perdesaan/Angkutan Lokal/Sejenis  di Desa
+5;AKSESIBILITAS;SUB-DIMENSI KEMUDAHAN AKSES;Akses Listrik;Ketersediaan Pelayanan Listrik untuk rumah di desa
+5;AKSESIBILITAS;SUB-DIMENSI KEMUDAHAN AKSES;Akses Listrik;Tersedia Lama Durasi layanan Listrik di Desa
+5;AKSESIBILITAS;SUB-DIMENSI KEMUDAHAN AKSES;Layanan Telekomunikasi;Ketersediaan Akses Telepon di sebagian besar wilayah Desa
+5;AKSESIBILITAS;SUB-DIMENSI KEMUDAHAN AKSES;Layanan Telekomunikasi;Ketersediaan Akses Internet di sebagian besar wilayah Desa
+6;TATA KELOLA PEMERINTAHAN DESA;SUB-DIMENSI KELEMBAGAAN DAN PELAYANAN DESA;Pelaksanaan Pelayanan dan Administrasi Desa;Pelaksanaan Pelayanan dan Administrasi Desa
+6;TATA KELOLA PEMERINTAHAN DESA;SUB-DIMENSI KELEMBAGAAN DAN PELAYANAN DESA;Pemanfaatan Teknologi dalam Pelayanan Desa (SPBE);Publikasi Informasi Pelayanan kepada masyarakat desa
+6;TATA KELOLA PEMERINTAHAN DESA;SUB-DIMENSI KELEMBAGAAN DAN PELAYANAN DESA;Pemanfaatan Teknologi dalam Pelayanan Desa (SPBE);Pelayanan Administrasi untuk masyarakat desa
+6;TATA KELOLA PEMERINTAHAN DESA;SUB-DIMENSI KELEMBAGAAN DAN PELAYANAN DESA;Pemanfaatan Teknologi dalam Pelayanan Desa (SPBE);Pelayanan Pengaduan untuk masyarakat desa
+6;TATA KELOLA PEMERINTAHAN DESA;SUB-DIMENSI KELEMBAGAAN DAN PELAYANAN DESA;Pemanfaatan Teknologi dalam Pelayanan Desa (SPBE);Pelayanan Lainnya untuk masyarakat desa
+6;TATA KELOLA PEMERINTAHAN DESA;SUB-DIMENSI KELEMBAGAAN DAN PELAYANAN DESA;Musyawarah Desa;Frekuensi Musyawarah Desa selama setahun terakhir
+6;TATA KELOLA PEMERINTAHAN DESA;SUB-DIMENSI KELEMBAGAAN DAN PELAYANAN DESA;Musyawarah Desa;Musyawarah Desa dihadiri oleh unsur masyarakat atau unsur masyarakat lainnya
+6;TATA KELOLA PEMERINTAHAN DESA;SUB-DIMENSI TATA KELOLA KEUANGAN DESA;Pendapatan Asli Desa (PADes) dan Dana Desa;Pendapatan Asli Desa
+6;TATA KELOLA PEMERINTAHAN DESA;SUB-DIMENSI TATA KELOLA KEUANGAN DESA;Pendapatan Asli Desa (PADes) dan Dana Desa;Peningkatan PADes
+6;TATA KELOLA PEMERINTAHAN DESA;SUB-DIMENSI TATA KELOLA KEUANGAN DESA;Pendapatan Asli Desa (PADes) dan Dana Desa;Ketersediaan Penyertaan Modal dari Dana Desa kepada BUMDesa
+6;TATA KELOLA PEMERINTAHAN DESA;SUB-DIMENSI TATA KELOLA KEUANGAN DESA;Jumlah Kepemilikan dan Produktivitas Aset Desa;Kepemilikan Aset berupa Tanah Desa
+6;TATA KELOLA PEMERINTAHAN DESA;SUB-DIMENSI TATA KELOLA KEUANGAN DESA;Jumlah Kepemilikan dan Produktivitas Aset Desa;Kepemilikan Aset berupa Kantor Desa
+6;TATA KELOLA PEMERINTAHAN DESA;SUB-DIMENSI TATA KELOLA KEUANGAN DESA;Jumlah Kepemilikan dan Produktivitas Aset Desa;Kepemilikan Aset berupa Pasar Desa
+6;TATA KELOLA PEMERINTAHAN DESA;SUB-DIMENSI TATA KELOLA KEUANGAN DESA;Jumlah Kepemilikan dan Produktivitas Aset Desa;Kepemilikan Aset Lainnya
+6;TATA KELOLA PEMERINTAHAN DESA;SUB-DIMENSI TATA KELOLA KEUANGAN DESA;Jumlah Kepemilikan dan Produktivitas Aset Desa;Produktivitas Kepemilikan Aset Desa
+6;TATA KELOLA PEMERINTAHAN DESA;SUB-DIMENSI TATA KELOLA KEUANGAN DESA;Jumlah Kepemilikan dan Produktivitas Aset Desa;inventarisasi Aset Desa
+```

@@ -1,211 +1,983 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" x-data="adminApp()" :class="{ 'dark': darkMode }">
+
 <head>
-    <meta charset="UTF-8">
-    <title>Admin Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/ag-grid-community/dist/ag-grid-community.min.js"></script>
-    <style>.ag-theme-alpine { --ag-font-size: 13px; }</style>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+    }
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ag-grid-community/dist/ag-grid-community.min.js"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+
+  <style>
+    /* --- AG Grid Settings --- */
+    .ag-theme-alpine {
+      --ag-font-size: 13px;
+      --ag-header-height: 32px;
+      --ag-row-height: 32px;
+    }
+
+    /* Dark Mode Overrides for AG Grid */
+    .dark .ag-theme-alpine {
+      --ag-background-color: #1e293b;
+      /* slate-800 */
+      --ag-foreground-color: #cbd5e1;
+      /* slate-300 */
+      --ag-border-color: #334155;
+      /* slate-700 */
+      --ag-header-background-color: #0f172a;
+      /* slate-900 */
+      --ag-row-hover-color: #334155;
+    }
+
+    /* --- Dashboard Table Styles --- */
+    :root {
+      --border-color: #c0c0c0;
+      --header-bg: #f2f2f2;
+      --header-text: #333;
+      --hover-row: #f9f9fa;
+      --header-row-height: 32px;
+    }
+
+    /* Dark Mode Vars */
+    html.dark {
+      --border-color: #475569;
+      --header-bg: #1e293b;
+      --header-text: #e2e8f0;
+      --hover-row: #334155;
+    }
+
+    /* --- Custom Scrollbar --- */
+    /* Webkit (Chrome/Edge/Safari) */
+    ::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #c1c1c1;
+      border-radius: 5px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #a8a8a8;
+    }
+
+    /* Dark Mode Scrollbar */
+    .dark ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+
+    /* slate-900 */
+    .dark ::-webkit-scrollbar-thumb {
+      background: #475569;
+      border: 1px solid #0f172a;
+    }
+
+    /* slate-600 */
+    .dark ::-webkit-scrollbar-thumb:hover {
+      background: #64748b;
+    }
+
+    /* slate-500 */
+    .dark ::-webkit-scrollbar-corner {
+      background: #0f172a;
+    }
+
+    .dashboard-container {
+      overflow: auto;
+      height: 100%;
+      border: 1px solid var(--border-color);
+      background: white;
+      position: relative;
+    }
+
+    .dark .dashboard-container {
+      background: #0f172a;
+    }
+
+    .dash-table {
+      border-collapse: collapse;
+      width: max-content;
+      /* Important for resizing */
+      min-width: 100%;
+      font-size: 13px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      table-layout: fixed;
+    }
+
+    /* Sticky Headers */
+    .dash-table thead th {
+      background-color: var(--header-bg);
+      color: var(--header-text);
+      font-weight: 600;
+      border: 1px solid var(--border-color);
+      padding: 4px;
+      box-sizing: border-box;
+      position: sticky;
+      z-index: 10;
+      height: var(--header-row-height);
+      text-align: center;
+      vertical-align: middle;
+      background-clip: padding-box;
+    }
+
+    /* Handle double-row headers sticking */
+    .dash-table thead tr:first-child th {
+      top: 0;
+      z-index: 11;
+    }
+
+    .dash-table thead tr:nth-child(2) th {
+      top: var(--header-row-height);
+      z-index: 11;
+      border-top: none;
+    }
+
+    .dash-table td {
+      border: 1px solid var(--border-color);
+      padding: 0px;
+      vertical-align: top;
+      color: #2c3e50;
+    }
+
+    .dark .dash-table td {
+      color: #cbd5e1;
+    }
+
+    .input-cell {
+      width: 100%;
+      height: 100%;
+      border: none;
+      padding: 6px;
+      background: transparent;
+      outline: none;
+      font-family: inherit;
+      font-size: inherit;
+      resize: none;
+      overflow: hidden;
+      white-space: pre-wrap;
+      display: block;
+      min-height: 40px;
+    }
+
+    .merged-cell {
+      background-color: #fff;
+      vertical-align: top;
+      font-weight: 500;
+    }
+
+    .dark .merged-cell {
+      background-color: #0f172a;
+    }
+
+    /* Column Width Utilities */
+    .col-no {
+      width: 40px;
+      min-width: 40px;
+      text-align: center;
+      padding: 0 !important;
+    }
+
+    .col-dimensi {
+      width: 40px;
+      max-width: 100px;
+      text-align: center;
+    }
+
+    .col-sub_dimensi {
+      width: 40px;
+      max-width: 200px;
+      text-align: center;
+    }
+
+    .col-indikator {
+      width: 40px;
+      max-width: 200px;
+      text-align: center;
+    }
+
+    .col-item {
+      width: 300px;
+      min-width: 150px;
+      background-color: #fafafa;
+    }
+
+    .dark .col-item {
+      background-color: #1e293b;
+    }
+
+    .col-score {
+      width: 60px;
+      min-width: 60px;
+      text-align: center;
+      padding: 0 4px;
+    }
+
+    .col-intervensi {
+      width: 1100px;
+      min-width: 150px;
+    }
+
+    .col-pusat {
+      width: 200px;
+      min-width: 150px;
+    }
+
+    .col-prov {
+      width: 200px;
+      min-width: 150px;
+    }
+
+    .col-kab {
+      width: 200px;
+      min-width: 150px;
+    }
+
+    .col-desa {
+      width: 200px;
+      min-width: 150px;
+    }
+
+    .col-lain {
+      width: 200px;
+      min-width: 150px;
+    }
+
+
+    /* Draggable Resizer */
+    .resizer {
+      position: absolute;
+      right: 0;
+      top: 0;
+      height: 100%;
+      width: 5px;
+      background: transparent;
+      cursor: col-resize;
+      user-select: none;
+      touch-action: none;
+      z-index: 100;
+    }
+
+    .resizer:hover,
+    .resizing {
+      background-color: #007bff;
+    }
+
+    /* Input Styling inside Table */
+    .dash-table input {
+      width: 100%;
+      height: 100%;
+      border: none;
+      padding: 4px;
+      background: transparent;
+      text-align: center;
+      outline: none;
+    }
+
+    .dash-table input:focus {
+      background-color: #e8f0fe;
+    }
+
+    .dark .dash-table input:focus {
+      background-color: #334155;
+    }
+  </style>
 </head>
-<body class="bg-gray-100 h-screen flex flex-col" x-data="adminApp()">
 
-    <div class="bg-slate-800 text-white p-4 flex justify-between items-center shadow-md">
-        <h1 class="text-lg font-bold">🛡️ Admin Dashboard</h1>
-        <div class="text-sm text-gray-400">Connected to: <span x-text="apiUrl"></span></div>
-    </div>
+<body class="bg-gray-100 h-screen flex flex-col transition-colors duration-300 dark:bg-slate-900 dark:text-slate-100">
 
-    <div class="flex flex-1 overflow-hidden">
-        <div class="w-80 bg-white border-r p-4 flex flex-col overflow-y-auto">
-            
-            <div class="mb-6 border-b pb-4">
-                <h3 class="text-xs font-bold text-gray-500 uppercase mb-2">⏳ History / Versions</h3>
-                <select x-model="selectedVersion" @change="fetchData" class="w-full border p-2 rounded text-sm bg-blue-50">
-                    <option value="">🟢 Live (HEAD)</option>
-                    <template x-for="v in versions" :key="v.ts">
-                        <option :value="v.ts" x-text="'📄 ' + v.label"></option>
-                    </template>
-                </select>
-            </div>
+  <div
+    class="bg-slate-800 text-white p-3 flex justify-between items-center shadow-md z-20 shrink-0 border-b border-slate-700">
 
-            <div class="mb-6 border-b pb-4">
-                <h3 class="text-xs font-bold text-gray-500 uppercase mb-2">🔍 Filter by IDs</h3>
-                <textarea 
-                    x-model="idList" 
-                    placeholder="Paste IDs here (comma/newline)..."
-                    class="w-full border p-2 rounded text-sm h-32 font-mono"
-                ></textarea>
-                <button @click="fetchData" class="mt-2 w-full bg-slate-700 text-white py-1 rounded hover:bg-slate-800 text-sm">
-                    Apply Filter
-                </button>
-            </div>
+    <div class="flex items-center gap-6">
+      <h1 class="text-lg font-bold flex items-center gap-2">
+        <span>🛡️</span> Admin Dashboard
+      </h1>
 
-            <div>
-                <h3 class="text-xs font-bold text-gray-500 uppercase mb-2">📤 Upload Update</h3>
-                
-                <div x-show="!stagingData">
-                    <input type="file" @change="handleStage" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100"/>
-                    <p x-text="statusMsg" class="text-xs mt-2 text-blue-600"></p>
-                </div>
+      <div class="bg-slate-700 p-1 rounded flex gap-1">
+        <button @click="switchView('grid')"
+          :class="viewMode === 'grid' ? 'bg-blue-600 text-white shadow' : 'text-gray-300 hover:bg-slate-600'"
+          class="px-3 py-1 rounded text-xs font-bold transition flex items-center gap-1">
+          <span>▦</span> Grid
+        </button>
+        <button @click="switchView('dashboard')"
+          :class="viewMode === 'dashboard' ? 'bg-blue-600 text-white shadow' : 'text-gray-300 hover:bg-slate-600'"
+          class="px-3 py-1 rounded text-xs font-bold transition flex items-center gap-1">
+          <span>📊</span> Dashboard
+        </button>
+      </div>
 
-                <div x-show="stagingData" class="bg-yellow-50 p-3 rounded border border-yellow-200">
-                    <p class="text-xs font-bold text-slate-700 mb-2 truncate" x-text="'File: ' + (stagingData ? stagingData.filename : '')"></p>
-                    
-                    <div class="grid grid-cols-3 gap-1 mb-3 text-center">
-                        <div class="bg-green-100 p-1 rounded">
-                            <div class="text-xs text-green-700 font-bold">Add</div>
-                            <div class="text-sm font-mono" x-text="stagingData?.diff.added"></div>
-                        </div>
-                        <div class="bg-blue-100 p-1 rounded">
-                            <div class="text-xs text-blue-700 font-bold">Mod</div>
-                            <div class="text-sm font-mono" x-text="stagingData?.diff.changed"></div>
-                        </div>
-                        <div class="bg-red-100 p-1 rounded">
-                            <div class="text-xs text-red-700 font-bold">Del</div>
-                            <div class="text-sm font-mono" x-text="stagingData?.diff.removed"></div>
-                        </div>
-                    </div>
+      <div class="bg-slate-900/50 px-3 py-1 rounded flex items-center gap-4 text-xs border border-slate-600">
+        <div class="flex flex-col leading-none">
+          <span class="text-slate-400 text-[9px] uppercase tracking-wider">Total Rows</span>
+          <span class="font-mono font-bold text-white text-sm" x-text="totalRows">0</span>
+        </div>
+        <div class="h-6 w-px bg-slate-600"></div>
+        <div class="flex flex-col leading-none">
+          <span class="text-slate-400 text-[9px] uppercase tracking-wider">Last Update</span>
+          <span class="font-mono font-bold text-green-400 text-sm" x-text="lastUpdate">N/A</span>
+        </div>
+        <div class="h-6 w-px bg-slate-600"></div>
 
-                    <div class="flex gap-2">
-                        <button @click="confirmCommit" class="flex-1 bg-green-600 text-white py-1 rounded text-sm hover:bg-green-700 font-bold">
-                            Confirm
-                        </button>
-                        <button @click="stagingData = null; statusMsg = ''" class="bg-gray-300 text-gray-700 px-3 rounded text-sm hover:bg-gray-400">
-                            ✕
-                        </button>
-                    </div>
-                </div>
-            </div>
+        <div class="bg-slate-700 p-0.5 rounded flex gap-1">
+          <button @click="translateOn = false; fetchData()"
+            :class="!translateOn ? 'bg-blue-600 text-white shadow' : 'text-gray-400 hover:text-white hover:bg-slate-600'"
+            class="px-2 py-1 rounded text-[10px] font-bold transition flex items-center gap-1"
+            title="Show Raw Numbers (1-5)">
+            <span>🔢</span> Raw
+          </button>
+          <button @click="translateOn = true; fetchData()"
+            :class="translateOn ? 'bg-blue-600 text-white shadow' : 'text-gray-400 hover:text-white hover:bg-slate-600'"
+            class="px-2 py-1 rounded text-[10px] font-bold transition flex items-center gap-1"
+            title="Show Text Recommendations">
+            <span>🔤</span> Text
+          </button>
         </div>
 
-        <div class="flex-1 p-4 relative">
-            <div id="myGrid" class="ag-theme-alpine w-full h-full"></div>
+        <div class="h-6 w-px bg-slate-600"></div>
+
+        <div class="bg-slate-700 p-0.5 rounded flex gap-1">
+          <button @click="calculateDashboard" :class="'bg-blue-600 text-white shadow'"
+            class="px-2 py-1 rounded text-[10px] font-bold transition flex items-center gap-1" title="Recalculate Data">
+            <span>⚡</span> calculate
+          </button>
         </div>
+      </div>
     </div>
 
-    <script>
-        function adminApp() {
-            return {
-                apiUrl: "{{ api_url }}",
-                year: "2025",
-                gridOptions: null,
-                versions: [],
-                selectedVersion: "",
-                idList: "",
-                statusMsg: "",
-                
-                // Staging State
-                stagingData: null,
+    <div class="flex items-center gap-4">
+      <button @click="toggleDarkMode"
+        class="p-1.5 rounded hover:bg-slate-700 text-yellow-400 transition border border-transparent hover:border-slate-600"
+        title="Toggle Theme">
+        <span x-show="!darkMode">☼</span>
+        <span x-show="darkMode">☾</span>
+      </button>
 
-                init() {
-                    this.gridOptions = {
-                        rowData: [],
-                        columnDefs: [],
-                        defaultColDef: { sortable: true, filter: true, resizable: true },
-                        pagination: true,
-                        paginationPageSize: 100
-                    };
-                    new agGrid.Grid(document.getElementById('myGrid'), this.gridOptions);
-                    
-                    this.fetchVersions();
-                    this.fetchData();
-                },
+      <div class="h-6 w-px bg-slate-700"></div>
 
-                async fetchVersions() {
-                    try {
-                        let res = await fetch(`${this.apiUrl}/history/versions/${this.year}`);
-                        if(res.ok) this.versions = await res.json();
-                    } catch(e) { console.error(e); }
-                },
+      <a href="/logout"
+        class="flex items-center gap-2 text-xs font-bold text-red-400 hover:text-red-300 transition bg-red-950/30 border border-red-900/50 px-3 py-1.5 rounded hover:bg-red-900/50">
+        <span>🚪</span> Logout
+      </a>
+    </div>
+  </div>
 
-                async fetchData() {
-                    this.gridOptions.api.showLoadingOverlay();
-                    let params = new URLSearchParams({ limit: 1000 });
-                    
-                    if (this.idList.trim()) {
-                        let cleanIds = this.idList.replace(/\n/g, ",").trim();
-                        params.append("ids", cleanIds);
-                    }
-                    
-                    if (this.selectedVersion) {
-                        params.append("version", this.selectedVersion);
-                    }
+  </div>
 
-                    try {
-                        let res = await fetch(`${this.apiUrl}/query/${this.year}?${params}`);
-                        let data = await res.json();
-                        
-                        // Handle "List of Rows" (Success)
-                        if (Array.isArray(data)) {
-                            if (data.length > 0) {
-                                let cols = Object.keys(data[0]).map(k => ({ field: k, sortable: true, filter: true }));
-                                this.gridOptions.api.setColumnDefs(cols);
-                                this.gridOptions.api.setRowData(data);
-                            } else {
-                                this.gridOptions.api.setRowData([]);
-                            }
-                        } 
-                        // Handle "Error Object" (Failure)
-                        else if (data.error) {
-                            alert("Server Error: " + data.error);
-                            this.gridOptions.api.setRowData([]);
-                        }
-                    } catch(e) { 
-                        console.error(e);
-                        alert("Connection Error"); 
-                    }
-                    this.gridOptions.api.hideOverlay();
-                },
+  <div class="flex flex-1 overflow-hidden">
 
-                // Step 1: Upload to Stage
-                async handleStage(e) {
-                    let file = e.target.files[0];
-                    if(!file) return;
-                    
-                    this.statusMsg = "Analyzing Diff...";
-                    let fd = new FormData();
-                    fd.append("file", file);
-                    
-                    try {
-                        let res = await fetch(`${this.apiUrl}/stage/${this.year}`, { method: "POST", body: fd });
-                        let data = await res.json();
-                        
-                        if(data.status === "staged") {
-                            this.stagingData = data;
-                            this.statusMsg = "";
-                            e.target.value = null; // Reset input
-                        } else {
-                            this.statusMsg = "❌ Error: " + (data.error || "Unknown");
-                        }
-                    } catch(err) { this.statusMsg = "❌ Connection Fail"; }
-                },
+    <div
+      class="w-80 bg-white border-r p-4 flex flex-col overflow-y-auto shrink-0 shadow-lg z-10 custom-scrollbar dark:bg-slate-800 dark:border-slate-700 transition-colors duration-300">
 
-                // Step 2: Commit
-                async confirmCommit() {
-                    if(!this.stagingData) return;
-                    this.statusMsg = "Committing...";
-                    
-                    try {
-                        let params = new URLSearchParams({
-                            staging_id: this.stagingData.staging_id,
-                            filename: this.stagingData.filename
-                        });
-                        
-                        let res = await fetch(`${this.apiUrl}/commit/${this.year}?${params}`, { method: "POST" });
-                        let resp = await res.json();
-                        
-                        if(resp.status === "success") {
-                            alert("Database Updated Successfully!");
-                            this.stagingData = null;
-                            this.fetchVersions();
-                            this.fetchData();
-                        } else {
-                            alert("Commit Failed: " + resp.error);
-                        }
-                    } catch(err) { alert("Commit Error"); }
+      <div class="sidebar-section mb-5 border-b border-gray-100 pb-4 dark:border-slate-700">
+        <h3 class="text-xs font-bold text-gray-400 uppercase mb-3 tracking-wider">🚀 Actions</h3>
+
+        <div class="space-y-3">
+          <div x-show="!stagingData">
+            <label class="block cursor-pointer">
+              <input type="file" @change="handleStage"
+                class="block w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:text-slate-400 dark:file:bg-slate-700 dark:file:text-blue-400 cursor-pointer" />
+            </label>
+            <p x-text="statusMsg" class="text-xs mt-1 text-blue-600 font-medium min-h-[16px]"></p>
+          </div>
+
+          <div x-show="stagingData"
+            class="bg-amber-50 p-3 rounded border border-amber-200 shadow-sm dark:bg-amber-900/20 dark:border-amber-800"
+            style="display: none;">
+            <p class="text-[10px] text-amber-800 mb-2 truncate font-mono dark:text-amber-400"
+              x-text="stagingData?.filename"></p>
+
+            <div class="grid grid-cols-3 gap-1 mb-2 text-center">
+              <div class="bg-green-100 p-1 rounded dark:bg-green-900/30">
+                <div class="text-[9px] text-green-800 font-bold dark:text-green-400">ADD</div>
+                <div class="text-xs font-mono dark:text-green-200" x-text="stagingData?.diff.added">0</div>
+              </div>
+              <div class="bg-blue-100 p-1 rounded dark:bg-blue-900/30">
+                <div class="text-[9px] text-blue-800 font-bold dark:text-blue-400">MOD</div>
+                <div class="text-xs font-mono dark:text-blue-200" x-text="stagingData?.diff.changed">0</div>
+              </div>
+              <div class="bg-red-100 p-1 rounded dark:bg-red-900/30">
+                <div class="text-[9px] text-red-800 font-bold dark:text-red-400">DEL</div>
+                <div class="text-xs font-mono dark:text-red-200" x-text="stagingData?.diff.removed">0</div>
+              </div>
+            </div>
+
+            <div class="flex gap-2">
+              <button @click="confirmCommit"
+                class="flex-1 bg-green-600 text-white py-1 rounded text-xs font-bold hover:bg-green-700">Confirm</button>
+              <button @click="stagingData = null; statusMsg=''"
+                class="bg-white border border-gray-300 text-gray-600 px-2 rounded text-xs hover:bg-gray-50 dark:bg-slate-800 dark:border-slate-600 dark:text-gray-300 dark:hover:bg-slate-700">Cancel</button>
+            </div>
+          </div>
+
+          <button @click="downloadExcel"
+            class="w-full border border-green-600 text-green-700 bg-green-50 py-2 rounded text-xs font-bold hover:bg-green-100 transition flex justify-center items-center gap-2 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800 dark:hover:bg-green-900/40">
+            <span>📥</span> Download Excel
+          </button>
+        </div>
+      </div>
+
+      <div class="sidebar-section mb-5 border-b border-gray-100 pb-4 dark:border-slate-700">
+        <h3 class="text-xs font-bold text-gray-400 uppercase mb-2 tracking-wider">⏳ Time Travel</h3>
+        <select x-model="selectedVersion" @change="fetchData"
+          class="w-full border border-gray-300 p-2 rounded text-xs bg-gray-50 focus:ring-1 focus:ring-blue-500 outline-none text-gray-700 dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300">
+          <option value="">🟢 Live (HEAD)</option>
+          <template x-for="v in versions" :key="v.ts">
+            <option :value="v.ts" x-text="v.label"></option>
+          </template>
+        </select>
+      </div>
+
+      <div class="sidebar-section mb-5 border-b border-gray-100 pb-4 space-y-3 dark:border-slate-700">
+        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider">📍 Location</h3>
+
+        <div>
+          <label class="block text-[10px] font-bold text-gray-500 mb-1 dark:text-gray-400">PROVINSI</label>
+          <select x-model="selProv" @change="selKab=''; selKec=''; fetchData()"
+            class="w-full border p-1.5 rounded text-xs bg-white focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300">
+            <option value="">- All -</option>
+            <template x-for="p in Object.keys(hierarchy).sort()" :key="p">
+              <option :value="p" x-text="p"></option>
+            </template>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-bold text-gray-500 mb-1 dark:text-gray-400">KABUPATEN/KOTA</label>
+          <select x-model="selKab" @change="selKec=''; fetchData()"
+            class="w-full border p-1.5 rounded text-xs bg-white focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
+            :disabled="!selProv" :class="{'bg-gray-100 dark:bg-slate-800': !selProv}">
+            <option value="">- All -</option>
+            <template x-for="k in getKabOptions()" :key="k">
+              <option :value="k" x-text="k"></option>
+            </template>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-bold text-gray-500 mb-1 dark:text-gray-400">KECAMATAN</label>
+          <select x-model="selKec" @change="fetchData"
+            class="w-full border p-1.5 rounded text-xs bg-white focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
+            :disabled="!selKab" :class="{'bg-gray-100 dark:bg-slate-800': !selKab}">
+            <option value="">- All -</option>
+            <template x-for="c in getKecOptions()" :key="c">
+              <option :value="c" x-text="c"></option>
+            </template>
+          </select>
+        </div>
+      </div>
+
+      <div class="sidebar-section mb-5 border-b border-gray-100 pb-4 dark:border-slate-700">
+        <h3 class="text-xs font-bold text-gray-400 uppercase mb-2 tracking-wider">🔍 Specific Search</h3>
+
+        <div class="mb-3">
+          <textarea x-model="idList"
+            class="w-full border p-2 rounded text-xs h-20 font-mono focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
+            placeholder="Paste IDs here (comma or newline separated)..."></textarea>
+        </div>
+
+        <div class="mb-3">
+          <input type="text" x-model="nameSearch"
+            class="w-full border p-2 rounded text-xs focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
+            placeholder="Search Desa Name or Code...">
+        </div>
+
+        <button @click="fetchData"
+          class="w-full bg-slate-700 text-white py-2 rounded text-xs font-bold hover:bg-slate-800 transition shadow-sm dark:bg-slate-600 dark:hover:bg-slate-500">
+          Apply Filters
+        </button>
+      </div>
+
+    </div>
+
+    <div class="flex-1 relative bg-gray-50 overflow-hidden flex flex-col dark:bg-slate-900">
+
+      <div x-show="viewMode === 'grid'" class="flex-1 p-0 relative">
+        <div id="myGrid" class="ag-theme-alpine w-full h-full border-none"></div>
+      </div>
+
+      <div x-show="viewMode === 'dashboard'" class="flex-1 p-4 overflow-hidden relative" style="display: none;">
+        <div class="dashboard-container shadow-md rounded">
+          <table id="dashTable" class="dash-table">
+            <thead>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    function adminApp() {
+      return {
+        apiUrl: "{{ api_url }}",
+        year: "2025",
+        viewMode: 'grid',
+        darkMode: localStorage.getItem('theme') === 'dark',
+
+        // Data State
+        versions: [],
+        hierarchy: {},
+        stagingData: null,
+        tableStructureLoaded: false,
+        gridApi: null,
+
+        // Filters
+        translateOn: false,
+        selectedVersion: "",
+        selProv: "",
+        selKab: "",
+        selKec: "",
+        idList: "",
+        nameSearch: "",
+
+        // UI State
+        totalRows: "0",
+        lastUpdate: "N/A",
+        statusMsg: "",
+
+        init() {
+          this.initGrid();
+          this.fetchVersions();
+          this.fetchHierarchy();
+          this.fetchData();
+        },
+
+        toggleDarkMode() {
+          this.darkMode = !this.darkMode;
+          localStorage.setItem('theme', this.darkMode ? 'dark' : 'light');
+        },
+
+        // ----------------------------------------
+        // 1. VIEW LOGIC
+        // ----------------------------------------
+        switchView(mode) {
+          this.viewMode = mode;
+          if (mode === 'dashboard') {
+            this.loadDashboardStructure();
+          } else {
+            // Refresh grid layout if switching back
+            setTimeout(() => {
+              if (this.gridApi) this.gridApi.sizeColumnsToFit();
+            }, 50);
+          }
+        },
+
+        // ----------------------------------------
+        // 2. AG-GRID LOGIC
+        // ----------------------------------------
+        initGrid() {
+          const gridOptions = {
+            rowData: [],
+            columnDefs: [],
+            defaultColDef: {
+              sortable: true, 
+              filter: true, 
+              resizable: true,
+              minWidth: 100,
+              flex: 1,
+              wrapText: true,
+              autoHeight: false
+            },
+            pagination: true,
+            paginationPageSize: 1000,
+            rowSelection: 'multiple',
+            animateRows: true
+          };
+          // Capture API instance correctly for v31+
+          this.gridApi = agGrid.createGrid(document.getElementById('myGrid'), gridOptions);
+        },
+
+        // ----------------------------------------
+        // 3. DATA FETCHING & FILTERS
+        // ----------------------------------------
+        async fetchHierarchy() {
+          try {
+            let res = await fetch(`${this.apiUrl}/hierarchy/${this.year}`);
+            if (res.ok) this.hierarchy = await res.json();
+          } catch (e) { }
+        },
+        getKabOptions() {return (this.selProv && this.hierarchy[this.selProv]) ? Object.keys(this.hierarchy[this.selProv]).sort() : [];},
+        getKecOptions() {return (this.selProv && this.selKab && this.hierarchy[this.selProv][this.selKab]) ? this.hierarchy[this.selProv][this.selKab].sort() : [];},
+
+        async fetchData() {
+          if (this.gridApi) this.gridApi.showLoadingOverlay();
+
+          // Update Date Display based on selection
+          if (this.selectedVersion) {
+            // If viewing a snapshot, show that snapshot's date
+            this.lastUpdate = this.selectedVersion;
+          } else if (this.versions.length > 0) {
+            // If Live, show the latest commit date
+            this.lastUpdate = this.versions[0].ts;
+          }
+
+          let params = new URLSearchParams({limit: 50000, translate: this.translateOn});
+          if (this.selectedVersion) params.append("version", this.selectedVersion);
+          if (this.selProv) params.append("Provinsi", this.selProv);
+          if (this.selKab) params.append("Kabupaten/ Kota", this.selKab);
+          if (this.selKec) params.append("Kecamatan", this.selKec);
+          if (this.nameSearch) params.append("Kode Wilayah Administrasi Desa", this.nameSearch);
+          if (this.idList.trim()) params.append("ids", this.idList.replace(/\n/g, ","));
+
+          try {
+            let res = await fetch(`${this.apiUrl}/query/${this.year}?${params}`);
+            let data = await res.json();
+
+            if (Array.isArray(data)) {
+              // Update Stats
+              this.totalRows = data.length.toLocaleString();
+              if (data.length > 0) {
+
+                // GRID UPDATE (Slice for performance)
+                const displayData = data.slice(0, 1000);
+                let cols = Object.keys(data[0]).map(k => ({
+                  field: k,
+                  headerName: k,
+                  tooltipField: k,
+                  valueGetter: params => params.data[k]
+                }));
+
+                if (this.gridApi) {
+                  this.gridApi.setGridOption('columnDefs', cols);
+                  this.gridApi.setGridOption('rowData', displayData);
                 }
+                this.calculateDashboard();
+              } else {
+                this.totalRows = "0";
+                if (this.gridApi) this.gridApi.setGridOption('rowData', []);
+              }
+            } else if (data.error) {
+              alert("Server Error: " + data.error);
             }
+          } catch (e) {console.error(e);}
+          if (this.gridApi) this.gridApi.hideOverlay();
+        },
+
+        async fetchVersions() {
+          try {
+            let res = await fetch(`${this.apiUrl}/history/versions/${this.year}`);
+            if (res.ok) {
+              this.versions = await res.json();
+              // Grab the latest timestamp immediately from the version list
+              if (this.versions.length > 0 && !this.selectedVersion) {
+                this.lastUpdate = this.versions[0].ts;
+              }
+            }
+          } catch (e) { }
+        },
+
+        // ----------------------------------------
+        // 4. DASHBOARD RENDER LOGIC
+        // ----------------------------------------
+        async loadDashboardStructure() {
+          if (this.tableStructureLoaded) return;
+          try {
+            let res = await fetch(`${this.apiUrl}/config/table_structure`);
+            if (!res.ok) throw new Error("Config not found");
+            let data = await res.json();
+            this.renderDashboardTable(data);
+            this.tableStructureLoaded = true;
+            this.calculateDashboard();
+          } catch (e) {alert(e.message);}
+        },
+
+        renderDashboardTable(dataRows) {
+          const table = document.getElementById('dashTable');
+          const thead = table.querySelector('thead');
+          const tbody = table.querySelector('tbody');
+          thead.innerHTML = ''; tbody.innerHTML = '';
+
+          // HEADERS CONSTRUCTION
+          const tr1 = document.createElement('tr');
+          const tr2 = document.createElement('tr');
+
+          const headers = ["NO", "DIMENSI", "SUB DIMENSI", "INDIKATOR", "ITEM"];
+          headers.forEach(h => {
+            const th = document.createElement('th');
+            th.innerHTML = `<span>${h}</span>`;
+            th.rowSpan = 2;
+            if (h === "NO") th.className = "col-no";
+            if (h === "DIMENSI") th.className = "col-dimensi";
+            if (h === "SUB DIMENSI") th.className = "col-sub_dimensi";
+            if (h === "INDIKATOR") th.className = "col-indikator";
+            if (h === "ITEM") {th.className = "col-item"; this.addResizer(th);}
+            tr1.appendChild(th);
+          });
+
+          // Extra Columns Headers
+          const thScore = document.createElement('th');
+          thScore.textContent = "SKOR";
+          thScore.colSpan = 6;
+          tr1.appendChild(thScore);
+
+          ["Rata-Rata", "1", "2", "3", "4", "5"].forEach(txt => {
+            const th = document.createElement('th');
+            th.textContent = txt;
+            th.className = "col-score";
+            tr2.appendChild(th);
+          });
+
+          const thPel = document.createElement('th');
+          thPel.textContent = "INTERVENSI / PELAKSANA";
+          thPel.colSpan = 6;
+          tr1.appendChild(thPel);
+
+          // Mapping labels to keys in CSV
+          const pelaksanaConfig = [
+            {label: "INTERVENSI", key: "INTERVENSI KEGIATAN", css: "col-intervensi"},
+            {label: "PUSAT", key: "PELAKSANA KEGIATAN PUSAT", css: "col-pusat"},
+            {label: "PROV", key: "PELAKSANA KEGIATAN PROVINSI", css: "col-prov"},
+            {label: "KAB", key: "PELAKSANA KEGIATAN KABUPATEN", css: "col-kab"},
+            {label: "DESA", key: "PELAKSANA KEGIATAN DESA", css: "col-desa"},
+            {label: "LAIN", key: "PELAKSANA KEGIATAN Lainnya", css: "col-lain"}
+          ];
+
+          pelaksanaConfig.forEach(c => {
+            const th = document.createElement('th');
+            th.textContent = c.label;
+            th.className = c.css;
+            this.addResizer(th);
+            tr2.appendChild(th);
+          });
+
+          thead.appendChild(tr1);
+          thead.appendChild(tr2);
+
+          // BODY CONSTRUCTION (Merge Logic)
+          const rowSpans = new Array(dataRows.length).fill(0).map(() => ({}));
+          const mergeKeys = ["NO", "DIMENSI", "SUB DIMENSI", "INDIKATOR"];
+
+          for (let k of mergeKeys) {
+            for (let i = 0; i < dataRows.length; i++) {
+              if (rowSpans[i][k] === -1) continue;
+              let span = 1;
+              for (let j = i + 1; j < dataRows.length; j++) {
+                if (dataRows[i][k] === dataRows[j][k]) {
+                  let parentsMatch = true;
+                  let idx = mergeKeys.indexOf(k);
+                  for (let p = 0; p < idx; p++) {
+                    if (dataRows[i][mergeKeys[p]] !== dataRows[j][mergeKeys[p]]) parentsMatch = false;
+                  }
+                  if (parentsMatch) {span++; rowSpans[j][k] = -1;} else break;
+                } else break;
+              }
+              rowSpans[i][k] = span;
+            }
+          }
+
+          dataRows.forEach((row, i) => {
+            const tr = document.createElement('tr');
+
+            headers.forEach(k => {
+              if (rowSpans[i][k] === -1) return;
+              const td = document.createElement('td');
+              td.textContent = row[k] || "";
+              if (rowSpans[i][k] > 1) {
+                td.rowSpan = rowSpans[i][k];
+                td.className = "merged-cell";
+              }
+              tr.appendChild(td);
+            });
+
+            // Score Inputs
+            ["SKOR Rata-Rata", "SKOR 1", "SKOR 2", "SKOR 3", "SKOR 4", "SKOR 5"].forEach(k => {
+              const td = document.createElement('td');
+              const inp = document.createElement('input');
+              inp.value = row[k] || ""; // Fill if CSV has default
+              td.appendChild(inp);
+              tr.appendChild(td);
+            });
+
+            // Pelaksana Inputs
+            pelaksanaConfig.forEach(c => {
+              const td = document.createElement('td');
+
+              // Use textarea instead of input for these columns
+              const inp = document.createElement('textarea');
+              inp.value = row[c.key] || "";
+              inp.className = "input-cell";
+
+              // Auto-resize height based on content
+              inp.style.height = 'auto';
+              inp.rows = (inp.value.match(/\n/g) || []).length + 1;
+
+              td.appendChild(inp);
+              tr.appendChild(td);
+            });
+
+            tbody.appendChild(tr);
+          });
+        },
+
+        addResizer(th) {
+          const resizer = document.createElement('div');
+          resizer.className = 'resizer';
+          th.appendChild(resizer);
+          let x = 0, w = 0;
+
+          const mm = (e) => {
+            const dx = e.clientX - x;
+            th.style.width = `${Math.max(30, w + dx)}px`;
+            th.style.minWidth = th.style.width;
+          };
+          const mu = () => {
+            document.removeEventListener('mousemove', mm);
+            document.removeEventListener('mouseup', mu);
+            resizer.classList.remove('resizing');
+          };
+          resizer.addEventListener('mousedown', (e) => {
+            x = e.clientX;
+            w = parseInt(window.getComputedStyle(th).width, 10);
+            document.addEventListener('mousemove', mm);
+            document.addEventListener('mouseup', mu);
+            resizer.classList.add('resizing');
+            e.stopPropagation();
+          });
+        },
+
+        // ----------------------------------------
+        // 5. STAGING LOGIC
+        // ----------------------------------------
+        async handleStage(e) {
+          let file = e.target.files[0];
+          if (!file) return;
+          this.statusMsg = "Analyzing...";
+          let fd = new FormData();
+          fd.append("file", file);
+          try {
+            let res = await fetch(`${this.apiUrl}/stage/${this.year}`, {method: "POST", body: fd});
+            let d = await res.json();
+            if (d.status === "staged") {
+              this.stagingData = d;
+              this.statusMsg = "";
+              e.target.value = null;
+            } else this.statusMsg = "❌ " + d.error;
+          } catch (err) {this.statusMsg = "❌ Connection Fail";}
+        },
+
+        // ----------------------------------------
+        //  CALCULATION LOGIC ---
+        // ----------------------------------------
+        async calculateDashboard() {
+          // Only run if we are in dashboard mode, or force switch
+          if (this.viewMode !== 'dashboard') {
+            this.viewMode = 'dashboard';
+          }
+
+          this.statusMsg = "Calculating...";
+          // Show a simple loading indicator in the table
+          const tbody = document.querySelector('#dashTable tbody');
+          if (tbody) tbody.innerHTML = '<tr><td colspan="100" class="text-center p-4">Calculating...</td></tr>';
+
+          // Add all current filters to params (Same logic as fetchData)
+          let params = new URLSearchParams();
+          if (this.selectedVersion) params.append("version", this.selectedVersion);
+          if (this.selProv) params.append("Provinsi", this.selProv);
+          if (this.selKab) params.append("Kabupaten/ Kota", this.selKab);
+          if (this.selKec) params.append("Kecamatan", this.selKec);
+          if (this.nameSearch) params.append("Kode Wilayah Administrasi Desa", this.nameSearch);
+          if (this.idList.trim()) params.append("ids", this.idList.replace(/\n/g, ","));
+
+          try {
+            let res = await fetch(`${this.apiUrl}/dashboard/calculate/${this.year}?${params.toString()}`, {method: "POST"});
+            if (!res.ok) throw new Error("Calculation failed");
+
+            let data = await res.json();
+            this.renderDashboardTable(data);
+            this.statusMsg = "✅ Done";
+            this.tableStructureLoaded = true;
+          } catch (e) {
+            alert("Error: " + e.message);
+            this.statusMsg = "❌ Error";
+          }
+        },
+
+        async downloadExcel() {
+          this.statusMsg = "Preparing download...";
+
+          try {
+            const wb = XLSX.utils.book_new();
+
+            // === SHEET 1: GRID DATA ===
+            let gridData = [];
+            if (this.gridApi) {
+              this.gridApi.forEachNode(node => {
+                gridData.push(node.data);
+              });
+            }
+
+            if (gridData.length === 0) {
+              throw new Error("No data loaded. Please load data first.");
+            }
+
+            const ws_grid = XLSX.utils.json_to_sheet(gridData);
+            XLSX.utils.book_append_sheet(wb, ws_grid, "Grid");
+
+            // === SHEET 2: DASHBOARD TABLE ===
+            const dashTable = document.getElementById('dashTable');
+            if (dashTable && dashTable.querySelector('tbody tr')) {
+              // Clone table to avoid modifying the original
+              const tableClone = dashTable.cloneNode(true);
+              
+              // Replace all inputs/textareas with their values
+              tableClone.querySelectorAll('input, textarea').forEach(input => {
+                const span = document.createElement('span');
+                span.textContent = input.value;
+                input.parentNode.replaceChild(span, input);
+              });
+
+              const ws_dash = XLSX.utils.table_to_sheet(tableClone, {raw: true});
+              XLSX.utils.book_append_sheet(wb, ws_dash, "Dashboard");
+            }
+
+            // Download
+            XLSX.writeFile(wb, `export_${this.year}_${new Date().toISOString().split('T')[0]}.xlsx`);
+
+            this.statusMsg = "✅ Downloaded";
+            setTimeout(() => this.statusMsg = "", 2000);
+
+          } catch (error) {
+            console.error('Download error:', error);
+            this.statusMsg = "❌ Download failed";
+            alert('Download failed: ' + error.message);
+          }
+        },
+
+        async confirmCommit() {
+          if (!this.stagingData) return;
+          this.statusMsg = "Saving...";
+          let p = new URLSearchParams({
+            staging_id: this.stagingData.staging_id,
+            filename: this.stagingData.filename
+          });
+          try {
+            let res = await fetch(`${this.apiUrl}/commit/${this.year}?${p}`, {method: "POST"});
+            let d = await res.json();
+            if (d.status === "success") {
+              alert("✅ Saved Successfully!");
+              this.stagingData = null;
+              this.fetchVersions();
+              this.fetchData();
+            } else alert("❌ Fail: " + d.error);
+          } catch (err) {alert("❌ Commit Error");}
         }
-    </script>
+      }
+    }
+  </script>
 </body>
+
 </html>

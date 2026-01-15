@@ -18,12 +18,34 @@ API_BASE_URL = "http://localhost:8000"
 async def login_page(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
 
+# Logic to check cookie
 @app.get("/admin", response_class=HTMLResponse)
 async def admin_dashboard(request: Request):
+    # Simple Cookie Check
+    auth_token = request.cookies.get("session_token")
+    if auth_token != "admin_secret_123":
+        return RedirectResponse(url="/login", status_code=302)
+
     return templates.TemplateResponse("admin.html", {
         "request": request, 
         "api_url": API_BASE_URL
     })
+
+# Logout Route
+@app.get("/logout")
+async def logout():
+    response = RedirectResponse(url="/login", status_code=303)
+    response.delete_cookie(
+        key="session_token",
+        path="/",
+        httponly=True,
+        secure=False,
+        samesite="strict"
+    )
+    # Optional: prevent caching
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    return response
 
 @app.get("/")
 async def root():
