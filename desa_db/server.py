@@ -653,6 +653,80 @@ async def endpoint_post_calculate_dashboard(year: str, request: Request):
     finally:
         con.close()
 
+# DELETE: Soft Delete (Expire) specific IDs
+@app.post("/delete/{year}")
+async def endpoint_post_delete_ids(
+    year: str,
+    ids: str = Query(..., description="Comma or newline separated list of IDs"),
+    summary: str = Query("Manual Delete", description="Reason for deletion")
+    ):
+    """
+    Soft-deletes records by setting valid_to = NOW().
+    They will no longer appear in 'Live' views but remain in history.
+    Includes whitespace cleaning to ensure IDs match.
+    """
+    con, _ = helpers_get_db_connection(year)
+    try:
+        # Parse IDs
+        raw_ids = re.split(r'[,\n\r]+', ids)
+        # Ensure we are searching for clean, stripped strings
+        id_list = [x.strip() for x in raw_ids if x.strip()]
+        
+        if not id_list:
+            return JSONResponse(status_code=400, content={"error": "No valid IDs provided"})
+
+        # Execute Soft Delete
+        con.execute("BEGIN TRANSACTION")
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
+        # Create SQL list: 'ID1', 'ID2', ...
+        id_sql_list = ", ".join([f"'{x}'" for x in id_list])
+        
+        # ROBUST QUERY:
+        # 1. TRIM(CAST(...)): Handles whitespace and ensures we compare strings
+        # 2. RETURNING: Captures the IDs that were actually touched
+        query = f"""
+            UPDATE master_data 
+            SET valid_to = '{now}'
+            WHERE valid_to IS NULL 
+            AND TRIM(CAST("{ID_COL}" AS VARCHAR)) IN ({id_sql_list})
+            RETURNING "{ID_COL}"
+        """
+        
+        # Debugging: 
+        # print(f"Executing Delete: {query}")
+
+        # Execute and fetch the IDs that were actually updated
+        deleted_rows = con.execute(query).fetchall()
+        changes = len(deleted_rows)
+ 
+        if changes > 0:
+            # Log the Commit (using uuid for consistency)
+            commit_id = str(uuid.uuid4())
+            con.execute(f"INSERT INTO commits VALUES ('{commit_id}', '{now}', 'Manual Delete', '{summary} ({changes} rows)')")
+            con.execute("COMMIT")
+
+            return {
+                "status": "success", 
+                "deleted_count": changes, 
+                "deleted_ids": [r[0] for r in deleted_rows]
+            }
+        else:
+            con.execute("ROLLBACK")
+            # IMPORTANT: This returns 200 OK, but with a warning status.
+            # The frontend must read this 'status' field.
+            return {
+                "status": "warning", 
+                "message": "No active records found. Check if ID has hidden spaces or is already deleted."
+            }
+
+    except Exception as e:
+        con.execute("ROLLBACK")
+        traceback.print_exc()
+        return JSONResponse(status_code=500, content={"error": str(e)})
+    finally:
+        con.close()
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
