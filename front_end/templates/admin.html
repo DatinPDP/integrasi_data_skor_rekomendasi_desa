@@ -475,6 +475,13 @@
             </template>
           </select>
         </div>
+
+        <div class="mb-3">
+          <input type="text" x-model="nameSearch"
+            class="w-full border p-2 rounded text-xs focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
+            placeholder="Search Desa Name...">
+        </div>
+
       </div>
 
       <div class="sidebar-section mb-5 border-b border-gray-100 pb-4 dark:border-slate-700">
@@ -483,13 +490,7 @@
         <div class="mb-3">
           <textarea x-model="idList"
             class="w-full border p-2 rounded text-xs h-20 font-mono focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
-            placeholder="Paste IDs here (comma or newline separated)..."></textarea>
-        </div>
-
-        <div class="mb-3">
-          <input type="text" x-model="nameSearch"
-            class="w-full border p-2 rounded text-xs focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
-            placeholder="Search Desa Name or Code...">
+            placeholder="Paste IDs here (comma or newline separated) to search by ID Desa..."></textarea>
         </div>
 
         <button @click="fetchData"
@@ -630,7 +631,7 @@
           if (this.selProv) params.append("Provinsi", this.selProv);
           if (this.selKab) params.append("Kabupaten/ Kota", this.selKab);
           if (this.selKec) params.append("Kecamatan", this.selKec);
-          if (this.nameSearch) params.append("Kode Wilayah Administrasi Desa", this.nameSearch);
+          if (this.nameSearch) params.append("Desa", this.nameSearch);
           if (this.idList.trim()) params.append("ids", this.idList.replace(/\n/g, ","));
 
           try {

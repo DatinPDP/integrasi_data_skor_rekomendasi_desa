@@ -15,9 +15,10 @@ from openpyxl.styles import Font, PatternFill, Alignment
 
 import duckdb
 import polars as pl
-from fastapi import FastAPI, UploadFile, File, BackgroundTasks, Query, Request, HTTPException
+from fastapi import FastAPI, UploadFile, File, Query, Request, BackgroundTasks, HTTPException
 from fastapi.responses import JSONResponse, FileResponse, HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 
 # /root
 #   /.config/rekomendasi.json
@@ -35,15 +36,36 @@ from fastapi.middleware.cors import CORSMiddleware
 # ==========================================
 # Configuration & Constants
 # ==========================================
-# Import the optimized middleware
+# Import helpers and logic from middleware
 try:
-    from middleware import apply_rekomendasis
+    from middleware import (
+        apply_rekomendasis, 
+        make_json_response,
+        helpers_get_db_connection,
+        helpers_init_db,
+        helpers_refresh_filter_cache,
+        helpers_build_dynamic_query,
+        helpers_get_cache_path,
+        ID_COL,
+        BASE_DIR as MW_BASE_DIR, # Import BASE_DIR to ensure alignment
+        CONFIG_DIR,
+        STAGING_FOLDER as MW_STAGING_FOLDER # You might need to add STAGING_FOLDER to middleware or keep it here
+    )
 except ImportError:
-    # Fallback if running from a different context
-    from desa_db.middleware import apply_rekomendasis
+    # Fallback for different context import
+    from desa_db.middleware import apply_rekomendasis, make_json_response, helpers_get_db_connection, helpers_init_db, helpers_refresh_filter_cache, helpers_build_dynamic_query, helpers_get_cache_path, ID_COL, BASE_DIR as MW_BASE_DIR, CONFIG_DIR
 
 app = FastAPI()
 
+# ==========================================
+# MIDDLEWARE SETUP
+# ==========================================
+
+# GZIP COMPRESSION (Solves the 100MB issue)
+# minimum_size=1000 means responses smaller than 1kb won't be compressed.
+app.add_middleware(GZipMiddleware, minimum_size=1000)
+
+# CORS
 # CHECK: REMOVE ON PROD;Allow Frontend (8001) to talk to Backend (8000)
 app.add_middleware(
     CORSMiddleware,
@@ -58,185 +80,15 @@ app.add_middleware(
 
 # Get the directory where server.py is located (e.g., C:/.../desa_db)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
-# DB Folder: inside desa_db/dbs
-DB_FOLDER = os.path.join(BASE_DIR, "dbs")
-
 # Temp folder for uploads
 STAGING_FOLDER = os.path.join(BASE_DIR, "staging")
 
 # Header File: inside .config/headers.txt (sibling of desa_db)
-# Go up one level (..) to root, then into .config
-CONFIG_DIR = os.path.abspath(os.path.join(BASE_DIR, "../.config"))
 HEADER_FILE = os.path.join(CONFIG_DIR, "headers.txt")
 
-# Data Structure Constants
-# ID_COL acts as the Primary Key for deduplication and version control.
-ID_COL = "Kode Wilayah Administrasi Desa" 
-
 # Ensure directories exist
-os.makedirs(DB_FOLDER, exist_ok=True)
 os.makedirs(STAGING_FOLDER, exist_ok=True)
 os.makedirs(CONFIG_DIR, exist_ok=True)
-
-# ==========================================
-# HELPERS
-# ==========================================
-def helpers_get_db_connection(year: str):
-    """
-    Establishes a connection to a specific year's DuckDB database.
-    DuckDB runs in-process, saving data to a local file.
-    """
-    get_db_connection_clean_year = os.path.basename(year) # Security: Prevent ".." path traversal
-    db_path = os.path.join(DB_FOLDER, f"data_{get_db_connection_clean_year}.duckdb")
-    con = duckdb.connect(db_path)
-    return con, db_path
-
-def helpers_get_cache_path(year: str):
-    """Returns the absolute path for the cache file for a specific year."""
-    get_cache_path_clean_year = os.path.basename(year)
-    return os.path.join(CONFIG_DIR, f"unique_cache_{get_cache_path_clean_year}.json")
-
-def helpers_init_db(con: duckdb.DuckDBPyConnection, headers: list[str]):
-    """
-    SCD Type 2 Schema:
-    
-    Architecture:
-    - valid_from: Timestamp when this row became active.
-    - valid_to: Timestamp when this row was replaced/deleted (NULL = Currently Active).
-    - commit_id: Groups changes by upload transaction.
-    """
-    # Construct column definitions for SQL (e.g., "Col1" VARCHAR, "Col2" VARCHAR...)
-    # Note: Wrap headers in double quotes to handle spaces or special chars in column names.
-    cols_def = ", ".join([f'"{h}" VARCHAR' for h in headers])
-    
-    # Create the MAIN table (Latest Snapshot)
-    # Includes metadata: 'last_updated' and 'source_file'
-    con.execute(f"""
-        CREATE TABLE IF NOT EXISTS master_data (
-            valid_from TIMESTAMP,
-            valid_to TIMESTAMP,
-            commit_id VARCHAR,
-            source_file VARCHAR,
-            {cols_def}
-        )
-    """)
-
-    # Index for speed
-    con.execute(f"CREATE INDEX IF NOT EXISTS idx_id ON master_data (\"{ID_COL}\")")
-    
-    # Create the HISTORY table (Audit Log)
-    # Identical structure but includes 'archived_at' to track when the record was replaced.
-    con.execute("""
-        CREATE TABLE IF NOT EXISTS commits (
-            commit_id VARCHAR PRIMARY KEY,
-            timestamp TIMESTAMP,
-            filename VARCHAR,
-            summary VARCHAR
-        )
-    """)
-
-def helpers_refresh_filter_cache(year: str):
-    """
-    Builds a hierarchical JSON tree:
-    {
-        "Provinsi A": {
-            "Kabupaten A1": ["Kecamatan A1-1", "Kecamatan A1-2"],
-            "Kabupaten A2": [...]
-        },
-        ...
-    }
-    """
-    con, _ = helpers_get_db_connection(year)
-    hierarchy = {}
-
-    # Columns to cache for dropdowns
-    # You can add more here if needed
-    target_columns = ["Provinsi", "Kabupaten/ Kota", "Kecamatan"]
-    
-    try:
-        # Check if table exists
-        tables = con.execute("SHOW TABLES").fetchall()
-        if not tables or ('master_data',) not in tables:
-            return
-
-        # Fetch all unique combinations in one go (Very Fast)
-        # Assume headers are standard. Adjust exact column names if needed.
-        query = """
-            SELECT DISTINCT "Provinsi", "Kabupaten/ Kota", "Kecamatan" 
-            FROM master_data
-            WHERE valid_to IS NULL AND "Provinsi" IS NOT NULL
-            ORDER BY "Provinsi", "Kabupaten/ Kota", "Kecamatan"
-        """
-        rows = con.execute(query).fetchall()
-        
-        # Build the Tree
-        for prov, kab, kec in rows:
-            if prov not in hierarchy:
-                hierarchy[prov] = {}
-            if kab not in hierarchy[prov]:
-                hierarchy[prov][kab] = []
-            if kec not in hierarchy[prov][kab]:
-                hierarchy[prov][kab].append(kec)
-        
-        # Write to disk
-        with open(helpers_get_cache_path(year), "w", encoding="utf-8") as f:
-            json.dump(hierarchy, f, ensure_ascii=False)
-            
-        print(f"✅ Hierarchy Cache refreshed: {cache_path}")
-        
-    except Exception as e:
-        print(f"❌ Error refreshing hierarchy: {e}")
-    finally:
-        con.close()
-
-def helpers_build_dynamic_query(con, base_query, request_params):
-    """
-    Dynamically adds WHERE or AND clauses based on URL parameters.
-    Ignores system params like 'limit', 'translate', 'year'.
-    """
-    # Get valid column names from the 'master_data' table to prevent SQL injection
-    valid_cols = [r[0] for r in con.execute("DESCRIBE master_data").fetchall()]
-    
-    filters = []
-    values = []
-    
-    # Iterate over all query parameters
-    # A. SPECIAL FILTER: ID List (Comma Separated)
-    if "ids" in request_params and request_params["ids"]:
-        raw_ids = request_params["ids"]
-
-        # Split by comma, newline, or carriage return
-        filtered_ids = re.split(r'[,\n\r]+', raw_ids)
-
-        # Strip each token and remove empty strings in one pass
-        id_list = [x.strip() for x in filtered_ids if x.strip()]
-
-        if id_list:
-            # Create placeholders (?, ?, ?)
-            placeholders = ", ".join(["?"] * len(id_list))
-            filters.append(f'"{ID_COL}" IN ({placeholders})')
-            values.extend(id_list)
-
-    # B. STANDARD FILTERS
-    ignored_keys = ["ids", "version", "limit", "translate", "staging_id", "filename"]
-    for key, val in request_params.items():
-        # Map URL friendly names if necessary, or use direct keys
-        # Assume frontend sends specific column names like "Provinsi"
-        if key in valid_cols and key not in ignored_keys and val:
-            filters.append(f'"{key}" ILIKE ?')
-            values.append(f"%{val}%")
-            
-    # Smart Append
-    if filters:
-        filter_str = " AND ".join(filters)
-        # Check if base_query already has a WHERE clause (case-insensitive)
-        if "WHERE" in base_query.upper():
-            base_query += f" AND {filter_str}"
-        else:
-            base_query += f" WHERE {filter_str}"
-        
-    return base_query, values
 
 # ==========================================
 # API Endpoints
@@ -505,9 +357,16 @@ def endpoint_get_query_data(
     version: str = None
     ):
     """
-    'last_updated' is automatically the first column (Left Most).
-    Retrieves the latest data snapshot from the 'master_data' table.
-    Includes basic string filtering and JSON NaN sanitization.
+    OPTIMIZED QUERY ENDPOINT:
+    Retrieves a subset of the master data for a specific year with support for historical versioning.
+
+    Key Features:
+    1. **Time Travel (SCD Type 2)**: 
+       - If `version` is provided, fetches the state of the data exactly as it was at that timestamp.
+       - If `version` is NULL, fetches the current active data (`valid_to IS NULL`).
+    2. **Dynamic Filtering**: Automatically converts URL parameters into SQL `WHERE` clauses (e.g., `?Provinsi=X` becomes `WHERE "Provinsi" ILIKE '%X%'`).
+    3. **Data Translation**: Optionally converts numeric scores (e.g., 1-5) into human-readable text recommendations if `translate=True`.
+    4. **Performance**: Bypasses standard Pydantic serialization by streaming the Polars DataFrame directly to JSON (optimized for Gzip compression).
     """
     con, _ = helpers_get_db_connection(year)
     try:
@@ -542,13 +401,13 @@ def endpoint_get_query_data(
         records = res.to_dicts()
         clean = [{k: (None if isinstance(v, float) and math.isnan(v) else v) for k,v in r.items()} for r in records]
         
-        return JSONResponse(clean)
+        return make_json_response(res)
+
     except Exception as e:
         traceback.print_exc()
         return JSONResponse(status_code=500, content={"error": str(e)})
     finally:
         con.close()
-
 
 # VERSIONS LIST
 @app.get("/history/versions/{year}")
@@ -586,7 +445,7 @@ INTERVENTION_FILE = os.path.join(CONFIG_DIR, "intervensi_kegiatan.json")
 
 def helpers_get_or_create_intervensi_kegiatan(items: list[str]):
     """
-    Loads intervention templates. If missing, creates a default file 
+    Loads intervensi_kegiatan. If missing, creates a default file 
     using the ITEM names as keys.
     """
     # 1. Try Load
@@ -620,7 +479,7 @@ def helpers_get_or_create_intervensi_kegiatan(items: list[str]):
                 "2": f"Perlu peningkatan {item} (Kurang)",
                 "3": f"Perlu peningkatan {item} (Cukup)",
                 "4": f"Perlu peningkatan {item} (Baik)",
-                "5": None # No intervention needed
+                "5": None
             }
             
     # 3. Save to Disk
@@ -628,7 +487,7 @@ def helpers_get_or_create_intervensi_kegiatan(items: list[str]):
         with open(INTERVENTION_FILE, "w", encoding="utf-8") as f:
             json.dump(defaults, f, indent=4, ensure_ascii=False)
     except Exception as e:
-        print(f"⚠️ Could not save intervention templates: {e}")
+        print(f"⚠️ Could not save intervensi_kegiatan: {e}")
         
     return defaults
 

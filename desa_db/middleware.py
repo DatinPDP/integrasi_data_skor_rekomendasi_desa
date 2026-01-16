@@ -1,6 +1,11 @@
-import polars as pl
-import json
 import os
+import json
+import re
+import math
+import duckdb
+import polars as pl
+from fastapi import Response
+from fastapi.responses import JSONResponse
 
 # ==========================================
 # CONFIGURATION
@@ -19,12 +24,32 @@ import os
 #   /front_end/templates/login.html
 
 
-# Get the directory where THIS file (middleware.py) is located
+# Resolves to: /.../desa_db
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# Point to ../.config/rekomendasi.json relative to this file
-JSON_PATH = os.path.abspath(os.path.join(BASE_DIR, "../.config/rekomendasi.json"))
+# Resolves to: /.../.config
+CONFIG_DIR = os.path.abspath(os.path.join(BASE_DIR, "../.config"))
 
+# Resolves to: /.../desa_db/dbs
+DB_FOLDER = os.path.join(BASE_DIR, "dbs")
+
+# Resolves to: /.../desa_db/staging
+STAGING_FOLDER = os.path.join(BASE_DIR, "staging")
+
+# Config Files
+JSON_PATH = os.path.join(CONFIG_DIR, "rekomendasi.json")
+
+# Data Structure Constants
+# ID_COL acts as the Primary Key for deduplication and version control.
+ID_COL = "Kode Wilayah Administrasi Desa" 
+
+
+# Point to ../.config/rekomendasi.json relative to this file
+os.makedirs(DB_FOLDER, exist_ok=True)
+
+# ==========================================
+# LOGIC LOADER (Existing)
+# ==========================================
 def load_logic():
     if not os.path.exists(JSON_PATH):
         # Fallback: Return empty dict if file is missing (prevents crashes)
@@ -75,3 +100,170 @@ def apply_rekomendasis(df: pl.DataFrame) -> pl.DataFrame:
     
     return df
 
+def make_json_response(df: pl.DataFrame) -> Response:
+    """
+    OPTIMIZATION: 
+    Directly converts Polars DataFrame to JSON string, bypassing 
+    Python's slow list-of-dicts conversion.
+    In newer Polars versions, write_json() defaults to row-oriented (list of dicts).
+    """
+    # Serialize directly to JSON string using Rust engine
+    json_str = df.write_json()
+    
+    # Return direct Response (skips FastAPI's jsonable_encoder overhead)
+    return Response(content=json_str, media_type="application/json")
+
+# ==========================================
+# DATABASE HELPERS
+# ==========================================
+def helpers_get_db_connection(year: str):
+    clean_year = os.path.basename(year)
+    db_path = os.path.join(DB_FOLDER, f"data_{clean_year}.duckdb")
+    con = duckdb.connect(db_path)
+    return con, db_path
+
+def helpers_get_cache_path(year: str):
+    """Returns the absolute path for the cache file for a specific year."""
+    get_cache_path_clean_year = os.path.basename(year)
+    return os.path.join(CONFIG_DIR, f"unique_cache_{get_cache_path_clean_year}.json")
+
+def helpers_init_db(con: duckdb.DuckDBPyConnection, headers: list[str]):
+    """
+    SCD Type 2 Schema:
+    
+    Architecture:
+    - valid_from: Timestamp when this row became active.
+    - valid_to: Timestamp when this row was replaced/deleted (NULL = Currently Active).
+    - commit_id: Groups changes by upload transaction.
+    """
+    # Construct column definitions for SQL (e.g., "Col1" VARCHAR, "Col2" VARCHAR...)
+    # Note: Wrap headers in double quotes to handle spaces or special chars in column names.
+    cols_def = ", ".join([f'"{h}" VARCHAR' for h in headers])
+    
+    # Create the MAIN table (Latest Snapshot)
+    # Includes metadata: 'last_updated' and 'source_file'
+    con.execute(f"""
+        CREATE TABLE IF NOT EXISTS master_data (
+            valid_from TIMESTAMP,
+            valid_to TIMESTAMP,
+            commit_id VARCHAR,
+            source_file VARCHAR,
+            {cols_def}
+        )
+    """)
+
+    # Index for speed
+    con.execute(f"CREATE INDEX IF NOT EXISTS idx_id ON master_data (\"{ID_COL}\")")
+    
+    # Create the HISTORY table (Audit Log)
+    # Identical structure but includes 'archived_at' to track when the record was replaced.
+    con.execute("""
+        CREATE TABLE IF NOT EXISTS commits (
+            commit_id VARCHAR PRIMARY KEY,
+            timestamp TIMESTAMP,
+            filename VARCHAR,
+            summary VARCHAR
+        )
+    """)
+
+def helpers_refresh_filter_cache(year: str):
+    """
+    Builds a hierarchical JSON tree:
+    {
+        "Provinsi A": {
+            "Kabupaten A1": ["Kecamatan A1-1", "Kecamatan A1-2"],
+            "Kabupaten A2": [...]
+        },
+        ...
+    }
+    """
+    con, _ = helpers_get_db_connection(year)
+    hierarchy = {}
+
+    # Columns to cache for dropdowns
+    # You can add more here if needed
+    target_columns = ["Provinsi", "Kabupaten/ Kota", "Kecamatan"]
+    
+    try:
+        # Check if table exists
+        tables = con.execute("SHOW TABLES").fetchall()
+        if not tables or ('master_data',) not in tables:
+            return
+
+        # Fetch all unique combinations in one go (Very Fast)
+        # Assume headers are standard. Adjust exact column names if needed.
+        query = """
+            SELECT DISTINCT "Provinsi", "Kabupaten/ Kota", "Kecamatan" 
+            FROM master_data
+            WHERE valid_to IS NULL AND "Provinsi" IS NOT NULL
+            ORDER BY "Provinsi", "Kabupaten/ Kota", "Kecamatan"
+        """
+        rows = con.execute(query).fetchall()
+        
+        # Build the Tree
+        for prov, kab, kec in rows:
+            if prov not in hierarchy:
+                hierarchy[prov] = {}
+            if kab not in hierarchy[prov]:
+                hierarchy[prov][kab] = []
+            if kec not in hierarchy[prov][kab]:
+                hierarchy[prov][kab].append(kec)
+        
+        # Write to disk
+        with open(helpers_get_cache_path(year), "w", encoding="utf-8") as f:
+            json.dump(hierarchy, f, ensure_ascii=False)
+            
+        print(f"✅ Hierarchy Cache refreshed: {cache_path}")
+        
+    except Exception as e:
+        print(f"❌ Error refreshing hierarchy: {e}")
+    finally:
+        con.close()
+
+def helpers_build_dynamic_query(con, base_query, request_params):
+    """
+    Dynamically adds WHERE or AND clauses based on URL parameters.
+    Ignores system params like 'limit', 'translate', 'year'.
+    """
+    # Get valid column names from the 'master_data' table to prevent SQL injection
+    valid_cols = [r[0] for r in con.execute("DESCRIBE master_data").fetchall()]
+    
+    filters = []
+    values = []
+    
+    # Iterate over all query parameters
+    # A. SPECIAL FILTER: ID List (Comma Separated)
+    if "ids" in request_params and request_params["ids"]:
+        raw_ids = request_params["ids"]
+
+        # Split by comma, newline, or carriage return
+        filtered_ids = re.split(r'[,\n\r]+', raw_ids)
+
+        # Strip each token and remove empty strings in one pass
+        id_list = [x.strip() for x in filtered_ids if x.strip()]
+
+        if id_list:
+            # Create placeholders (?, ?, ?)
+            placeholders = ", ".join(["?"] * len(id_list))
+            filters.append(f'"{ID_COL}" IN ({placeholders})')
+            values.extend(id_list)
+
+    # B. STANDARD FILTERS
+    ignored_keys = ["ids", "version", "limit", "translate", "staging_id", "filename"]
+    for key, val in request_params.items():
+        # Map URL friendly names if necessary, or use direct keys
+        # Assume frontend sends specific column names like "Provinsi"
+        if key in valid_cols and key not in ignored_keys and val:
+            filters.append(f'"{key}" ILIKE ?')
+            values.append(f"%{val}%")
+            
+    # Smart Append
+    if filters:
+        filter_str = " AND ".join(filters)
+        # Check if base_query already has a WHERE clause (case-insensitive)
+        if "WHERE" in base_query.upper():
+            base_query += f" AND {filter_str}"
+        else:
+            base_query += f" WHERE {filter_str}"
+        
+    return base_query, values
