@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" x-data="adminApp()" :class="{ 'dark': darkMode }">
+<html lang="en" x-data="AdminDashboardApp()" :class="{ 'dark': isDarkModeEnabled }">
 
 <head>
   <meta charset="UTF-8">
@@ -113,6 +113,7 @@
       font-size: 13px;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       table-layout: fixed;
+      padding: 4px;
     }
 
     /* Sticky Headers */
@@ -146,6 +147,7 @@
     .dash-table td {
       border: 1px solid var(--border-color);
       padding: 0px;
+      padding-left: 4px !important;
       vertical-align: top;
       color: #2c3e50;
     }
@@ -174,12 +176,10 @@
       background-color: #fff;
       vertical-align: top;
       font-weight: 500;
-      padding-left: 8px;
     }
 
     .dark .merged-cell {
       background-color: #0f172a;
-      padding-left: 8px;
     }
 
     /* Column Width Utilities */
@@ -255,7 +255,6 @@
       min-width: 150px;
     }
 
-
     /* Draggable Resizer */
     .resizer {
       position: absolute;
@@ -296,281 +295,288 @@
   </style>
 </head>
 
-<body class="bg-gray-100 h-screen flex flex-col transition-colors duration-300 dark:bg-slate-900 dark:text-slate-100">
+<body
+  class="global_body_container font-mono bg-gray-100 h-screen flex flex-col transition-colors duration-300 dark:bg-slate-900 dark:text-slate-100">
 
   <div
-    class="bg-slate-800 text-white p-3 flex justify-between items-center shadow-md z-20 shrink-0 border-b border-slate-700">
+    class="header_main_container bg-slate-800 text-white p-3 flex justify-between items-center shadow-md z-20 shrink-0 border-b border-slate-700">
 
-    <div class="flex items-center gap-6">
-      <h1 class="text-lg font-bold flex items-center gap-2">
+    <div class="header_left_group flex items-center gap-6">
+      <h1 class="header_title_label text-lg font-bold flex items-center gap-2">
         <span>🛡️</span> Admin | data skor rekomendasi desa
       </h1>
 
-      <div class="bg-slate-700 p-1 rounded flex gap-1">
-        <button @click="switchView('grid')"
-          :class="viewMode === 'grid' ? 'bg-blue-600 text-white shadow' : 'text-gray-300 hover:bg-slate-600'"
-          class="px-3 py-1 rounded text-xs font-bold transition flex items-center gap-1">
+      <div class="header_view_toggles bg-slate-700 p-1 rounded flex gap-1">
+        <button @click="ui_SwitchViewMode('grid')"
+          :class="viewModeState === 'grid' ? 'bg-blue-600 text-white shadow' : 'text-gray-300 hover:bg-slate-600'"
+          class="header_toggle_grid_btn px-3 py-1 rounded text-xs font-bold transition flex items-center gap-1">
           <span>▦</span> Grid
         </button>
-        <button @click="switchView('dashboard')"
-          :class="viewMode === 'dashboard' ? 'bg-blue-600 text-white shadow' : 'text-gray-300 hover:bg-slate-600'"
-          class="px-3 py-1 rounded text-xs font-bold transition flex items-center gap-1">
+        <button @click="ui_SwitchViewMode('dashboard')"
+          :class="viewModeState === 'dashboard' ? 'bg-blue-600 text-white shadow' : 'text-gray-300 hover:bg-slate-600'"
+          class="header_toggle_dashboard_btn px-3 py-1 rounded text-xs font-bold transition flex items-center gap-1">
           <span>📊</span> Dashboard
         </button>
       </div>
 
-      <div class="bg-slate-900/50 px-3 py-1 rounded flex items-center gap-4 text-xs border border-slate-600">
-        <div class="flex flex-col leading-none">
+      <div
+        class="header_stats_bar bg-slate-900/50 px-3 py-1 rounded flex items-center gap-4 text-xs border border-slate-600">
+        <div class="stat_total_rows flex flex-col leading-none">
           <span class="text-slate-400 text-[9px] uppercase tracking-wider">Total Rows</span>
-          <span class="font-mono font-bold text-white text-sm" x-text="totalRows">0</span>
+          <span class="font-mono font-bold text-white text-sm" x-text="stats_TotalRows">0</span>
         </div>
         <div class="h-6 w-px bg-slate-600"></div>
-        <div class="flex flex-col leading-none">
+        <div class="stat_last_update flex flex-col leading-none">
           <span class="text-slate-400 text-[9px] uppercase tracking-wider">Last Update</span>
-          <span class="font-mono font-bold text-green-400 text-sm" x-text="lastUpdate">N/A</span>
+          <span class="font-mono font-bold text-green-400 text-sm" x-text="stats_LastUpdateLabel">N/A</span>
         </div>
         <div class="h-6 w-px bg-slate-600"></div>
 
-        <div class="bg-slate-700 p-0.5 rounded flex gap-1">
-          <button @click="translateOn = false; fetchData()"
-            :class="!translateOn ? 'bg-blue-600 text-white shadow' : 'text-gray-400 hover:text-white hover:bg-slate-600'"
-            class="px-2 py-1 rounded text-[10px] font-bold transition flex items-center gap-1"
+        <div class="header_translation_controls bg-slate-700 p-0.5 rounded flex gap-1">
+          <button @click="ui_ToggleTranslate(false)"
+            :class="!isTranslationActive ? 'bg-blue-600 text-white shadow' : 'text-gray-400 hover:text-white hover:bg-slate-600'"
+            class="header_btn_raw_numbers px-2 py-1 rounded text-[12px] font-bold transition flex items-center gap-1"
             title="Show Raw Numbers (1-5)">
-            <span>🔢</span> Raw
+            Raw
           </button>
-          <button @click="translateOn = true; fetchData()"
-            :class="translateOn ? 'bg-blue-600 text-white shadow' : 'text-gray-400 hover:text-white hover:bg-slate-600'"
-            class="px-2 py-1 rounded text-[10px] font-bold transition flex items-center gap-1"
+          <button @click="ui_ToggleTranslate(true)"
+            :class="isTranslationActive ? 'bg-blue-600 text-white shadow' : 'text-gray-400 hover:text-white hover:bg-slate-600'"
+            class="header_btn_translated_text px-2 py-1 rounded text-[12px] font-bold transition flex items-center gap-1"
             title="Show Text Recommendations">
-            <span>🔤</span> Text
+            Text
           </button>
         </div>
 
         <div class="h-6 w-px bg-slate-600"></div>
 
-        <div class="bg-slate-700 p-0.5 rounded flex gap-1">
-          <button @click="calculateDashboard" :class="'bg-blue-600 text-white shadow'"
-            class="px-2 py-1 rounded text-[10px] font-bold transition flex items-center gap-1" title="Recalculate Data">
-            <span>⚡</span> calculate
+        <div class="header_calc_controls bg-slate-700 p-0.5 rounded flex gap-1">
+          <button @click="action_CalculateDashboardStats" :class="'bg-blue-600 text-white shadow'"
+            class="header_btn_calculate px-2 py-1 rounded text-[12px] font-bold transition flex items-center gap-1"
+            title="Recalculate Data">
+            calculate
           </button>
         </div>
       </div>
     </div>
 
-    <div class="flex items-center gap-4">
-      <button @click="toggleDarkMode"
-        class="p-1.5 rounded hover:bg-slate-700 text-yellow-400 transition border border-transparent hover:border-slate-600"
+    <div class="header_right_group flex items-center gap-4">
+      <button @click="ui_ToggleDarkMode"
+        class="header_btn_theme_toggle p-1.5 rounded hover:bg-slate-700 text-yellow-400 transition border border-transparent hover:border-slate-600"
         title="Toggle Theme">
-        <span x-show="!darkMode">☼</span>
-        <span x-show="darkMode">☾</span>
+        <span x-show="!isDarkModeEnabled">☼</span>
+        <span x-show="isDarkModeEnabled">☾</span>
       </button>
 
       <div class="h-6 w-px bg-slate-700"></div>
 
       <a href="/logout"
-        class="flex items-center gap-2 text-xs font-bold text-red-400 hover:text-red-300 transition bg-red-950/30 border border-red-900/50 px-3 py-1.5 rounded hover:bg-red-900/50">
+        class="header_btn_logout flex items-center gap-2 text-xs font-bold text-red-400 hover:text-red-300 transition bg-red-950/30 border border-red-900/50 px-3 py-1.5 rounded hover:bg-red-900/50">
         <span>🚪</span> Logout
       </a>
     </div>
   </div>
 
-  </div>
+  <div class="main_layout_wrapper flex flex-1 overflow-hidden">
 
-  <div class="flex flex-1 overflow-hidden">
+    <div :class="isSidebarOpen ? 'w-80' : 'w-0'"
+      class="sidebar_animation_wrapper relative z-20 shrink-0 transition-all duration-300 ease-in-out bg-white dark:bg-slate-800">
 
-    <div
-      class="w-80 bg-white border-r p-4 flex flex-col overflow-y-auto shrink-0 shadow-lg z-10 custom-scrollbar dark:bg-slate-800 dark:border-slate-700 transition-colors duration-300">
+      <button @click="isSidebarOpen = !isSidebarOpen"
+        class="sidebar_toggle_btn absolute -right-3 top-20 w-6 h-6 bg-white border border-slate-200 dark:border-slate-600 dark:bg-slate-800 rounded-full shadow-md z-50 flex items-center justify-center hover:bg-slate-50 cursor-pointer text-slate-500 dark:text-slate-300 transform transition-transform duration-300 focus:outline-none"
+        :class="isSidebarOpen ? 'rotate-0' : 'rotate-180'" title="Toggle Sidebar">
+        <span class="text-[20px] leading-none font-bold">↔</span>
+      </button>
 
-      <div class="sidebar-section mb-5 border-b border-gray-100 pb-4 dark:border-slate-700">
-        <h3 class="text-xs font-bold text-gray-400 uppercase mb-3 tracking-wider">🚀 Actions</h3>
+      <div
+        class="sidebar_content_clipper h-full w-full overflow-hidden flex flex-col border-r border-slate-200 dark:border-slate-700">
 
-        <div class="space-y-3">
-          <div class="flex items-center gap-2 mb-1">
-            <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider dark:text-slate-400">Database
-              Import</span>
-            <div class="h-px bg-slate-200 flex-1 dark:bg-slate-700"></div>
-          </div>
+        <div class="sidebar_inner_content w-80 h-full overflow-y-auto custom-scrollbar flex flex-col p-4">
 
-          <div x-show="!stagingData">
-            <label
-              class="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-blue-300 rounded-lg cursor-pointer bg-blue-50/50 hover:bg-blue-100 hover:border-blue-400 transition-all dark:bg-slate-800 dark:border-slate-600 dark:hover:border-blue-500 dark:hover:bg-slate-700 group">
+          <div class="sidebar_section_upload mb-5 border-b border-gray-100 pb-4 dark:border-slate-700">
+            <h3 class="sidebar_section_title text-xs font-bold text-gray-400 uppercase mb-3 tracking-wider">🚀 Actions
+            </h3>
 
-              <div class="flex flex-col items-center justify-center pt-2 pb-3">
-                <div
-                  class="mb-1 text-blue-400 group-hover:text-blue-600 group-hover:scale-110 transition-transform dark:text-slate-400 dark:group-hover:text-blue-400">
-                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-                  </svg>
-                </div>
-
-                <p class="text-[10px] font-bold text-slate-600 group-hover:text-blue-700 dark:text-slate-300">Upload
-                  Data File</p>
-                <p class="text-[9px] text-slate-400 dark:text-slate-500">.xlsb or .xlsx</p>
+            <div class="sidebar_upload_group space-y-3">
+              <div class="sidebar_upload_label_group flex items-center gap-2 mb-1">
+                <span class="text-[12px] font-bold text-slate-500 uppercase tracking-wider dark:text-slate-400">Database
+                  Import</span>
+                <div class="h-px bg-slate-200 flex-1 dark:bg-slate-700"></div>
               </div>
 
-              <input type="file" @change="handleStage" class="hidden" accept=".xlsb, .xlsx" />
-            </label>
-
-            <div class="min-h-[16px] mt-1 text-center">
-              <p x-text="statusMsg" class="text-[10px] text-blue-600 font-bold animate-pulse" x-show="statusMsg"></p>
-            </div>
-          </div>
-
-          <div x-show="stagingData"
-            class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden dark:bg-slate-800 dark:border-slate-600"
-            style="display: none;">
-
-            <div
-              class="bg-amber-50 px-3 py-2 border-b border-amber-100 dark:bg-amber-900/20 dark:border-amber-800/50 flex items-center justify-between">
-              <span class="text-[10px] font-bold text-amber-700 dark:text-amber-500">⚠️ Review Changes</span>
-              <div class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></div>
-            </div>
-
-            <div class="p-3">
-              <p class="text-[10px] text-slate-500 mb-3 truncate font-mono bg-slate-100 p-1 rounded dark:bg-slate-900 dark:text-slate-400"
-                x-text="stagingData?.filename"></p>
-
-              <div class="grid grid-cols-3 gap-2 mb-3 text-center">
-                <div
-                  class="flex flex-col border border-green-200 bg-green-50 rounded p-1 dark:bg-green-900/20 dark:border-green-800">
-                  <span class="text-[9px] text-green-700 font-bold dark:text-green-400">NEW</span>
-                  <span class="text-xs font-mono font-bold text-slate-700 dark:text-slate-200"
-                    x-text="stagingData?.diff.added">0</span>
-                </div>
-                <div
-                  class="flex flex-col border border-blue-200 bg-blue-50 rounded p-1 dark:bg-blue-900/20 dark:border-blue-800">
-                  <span class="text-[9px] text-blue-700 font-bold dark:text-blue-400">MOD</span>
-                  <span class="text-xs font-mono font-bold text-slate-700 dark:text-slate-200"
-                    x-text="stagingData?.diff.changed">0</span>
-                </div>
-                <div
-                  class="flex flex-col border border-red-200 bg-red-50 rounded p-1 dark:bg-red-900/20 dark:border-red-800">
-                  <span class="text-[9px] text-red-700 font-bold dark:text-red-400">DEL</span>
-                  <span class="text-xs font-mono font-bold text-slate-700 dark:text-slate-200"
-                    x-text="stagingData?.diff.removed">0</span>
+              <div x-show="!stagingData_Object" class="sidebar_upload_dropzone_container">
+                <label
+                  class="sidebar_upload_dropzone flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-blue-300 rounded-lg cursor-pointer bg-blue-50/50 hover:bg-blue-100 hover:border-blue-400 transition-all dark:bg-slate-800 dark:border-slate-600 dark:hover:border-blue-500 dark:hover:bg-slate-700 group">
+                  <div class="flex flex-col items-center justify-center pt-2 pb-3">
+                    <div
+                      class="mb-1 text-blue-400 group-hover:text-blue-600 group-hover:scale-110 transition-transform dark:text-slate-400 dark:group-hover:text-blue-400">
+                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12">
+                        </path>
+                      </svg>
+                    </div>
+                    <p class="text-[12px] font-bold text-slate-600 group-hover:text-blue-700 dark:text-slate-300">Upload
+                      Data File</p>
+                    <p class="text-[9px] text-slate-400 dark:text-slate-500">.xlsb or .xlsx</p>
+                  </div>
+                  <input type="file" @change="action_UploadFile_ToStaging" class="sidebar_input_file hidden"
+                    accept=".xlsb, .xlsx" />
+                </label>
+                <div class="sidebar_status_msg_container min-h-[16px] mt-1 text-center">
+                  <p x-text="ui_StatusMessage"
+                    class="sidebar_status_msg text-[12px] text-blue-600 font-bold animate-pulse"
+                    x-show="ui_StatusMessage"></p>
                 </div>
               </div>
 
-              <div class="flex gap-2">
-                <button @click="confirmCommit"
-                  class="flex-1 bg-slate-800 text-white py-1.5 rounded text-[10px] font-bold hover:bg-slate-900 shadow-sm transition dark:bg-blue-600 dark:hover:bg-blue-500">
-                  Commit to DB
-                </button>
-                <button @click="stagingData = null; statusMsg=''"
-                  class="px-3 border border-slate-300 text-slate-600 rounded text-[10px] font-bold hover:bg-slate-50 transition dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700">
-                  Cancel
-                </button>
+              <div x-show="stagingData_Object"
+                class="sidebar_staging_review_panel bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden dark:bg-slate-800 dark:border-slate-600"
+                style="display: none;">
+                <div
+                  class="sidebar_staging_header bg-amber-50 px-3 py-2 border-b border-amber-100 dark:bg-amber-900/20 dark:border-amber-800/50 flex items-center justify-between">
+                  <span class="text-[12px] font-bold text-amber-700 dark:text-amber-500">⚠️ Review Changes</span>
+                  <div class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></div>
+                </div>
+                <div class="p-3">
+                  <p class="sidebar_staging_filename text-[12px] text-slate-500 mb-3 truncate font-mono bg-slate-100 p-1 rounded dark:bg-slate-900 dark:text-slate-400"
+                    x-text="stagingData_Object?.filename"></p>
+                  <div class="sidebar_staging_stats_grid grid grid-cols-3 gap-2 mb-3 text-center">
+                    <div
+                      class="stat_box_new flex flex-col border border-green-200 bg-green-50 rounded p-1 dark:bg-green-900/20 dark:border-green-800">
+                      <span class="text-[9px] text-green-700 font-bold dark:text-green-400">NEW</span>
+                      <span class="text-xs font-mono font-bold text-slate-700 dark:text-slate-200"
+                        x-text="stagingData_Object?.diff.added">0</span>
+                    </div>
+                    <div
+                      class="stat_box_mod flex flex-col border border-blue-200 bg-blue-50 rounded p-1 dark:bg-blue-900/20 dark:border-blue-800">
+                      <span class="text-[9px] text-blue-700 font-bold dark:text-blue-400">MOD</span>
+                      <span class="text-xs font-mono font-bold text-slate-700 dark:text-slate-200"
+                        x-text="stagingData_Object?.diff.changed">0</span>
+                    </div>
+                    <div
+                      class="stat_box_del flex flex-col border border-red-200 bg-red-50 rounded p-1 dark:bg-red-900/20 dark:border-red-800">
+                      <span class="text-[9px] text-red-700 font-bold dark:text-red-400">DEL</span>
+                      <span class="text-xs font-mono font-bold text-slate-700 dark:text-slate-200"
+                        x-text="stagingData_Object?.diff.removed">0</span>
+                    </div>
+                  </div>
+                  <div class="sidebar_staging_actions flex gap-2">
+                    <button @click="action_CommitStagedData_ToDB"
+                      class="sidebar_btn_commit flex-1 bg-slate-800 text-white py-1.5 rounded text-[12px] font-bold hover:bg-slate-900 shadow-sm transition dark:bg-blue-600 dark:hover:bg-blue-500">Commit
+                      to DB</button>
+                    <button @click="stagingData_Object = null; ui_StatusMessage=''"
+                      class="sidebar_btn_cancel px-3 border border-slate-300 text-slate-600 rounded text-[12px] font-bold hover:bg-slate-50 transition dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700">Cancel</button>
+                  </div>
+                </div>
               </div>
+
+              <button @click="action_ExportToExcel"
+                class="sidebar_btn_download_excel w-full border border-green-600 text-green-700 bg-green-50 py-2 rounded text-xs font-bold hover:bg-green-100 transition flex justify-center items-center gap-2 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800 dark:hover:bg-green-900/40">
+                <span>📥</span> Download Excel
+              </button>
             </div>
           </div>
 
-          <button @click="downloadExcel"
-            class="w-full border border-green-600 text-green-700 bg-green-50 py-2 rounded text-xs font-bold hover:bg-green-100 transition flex justify-center items-center gap-2 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800 dark:hover:bg-green-900/40">
-            <span>📥</span> Download Excel
-          </button>
+          <div class="sidebar_section_history mb-5 border-b border-gray-100 pb-4 dark:border-slate-700">
+            <h3 class="sidebar_section_title text-xs font-bold text-gray-400 uppercase mb-2 tracking-wider">⏳ History
+            </h3>
+            <select x-model="filter_SelectedVersion" @change="fetch_MainGridData_FromAPI"
+              class="sidebar_select_version w-full border border-gray-300 p-2 rounded text-xs bg-gray-50 focus:ring-1 focus:ring-blue-500 outline-none text-gray-700 dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300">
+              <option value="">🟢 Live (HEAD)</option>
+              <template x-for="v in meta_VersionsList" :key="v.ts">
+                <option :value="v.ts" x-text="v.label"></option>
+              </template>
+            </select>
+          </div>
+
+          <div class="sidebar_section_delete mb-5 border-b border-gray-100 pb-4 dark:border-slate-700">
+            <h3 class="sidebar_section_title text-xs font-bold text-red-400 uppercase mb-2 tracking-wider">🗑️ Soft
+              Delete</h3>
+            <div class="mb-2">
+              <textarea x-model="filter_DeleteListInput"
+                class="sidebar_input_delete_ids w-full border border-red-200 p-2 rounded text-xs h-16 font-mono focus:border-red-500 focus:ring-1 focus:ring-red-200 outline-none text-gray-700 dark:bg-slate-900 dark:border-red-900/50 dark:text-red-100 dark:placeholder-red-100/50"
+                placeholder="Paste IDs here to drop from Live view..."></textarea>
+            </div>
+            <button @click="action_SoftDeleteIDs_FromDB"
+              class="sidebar_btn_confirm_delete w-full bg-red-50 text-red-600 border border-red-200 py-1.5 rounded text-xs font-bold hover:bg-red-100 hover:text-red-700 transition dark:bg-red-900/20 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/40">
+              Confirm Delete
+            </button>
+          </div>
+
+          <div class="sidebar_section_location mb-5 border-b border-gray-100 pb-4 space-y-3 dark:border-slate-700">
+            <h3 class="sidebar_section_title text-xs font-bold text-gray-400 uppercase tracking-wider">📍 Location</h3>
+
+            <div class="sidebar_location_prov_group">
+              <label class="block text-[12px] font-bold text-gray-500 mb-1 dark:text-gray-400">PROVINSI</label>
+              <select x-model="filter_SelProv"
+                @change="filter_SelKab=''; filter_SelKec=''; fetch_MainGridData_FromAPI()"
+                class="sidebar_select_prov w-full border p-1.5 rounded text-xs bg-white focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300">
+                <option value="">- All -</option>
+                <template x-for="p in Object.keys(meta_HierarchyTree).sort()" :key="p">
+                  <option :value="p" x-text="p"></option>
+                </template>
+              </select>
+            </div>
+
+            <div class="sidebar_location_kab_group">
+              <label class="block text-[12px] font-bold text-gray-500 mb-1 dark:text-gray-400">KABUPATEN/KOTA</label>
+              <select x-model="filter_SelKab" @change="filter_SelKec=''; fetch_MainGridData_FromAPI()"
+                class="sidebar_select_kab w-full border p-1.5 rounded text-xs bg-white focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
+                :disabled="!filter_SelProv" :class="{'bg-gray-100 dark:bg-slate-800': !filter_SelProv}">
+                <option value="">- All -</option>
+                <template x-for="k in util_GetKabOptions()" :key="k">
+                  <option :value="k" x-text="k"></option>
+                </template>
+              </select>
+            </div>
+
+            <div class="sidebar_location_kec_group">
+              <label class="block text-[12px] font-bold text-gray-500 mb-1 dark:text-gray-400">KECAMATAN</label>
+              <select x-model="filter_SelKec" @change="fetch_MainGridData_FromAPI"
+                class="sidebar_select_kec w-full border p-1.5 rounded text-xs bg-white focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
+                :disabled="!filter_SelKab" :class="{'bg-gray-100 dark:bg-slate-800': !filter_SelKab}">
+                <option value="">- All -</option>
+                <template x-for="c in util_GetKecOptions()" :key="c">
+                  <option :value="c" x-text="c"></option>
+                </template>
+              </select>
+            </div>
+
+            <div class="sidebar_location_search_group mb-3">
+              <input type="text" x-model="filter_NameSearch"
+                class="sidebar_input_search_name w-full border p-2 rounded text-xs focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
+                placeholder="Search Desa Name...">
+            </div>
+          </div>
+
+          <div class="sidebar_section_id_search mb-5 border-b border-gray-100 pb-4 dark:border-slate-700">
+            <h3 class="sidebar_section_title text-xs font-bold text-gray-400 uppercase mb-2 tracking-wider">🔍 Specific
+              Search</h3>
+            <div class="mb-3">
+              <textarea x-model="filter_IdListInput"
+                class="sidebar_input_search_ids w-full border p-2 rounded text-xs h-20 font-mono focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
+                placeholder="Paste IDs here (comma or newline separated) to search by ID Desa..."></textarea>
+            </div>
+            <button @click="fetch_MainGridData_FromAPI"
+              class="sidebar_btn_apply_filter w-full bg-slate-700 text-white py-2 rounded text-xs font-bold hover:bg-slate-800 transition shadow-sm dark:bg-slate-600 dark:hover:bg-slate-500">
+              Apply Filters
+            </button>
+          </div>
+
         </div>
       </div>
-
-      <div class="sidebar-section mb-5 border-b border-gray-100 pb-4 dark:border-slate-700">
-        <h3 class="text-xs font-bold text-gray-400 uppercase mb-2 tracking-wider">⏳ History</h3>
-        <select x-model="selectedVersion" @change="fetchData"
-          class="w-full border border-gray-300 p-2 rounded text-xs bg-gray-50 focus:ring-1 focus:ring-blue-500 outline-none text-gray-700 dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300">
-          <option value="">🟢 Live (HEAD)</option>
-          <template x-for="v in versions" :key="v.ts">
-            <option :value="v.ts" x-text="v.label"></option>
-          </template>
-        </select>
-      </div>
-
-      <div class="sidebar-section mb-5 border-b border-gray-100 pb-4 dark:border-slate-700">
-        <h3 class="text-xs font-bold text-red-400 uppercase mb-2 tracking-wider">🗑️ Soft Delete</h3>
-
-        <div class="mb-2">
-          <textarea x-model="deleteList"
-            class="w-full border border-red-200 p-2 rounded text-xs h-16 font-mono focus:border-red-500 focus:ring-1 focus:ring-red-200 outline-none text-gray-700 dark:bg-slate-900 dark:border-red-900/50 dark:text-red-100 dark:placeholder-red-100/50"
-            placeholder="Paste IDs here to drop from Live view..."></textarea>
-        </div>
-
-        <button @click="handleDelete"
-          class="w-full bg-red-50 text-red-600 border border-red-200 py-1.5 rounded text-xs font-bold hover:bg-red-100 hover:text-red-700 transition dark:bg-red-900/20 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/40">
-          Confirm Delete
-        </button>
-      </div>
-
-      <div class="sidebar-section mb-5 border-b border-gray-100 pb-4 space-y-3 dark:border-slate-700">
-        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider">📍 Location</h3>
-
-        <div>
-          <label class="block text-[10px] font-bold text-gray-500 mb-1 dark:text-gray-400">PROVINSI</label>
-          <select x-model="selProv" @change="selKab=''; selKec=''; fetchData()"
-            class="w-full border p-1.5 rounded text-xs bg-white focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300">
-            <option value="">- All -</option>
-            <template x-for="p in Object.keys(hierarchy).sort()" :key="p">
-              <option :value="p" x-text="p"></option>
-            </template>
-          </select>
-        </div>
-
-        <div>
-          <label class="block text-[10px] font-bold text-gray-500 mb-1 dark:text-gray-400">KABUPATEN/KOTA</label>
-          <select x-model="selKab" @change="selKec=''; fetchData()"
-            class="w-full border p-1.5 rounded text-xs bg-white focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
-            :disabled="!selProv" :class="{'bg-gray-100 dark:bg-slate-800': !selProv}">
-            <option value="">- All -</option>
-            <template x-for="k in getKabOptions()" :key="k">
-              <option :value="k" x-text="k"></option>
-            </template>
-          </select>
-        </div>
-
-        <div>
-          <label class="block text-[10px] font-bold text-gray-500 mb-1 dark:text-gray-400">KECAMATAN</label>
-          <select x-model="selKec" @change="fetchData"
-            class="w-full border p-1.5 rounded text-xs bg-white focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
-            :disabled="!selKab" :class="{'bg-gray-100 dark:bg-slate-800': !selKab}">
-            <option value="">- All -</option>
-            <template x-for="c in getKecOptions()" :key="c">
-              <option :value="c" x-text="c"></option>
-            </template>
-          </select>
-        </div>
-
-        <div class="mb-3">
-          <input type="text" x-model="nameSearch"
-            class="w-full border p-2 rounded text-xs focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
-            placeholder="Search Desa Name...">
-        </div>
-
-      </div>
-
-      <div class="sidebar-section mb-5 border-b border-gray-100 pb-4 dark:border-slate-700">
-        <h3 class="text-xs font-bold text-gray-400 uppercase mb-2 tracking-wider">🔍 Specific Search</h3>
-
-        <div class="mb-3">
-          <textarea x-model="idList"
-            class="w-full border p-2 rounded text-xs h-20 font-mono focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
-            placeholder="Paste IDs here (comma or newline separated) to search by ID Desa..."></textarea>
-        </div>
-
-        <button @click="fetchData"
-          class="w-full bg-slate-700 text-white py-2 rounded text-xs font-bold hover:bg-slate-800 transition shadow-sm dark:bg-slate-600 dark:hover:bg-slate-500">
-          Apply Filters
-        </button>
-      </div>
-
     </div>
+    <div class="main_content_area flex-1 relative bg-gray-50 overflow-hidden flex flex-col dark:bg-slate-900">
 
-    <div class="flex-1 relative bg-gray-50 overflow-hidden flex flex-col dark:bg-slate-900">
-
-      <div x-show="viewMode === 'grid'" class="flex-1 p-0 relative">
-        <div id="myGrid" class="ag-theme-alpine w-full h-full border-none"></div>
+      <div x-show="viewModeState === 'grid'" class="view_container_grid flex-1 p-0 relative">
+        <div id="ag_grid_element" class="ag-theme-alpine w-full h-full border-none"></div>
       </div>
 
-      <div x-show="viewMode === 'dashboard'" class="flex-1 p-4 overflow-hidden relative" style="display: none;">
-        <div class="dashboard-container shadow-md rounded">
-          <table id="dashTable" class="dash-table">
+      <div x-show="viewModeState === 'dashboard'" class="view_container_dashboard flex-1 p-4 overflow-hidden relative"
+        style="display: none;">
+        <div class="dashboard_table_wrapper dashboard-container shadow-md rounded">
+          <table id="dashboard_table_element" class="dash-table">
             <thead>
             </thead>
             <tbody>
@@ -583,65 +589,78 @@
   </div>
 
   <script>
-    function adminApp() {
+    function AdminDashboardApp() {
       return {
-        apiUrl: "{{ api_url }}",
-        year: "2025",
-        viewMode: 'grid',
-        darkMode: localStorage.getItem('theme') === 'dark',
+        // --- CONFIGURATION ---
+        apiBaseUrl: "{{ api_url }}",
+        targetYear: "2025",
 
-        // Data State
-        versions: [],
-        hierarchy: {},
-        stagingData: null,
-        tableStructureLoaded: false,
-        gridApi: null,
-        deleteList: "",
+        // --- GLOBAL STATE ---
+        isSidebarOpen: true,
+        viewModeState: 'grid', // 'grid' | 'dashboard'
+        isDarkModeEnabled: localStorage.getItem('theme') === 'dark',
+        isTableStructureLoaded: false,
 
-        // Filters
-        translateOn: false,
-        selectedVersion: "",
-        selProv: "",
-        selKab: "",
-        selKec: "",
-        idList: "",
-        nameSearch: "",
+        // --- DATA STORAGE ---
+        meta_VersionsList: [], // From /history/versions
+        meta_HierarchyTree: {}, // From /history/versions (used for dropdowns)
+        stagingData_Object: null, // Stores uploaded file analysis
+        agGridApiInstance: null, // AG Grid Object
 
-        // UI State
-        totalRows: "0",
-        lastUpdate: "N/A",
-        statusMsg: "",
+        // --- FILTERS & INPUTS ---
+        isTranslationActive: false, // Toggle 1-5 vs Text
+        filter_SelectedVersion: "", // Timestamp string
+        filter_SelProv: "",
+        filter_SelKab: "",
+        filter_SelKec: "",
+        filter_NameSearch: "",
+        filter_IdListInput: "", // For search
+        filter_DeleteListInput: "", // For soft delete
 
+        // --- UI DISPLAY STATS ---
+        stats_TotalRows: "0",
+        stats_LastUpdateLabel: "N/A",
+        ui_StatusMessage: "",
+
+
+        // ============================================
+        // INITIALIZATION
+        // ============================================
         init() {
-          this.initGrid();
-          this.fetchMetaData();
-          this.fetchData();
+          this.initializeAgGridConfig();
+          this.fetchVersionHistoryAndHierarchy();
+          this.fetch_MainGridData_FromAPI();
         },
 
-        toggleDarkMode() {
-          this.darkMode = !this.darkMode;
-          localStorage.setItem('theme', this.darkMode ? 'dark' : 'light');
+        ui_ToggleDarkMode() {
+          this.isDarkModeEnabled = !this.isDarkModeEnabled;
+          localStorage.setItem('theme', this.isDarkModeEnabled ? 'dark' : 'light');
         },
 
-        // ----------------------------------------
-        // 1. VIEW LOGIC
-        // ----------------------------------------
-        switchView(mode) {
-          this.viewMode = mode;
+        // ============================================
+        // VIEW SWITCHING
+        // ============================================
+        ui_SwitchViewMode(mode) {
+          this.viewModeState = mode;
           if (mode === 'dashboard') {
-            this.loadDashboardStructure();
+            this.fetchDashboardConfigAndRenderTable();
           } else {
             // Refresh grid layout if switching back
             setTimeout(() => {
-              if (this.gridApi) this.gridApi.sizeColumnsToFit();
+              if (this.agGridApiInstance) this.agGridApiInstance.sizeColumnsToFit();
             }, 50);
           }
         },
 
-        // ----------------------------------------
-        // 2. AG-GRID LOGIC
-        // ----------------------------------------
-        initGrid() {
+        ui_ToggleTranslate(val) {
+          this.isTranslationActive = val;
+          this.fetch_MainGridData_FromAPI();
+        },
+
+        // ============================================
+        // AG-GRID LOGIC
+        // ============================================
+        initializeAgGridConfig() {
           const gridOptions = {
             rowData: [],
             columnDefs: [],
@@ -649,7 +668,7 @@
               sortable: true,
               filter: true,
               resizable: true,
-              minWidth: 100,
+              minWidth: 120,
               flex: 1,
               wrapText: true,
               autoHeight: false
@@ -660,46 +679,56 @@
             animateRows: true
           };
           // Capture API instance correctly for v31+
-          this.gridApi = agGrid.createGrid(document.getElementById('myGrid'), gridOptions);
+          this.agGridApiInstance = agGrid.createGrid(document.getElementById('ag_grid_element'), gridOptions);
         },
 
-        // ----------------------------------------
-        // 3. DATA FETCHING & FILTERS
-        // ----------------------------------------
-        getKabOptions() {return (this.selProv && this.hierarchy[this.selProv]) ? Object.keys(this.hierarchy[this.selProv]).sort() : [];},
-        getKecOptions() {return (this.selProv && this.selKab && this.hierarchy[this.selProv][this.selKab]) ? this.hierarchy[this.selProv][this.selKab].sort() : [];},
+        // ============================================
+        // DATA FETCHING
+        // ============================================
+        util_GetKabOptions() {
+          return (this.filter_SelProv && this.meta_HierarchyTree[this.filter_SelProv])
+            ? Object.keys(this.meta_HierarchyTree[this.filter_SelProv]).sort()
+            : [];
+        },
+        util_GetKecOptions() {
+          return (this.filter_SelProv && this.filter_SelKab && this.meta_HierarchyTree[this.filter_SelProv][this.filter_SelKab])
+            ? this.meta_HierarchyTree[this.filter_SelProv][this.filter_SelKab].sort()
+            : [];
+        },
 
-        async fetchData() {
-          if (this.gridApi) this.gridApi.showLoadingOverlay();
+        async fetch_MainGridData_FromAPI() {
+          if (this.agGridApiInstance) this.agGridApiInstance.showLoadingOverlay();
 
           // Update Date Display based on selection
-          if (this.selectedVersion) {
+          if (this.filter_SelectedVersion) {
             // If viewing a snapshot, show that snapshot's date
-            this.lastUpdate = this.selectedVersion;
-          } else if (this.versions.length > 0) {
+            this.stats_LastUpdateLabel = this.filter_SelectedVersion;
+          } else if (this.meta_VersionsList.length > 0) {
             // If Live, show the latest commit date
-            this.lastUpdate = this.versions[0].ts;
+            this.stats_LastUpdateLabel = this.meta_VersionsList[0].ts;
           }
 
-          let params = new URLSearchParams({limit: 50000, translate: this.translateOn});
-          if (this.selectedVersion) params.append("version", this.selectedVersion);
-          if (this.selProv) params.append("Provinsi", this.selProv);
-          if (this.selKab) params.append("Kabupaten/ Kota", this.selKab);
-          if (this.selKec) params.append("Kecamatan", this.selKec);
-          if (this.nameSearch) params.append("Desa", this.nameSearch);
-          if (this.idList.trim()) params.append("ids", this.idList.replace(/\n/g, ","));
+          let params = new URLSearchParams({limit: 50000, translate: this.isTranslationActive});
+          if (this.filter_SelectedVersion) params.append("version", this.filter_SelectedVersion);
+          if (this.filter_SelProv) params.append("Provinsi", this.filter_SelProv);
+          if (this.filter_SelKab) params.append("Kabupaten/ Kota", this.filter_SelKab);
+          if (this.filter_SelKec) params.append("Kecamatan", this.filter_SelKec);
+          if (this.filter_NameSearch) params.append("Desa", this.filter_NameSearch);
+          if (this.filter_IdListInput.trim()) params.append("ids", this.filter_IdListInput.replace(/\n/g, ","));
 
           try {
-            let res = await fetch(`${this.apiUrl}/query/${this.year}?${params}`);
+            let res = await fetch(`${this.apiBaseUrl}/query/${this.targetYear}?${params}`);
             let data = await res.json();
 
             if (Array.isArray(data)) {
               // Update Stats
-              this.totalRows = data.length.toLocaleString();
-              if (data.length > 0) {
+              this.stats_TotalRows = data.length.toLocaleString();
 
+              if (data.length > 0) {
                 // GRID UPDATE (Slice for performance)
                 const displayData = data.slice(0, 1000);
+
+                // Dynamic Column Generation
                 let cols = Object.keys(data[0]).map(k => ({
                   field: k,
                   headerName: k,
@@ -707,63 +736,66 @@
                   valueGetter: params => params.data[k]
                 }));
 
-                if (this.gridApi) {
-                  this.gridApi.setGridOption('columnDefs', cols);
-                  this.gridApi.setGridOption('rowData', displayData);
+                if (this.agGridApiInstance) {
+                  this.agGridApiInstance.setGridOption('columnDefs', cols);
+                  this.agGridApiInstance.setGridOption('rowData', displayData);
                 }
-                this.calculateDashboard();
+
+                // Also trigger calculation if dashboard is active
+                this.calculate_DashboardStats_FromAPI();
               } else {
-                this.totalRows = "0";
-                if (this.gridApi) this.gridApi.setGridOption('rowData', []);
+                this.stats_TotalRows = "0";
+                if (this.agGridApiInstance) this.agGridApiInstance.setGridOption('rowData', []);
               }
             } else if (data.error) {
               alert("Server Error: " + data.error);
             }
           } catch (e) {console.error(e);}
-          if (this.gridApi) this.gridApi.hideOverlay();
+
+          if (this.agGridApiInstance) this.agGridApiInstance.hideOverlay();
         },
 
-        async fetchMetaData() {
+        async fetchVersionHistoryAndHierarchy() {
           try {
             // Reusing the /history/versions endpoint but it now returns { versions: [], hierarchy: {} }
-            let res = await fetch(`${this.apiUrl}/history/versions/${this.year}`);
+            let res = await fetch(`${this.apiBaseUrl}/history/versions/${this.targetYear}`);
             if (res.ok) {
               let data = await res.json();
 
               // Assign Versions
-              this.versions = data.versions || [];
-              if (this.versions.length > 0 && !this.selectedVersion) {
-                this.lastUpdate = this.versions[0].ts;
+              this.meta_VersionsList = data.versions || [];
+              if (this.meta_VersionsList.length > 0 && !this.filter_SelectedVersion) {
+                this.stats_LastUpdateLabel = this.meta_VersionsList[0].ts;
               }
 
               // Assign Hierarchy
-              this.hierarchy = data.hierarchy || {};
+              this.meta_HierarchyTree = data.hierarchy || {};
             }
           } catch (e) {console.error("Meta Fetch Error", e);}
         },
 
-        // ----------------------------------------
-        // 4. DASHBOARD RENDER LOGIC
-        // ----------------------------------------
-        async loadDashboardStructure() {
-          if (this.tableStructureLoaded) return;
+        // ============================================
+        // DASHBOARD TABLE LOGIC
+        // ============================================
+        async fetchDashboardConfigAndRenderTable() {
+          if (this.isTableStructureLoaded) return;
           try {
-            let res = await fetch(`${this.apiUrl}/config/table_structure`);
+            let res = await fetch(`${this.apiBaseUrl}/config/table_structure`);
             if (!res.ok) throw new Error("Config not found");
             let data = await res.json();
-            this.renderDashboardTable(data);
-            this.tableStructureLoaded = true;
-            this.calculateDashboard();
+            this.constructDashboardTableDOM(data);
+            this.isTableStructureLoaded = true;
+            this.calculate_DashboardStats_FromAPI();
           } catch (e) {alert(e.message);}
         },
 
-        renderDashboardTable(dataRows) {
-          const table = document.getElementById('dashTable');
+        constructDashboardTableDOM(dataRows) {
+          const table = document.getElementById('dashboard_table_element');
           const thead = table.querySelector('thead');
           const tbody = table.querySelector('tbody');
           thead.innerHTML = ''; tbody.innerHTML = '';
 
-          // HEADERS CONSTRUCTION
+          // HEADERS
           const tr1 = document.createElement('tr');
           const tr2 = document.createElement('tr');
 
@@ -776,11 +808,11 @@
             if (h === "DIMENSI") th.className = "col-dimensi";
             if (h === "SUB DIMENSI") th.className = "col-sub_dimensi";
             if (h === "INDIKATOR") th.className = "col-indikator";
-            if (h === "ITEM") {th.className = "col-item"; this.addResizer(th);}
+            if (h === "ITEM") {th.className = "col-item"; this.util_AddColumnResizer(th);}
             tr1.appendChild(th);
           });
 
-          // Extra Columns Headers
+          // Score Headers
           const thScore = document.createElement('th');
           thScore.textContent = "SKOR";
           thScore.colSpan = 6;
@@ -793,12 +825,21 @@
             tr2.appendChild(th);
           });
 
-          const thPel = document.createElement('th');
-          thPel.textContent = "INTERVENSI / PELAKSANA";
-          thPel.colSpan = 6;
-          tr1.appendChild(thPel);
+          // Intervensi Header
+          const thIntervensi = document.createElement('th');
+          thIntervensi.textContent = "INTERVENSI";
+          thIntervensi.className = "col-intervensi";
+          thIntervensi.rowSpan = 2;
+          this.util_AddColumnResizer(thIntervensi);
+          tr1.appendChild(thIntervensi);
 
-          // Mapping labels to keys in CSV
+          // Pelaksana Header
+          const thPelaksana = document.createElement('th');
+          thPelaksana.textContent = "PELAKSANA";
+          thPelaksana.colSpan = 5;
+          tr1.appendChild(thPelaksana);
+
+          // Pelaksana Sub-Headers
           const pelaksanaConfig = [
             {label: "INTERVENSI", key: "INTERVENSI KEGIATAN", css: "col-intervensi"},
             {label: "PUSAT", key: "PELAKSANA KEGIATAN PUSAT", css: "col-pusat"},
@@ -808,18 +849,18 @@
             {label: "LAIN", key: "PELAKSANA KEGIATAN Lainnya", css: "col-lain"}
           ];
 
-          pelaksanaConfig.forEach(c => {
+          pelaksanaConfig.slice(1).forEach(c => {
             const th = document.createElement('th');
             th.textContent = c.label;
             th.className = c.css;
-            this.addResizer(th);
+            this.util_AddColumnResizer(th);
             tr2.appendChild(th);
           });
 
           thead.appendChild(tr1);
           thead.appendChild(tr2);
 
-          // BODY CONSTRUCTION (Merge Logic)
+          // BODY MERGE LOGIC
           const rowSpans = new Array(dataRows.length).fill(0).map(() => ({}));
           const mergeKeys = ["NO", "DIMENSI", "SUB DIMENSI", "INDIKATOR"];
 
@@ -844,6 +885,7 @@
           dataRows.forEach((row, i) => {
             const tr = document.createElement('tr');
 
+            // Metadata Columns
             headers.forEach(k => {
               if (rowSpans[i][k] === -1) return;
               const td = document.createElement('td');
@@ -855,16 +897,16 @@
               tr.appendChild(td);
             });
 
-            // Score Inputs
+            // Score Columns
             ["SKOR Rata-Rata", "SKOR 1", "SKOR 2", "SKOR 3", "SKOR 4", "SKOR 5"].forEach(k => {
               const td = document.createElement('td');
               const inp = document.createElement('input');
-              inp.value = row[k] || ""; // Fill if CSV has default
+              inp.value = row[k] || "";
               td.appendChild(inp);
               tr.appendChild(td);
             });
 
-            // Pelaksana Inputs
+            // Text Area Columns
             pelaksanaConfig.forEach(c => {
               const td = document.createElement('td');
 
@@ -885,7 +927,7 @@
           });
         },
 
-        addResizer(th) {
+        util_AddColumnResizer(th) {
           const resizer = document.createElement('div');
           resizer.className = 'resizer';
           th.appendChild(resizer);
@@ -911,73 +953,95 @@
           });
         },
 
-        // ----------------------------------------
-        // 5. STAGING LOGIC
-        // ----------------------------------------
-        async handleStage(e) {
+        // ============================================
+        // ACTIONS: STAGING & UPLOAD
+        // ============================================
+        async action_UploadFile_ToStaging(e) {
           let file = e.target.files[0];
           if (!file) return;
-          this.statusMsg = "Analyzing...";
+          this.ui_StatusMessage = "Analyzing...";
           let fd = new FormData();
           fd.append("file", file);
           try {
-            let res = await fetch(`${this.apiUrl}/stage/${this.year}`, {method: "POST", body: fd});
+            let res = await fetch(`${this.apiBaseUrl}/stage/${this.targetYear}`, {method: "POST", body: fd});
             let d = await res.json();
             if (d.status === "staged") {
-              this.stagingData = d;
-              this.statusMsg = "";
+              this.stagingData_Object = d;
+              this.ui_StatusMessage = "";
               e.target.value = null;
-            } else this.statusMsg = "❌ " + d.error;
-          } catch (err) {this.statusMsg = "❌ Connection Fail";}
+            } else this.ui_StatusMessage = "❌ " + d.error;
+          } catch (err) {this.ui_StatusMessage = "❌ Connection Fail";}
         },
 
-        // ----------------------------------------
-        //  CALCULATION LOGIC ---
-        // ----------------------------------------
-        async calculateDashboard() {
-          // Only run if we are in dashboard mode, or force switch
-          if (this.viewMode !== 'dashboard') {
-            this.viewMode = 'dashboard';
+        async action_CommitStagedData_ToDB() {
+          if (!this.stagingData_Object) return;
+          this.ui_StatusMessage = "Saving...";
+          let p = new URLSearchParams({
+            staging_id: this.stagingData_Object.staging_id,
+            filename: this.stagingData_Object.filename
+          });
+          try {
+            let res = await fetch(`${this.apiBaseUrl}/commit/${this.targetYear}?${p}`, {method: "POST"});
+            let d = await res.json();
+            if (d.status === "success") {
+              alert("✅ Saved Successfully!");
+              this.stagingData_Object = null;
+              this.fetchVersionHistoryAndHierarchy();
+              this.fetch_MainGridData_FromAPI();
+            } else alert("❌ Fail: " + d.error);
+          } catch (err) {alert("❌ Commit Error");}
+        },
+
+        // ============================================
+        // ACTIONS: CALCULATION
+        // ============================================
+        async calculate_DashboardStats_FromAPI() {
+          // Force view switch if needed
+          if (this.viewModeState !== 'dashboard') {
+            this.viewModeState = 'dashboard';
           }
 
-          this.statusMsg = "Calculating...";
+          this.ui_StatusMessage = "Calculating...";
           // Show a simple loading indicator in the table
-          const tbody = document.querySelector('#dashTable tbody');
+          const tbody = document.querySelector('#dashboard_table_element tbody');
           if (tbody) tbody.innerHTML = '<tr><td colspan="100" class="text-center p-4">Calculating...</td></tr>';
 
           // Add all current filters to params (Same logic as fetchData)
           let params = new URLSearchParams();
-          if (this.selectedVersion) params.append("version", this.selectedVersion);
-          if (this.selProv) params.append("Provinsi", this.selProv);
-          if (this.selKab) params.append("Kabupaten/ Kota", this.selKab);
-          if (this.selKec) params.append("Kecamatan", this.selKec);
-          if (this.nameSearch) params.append("Kode Wilayah Administrasi Desa", this.nameSearch);
-          if (this.idList.trim()) params.append("ids", this.idList.replace(/\n/g, ","));
+          if (this.filter_SelectedVersion) params.append("version", this.filter_SelectedVersion);
+          if (this.filter_SelProv) params.append("Provinsi", this.filter_SelProv);
+          if (this.filter_SelKab) params.append("Kabupaten/ Kota", this.filter_SelKab);
+          if (this.filter_SelKec) params.append("Kecamatan", this.filter_SelKec);
+          if (this.filter_NameSearch) params.append("Kode Wilayah Administrasi Desa", this.filter_NameSearch);
+          if (this.filter_IdListInput.trim()) params.append("ids", this.filter_IdListInput.replace(/\n/g, ","));
 
           try {
-            let res = await fetch(`${this.apiUrl}/dashboard/calculate/${this.year}?${params.toString()}`, {method: "POST"});
+            let res = await fetch(`${this.apiBaseUrl}/dashboard/calculate/${this.targetYear}?${params.toString()}`, {method: "POST"});
             if (!res.ok) throw new Error("Calculation failed");
 
             let data = await res.json();
-            this.renderDashboardTable(data);
-            this.statusMsg = "✅ Done";
-            this.tableStructureLoaded = true;
+            this.constructDashboardTableDOM(data);
+            this.ui_StatusMessage = "✅ Done";
+            this.isTableStructureLoaded = true;
           } catch (e) {
             alert("Error: " + e.message);
-            this.statusMsg = "❌ Error";
+            this.ui_StatusMessage = "❌ Error";
           }
         },
 
-        async downloadExcel() {
-          this.statusMsg = "Preparing download...";
+        // ============================================
+        // ACTIONS: EXPORT & DELETE
+        // ============================================
+        async action_ExportToExcel() {
+          this.ui_StatusMessage = "Preparing download...";
 
           try {
             const wb = XLSX.utils.book_new();
 
-            // === SHEET 1: GRID DATA ===
+            // SHEET 1: GRID
             let gridData = [];
-            if (this.gridApi) {
-              this.gridApi.forEachNode(node => {
+            if (this.agGridApiInstance) {
+              this.agGridApiInstance.forEachNode(node => {
                 gridData.push(node.data);
               });
             }
@@ -989,8 +1053,8 @@
             const ws_grid = XLSX.utils.json_to_sheet(gridData);
             XLSX.utils.book_append_sheet(wb, ws_grid, "Grid");
 
-            // === SHEET 2: DASHBOARD TABLE ===
-            const dashTable = document.getElementById('dashTable');
+            // SHEET 2: DASHBOARD
+            const dashTable = document.getElementById('dashboard_table_element');
             if (dashTable && dashTable.querySelector('tbody tr')) {
               // Clone table to avoid modifying the original
               const tableClone = dashTable.cloneNode(true);
@@ -1007,50 +1071,31 @@
             }
 
             // Download
-            XLSX.writeFile(wb, `export_${this.year}_${new Date().toISOString().split('T')[0]}.xlsx`);
+            XLSX.writeFile(wb, `export_${this.targetYear}_${new Date().toISOString().split('T')[0]}.xlsx`);
 
-            this.statusMsg = "✅ Downloaded";
-            setTimeout(() => this.statusMsg = "", 2000);
+            this.ui_StatusMessage = "✅ Downloaded";
+            setTimeout(() => this.ui_StatusMessage = "", 2000);
 
           } catch (error) {
             console.error('Download error:', error);
-            this.statusMsg = "❌ Download failed";
+            this.ui_StatusMessage = "❌ Download failed";
             alert('Download failed: ' + error.message);
           }
         },
 
-        async confirmCommit() {
-          if (!this.stagingData) return;
-          this.statusMsg = "Saving...";
-          let p = new URLSearchParams({
-            staging_id: this.stagingData.staging_id,
-            filename: this.stagingData.filename
-          });
-          try {
-            let res = await fetch(`${this.apiUrl}/commit/${this.year}?${p}`, {method: "POST"});
-            let d = await res.json();
-            if (d.status === "success") {
-              alert("✅ Saved Successfully!");
-              this.stagingData = null;
-              this.fetchMetaData();
-              this.fetchData();
-            } else alert("❌ Fail: " + d.error);
-          } catch (err) {alert("❌ Commit Error");}
-        },
-
-        async handleDelete() {
-          if (!this.deleteList.trim()) return alert("Please enter IDs to delete.");
+        async action_SoftDeleteIDs_FromDB() {
+          if (!this.filter_DeleteListInput.trim()) return alert("Please enter IDs to delete.");
 
           if (!confirm("⚠️ Are you sure?")) return;
 
-          this.statusMsg = "Deleting...";
+          this.ui_StatusMessage = "Deleting...";
 
           let params = new URLSearchParams();
-          params.append("ids", this.deleteList);
+          params.append("ids", this.filter_DeleteListInput);
           params.append("summary", "User deleted from dashboard");
 
           try {
-            let res = await fetch(`${this.apiUrl}/delete/${this.year}?${params}`, {method: "POST"});
+            let res = await fetch(`${this.apiBaseUrl}/delete/${this.targetYear}?${params}`, {method: "POST"});
             let data = await res.json();
 
             // DEBUG: Show exactly what happened
@@ -1058,14 +1103,14 @@
 
             if (data.status === "success") {
               alert(`✅ Deleted ${data.deleted_count} records.\nIDs: ${data.deleted_ids.join(", ")}`);
-              this.deleteList = "";
-              this.fetchMetaData();
-              this.fetchData();
-              this.statusMsg = "";
+              this.filter_DeleteListInput = "";
+              this.fetchVersionHistoryAndHierarchy();
+              this.fetch_MainGridData_FromAPI();
+              this.ui_StatusMessage = "";
             } else if (data.status === "warning") {
               // This is likely what is happening now
               alert("⚠️ Server Warning: " + data.message);
-              this.statusMsg = "⚠️ ID Not Found";
+              this.ui_StatusMessage = "⚠️ ID Not Found";
             } else {
               alert("❌ Error: " + (data.error || "Unknown error"));
             }
