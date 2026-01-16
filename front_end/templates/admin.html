@@ -552,8 +552,7 @@
 
         init() {
           this.initGrid();
-          this.fetchVersions();
-          this.fetchHierarchy();
+          this.fetchMetaData();
           this.fetchData();
         },
 
@@ -605,12 +604,6 @@
         // ----------------------------------------
         // 3. DATA FETCHING & FILTERS
         // ----------------------------------------
-        async fetchHierarchy() {
-          try {
-            let res = await fetch(`${this.apiUrl}/hierarchy/${this.year}`);
-            if (res.ok) this.hierarchy = await res.json();
-          } catch (e) { }
-        },
         getKabOptions() {return (this.selProv && this.hierarchy[this.selProv]) ? Object.keys(this.hierarchy[this.selProv]).sort() : [];},
         getKecOptions() {return (this.selProv && this.selKab && this.hierarchy[this.selProv][this.selKab]) ? this.hierarchy[this.selProv][this.selKab].sort() : [];},
 
@@ -668,17 +661,23 @@
           if (this.gridApi) this.gridApi.hideOverlay();
         },
 
-        async fetchVersions() {
+        async fetchMetaData() {
           try {
+            // Reusing the /history/versions endpoint but it now returns { versions: [], hierarchy: {} }
             let res = await fetch(`${this.apiUrl}/history/versions/${this.year}`);
             if (res.ok) {
-              this.versions = await res.json();
-              // Grab the latest timestamp immediately from the version list
+              let data = await res.json();
+
+              // Assign Versions
+              this.versions = data.versions || [];
               if (this.versions.length > 0 && !this.selectedVersion) {
                 this.lastUpdate = this.versions[0].ts;
               }
+
+              // Assign Hierarchy
+              this.hierarchy = data.hierarchy || {};
             }
-          } catch (e) { }
+          } catch (e) { console.error("Meta Fetch Error", e); }
         },
 
         // ----------------------------------------
@@ -971,7 +970,7 @@
             if (d.status === "success") {
               alert("✅ Saved Successfully!");
               this.stagingData = null;
-              this.fetchVersions();
+              this.fetchMetaData();
               this.fetchData();
             } else alert("❌ Fail: " + d.error);
           } catch (err) {alert("❌ Commit Error");}

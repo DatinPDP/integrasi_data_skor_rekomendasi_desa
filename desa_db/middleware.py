@@ -166,60 +166,6 @@ def helpers_init_db(con: duckdb.DuckDBPyConnection, headers: list[str]):
         )
     """)
 
-def helpers_refresh_filter_cache(year: str):
-    """
-    Builds a hierarchical JSON tree:
-    {
-        "Provinsi A": {
-            "Kabupaten A1": ["Kecamatan A1-1", "Kecamatan A1-2"],
-            "Kabupaten A2": [...]
-        },
-        ...
-    }
-    """
-    con, _ = helpers_get_db_connection(year)
-    hierarchy = {}
-
-    # Columns to cache for dropdowns
-    # You can add more here if needed
-    target_columns = ["Provinsi", "Kabupaten/ Kota", "Kecamatan"]
-    
-    try:
-        # Check if table exists
-        tables = con.execute("SHOW TABLES").fetchall()
-        if not tables or ('master_data',) not in tables:
-            return
-
-        # Fetch all unique combinations in one go (Very Fast)
-        # Assume headers are standard. Adjust exact column names if needed.
-        query = """
-            SELECT DISTINCT "Provinsi", "Kabupaten/ Kota", "Kecamatan" 
-            FROM master_data
-            WHERE valid_to IS NULL AND "Provinsi" IS NOT NULL
-            ORDER BY "Provinsi", "Kabupaten/ Kota", "Kecamatan"
-        """
-        rows = con.execute(query).fetchall()
-        
-        # Build the Tree
-        for prov, kab, kec in rows:
-            if prov not in hierarchy:
-                hierarchy[prov] = {}
-            if kab not in hierarchy[prov]:
-                hierarchy[prov][kab] = []
-            if kec not in hierarchy[prov][kab]:
-                hierarchy[prov][kab].append(kec)
-        
-        # Write to disk
-        with open(helpers_get_cache_path(year), "w", encoding="utf-8") as f:
-            json.dump(hierarchy, f, ensure_ascii=False)
-            
-        print(f"✅ Hierarchy Cache refreshed: {cache_path}")
-        
-    except Exception as e:
-        print(f"❌ Error refreshing hierarchy: {e}")
-    finally:
-        con.close()
-
 def helpers_build_dynamic_query(con, base_query, request_params):
     """
     Dynamically adds WHERE or AND clauses based on URL parameters.

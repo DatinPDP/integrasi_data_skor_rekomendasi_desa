@@ -43,7 +43,6 @@ try:
         make_json_response,
         helpers_get_db_connection,
         helpers_init_db,
-        helpers_refresh_filter_cache,
         helpers_build_dynamic_query,
         helpers_get_cache_path,
         ID_COL,
@@ -53,7 +52,7 @@ try:
     )
 except ImportError:
     # Fallback for different context import
-    from desa_db.middleware import apply_rekomendasis, make_json_response, helpers_get_db_connection, helpers_init_db, helpers_refresh_filter_cache, helpers_build_dynamic_query, helpers_get_cache_path, ID_COL, BASE_DIR as MW_BASE_DIR, CONFIG_DIR
+    from desa_db.middleware import apply_rekomendasis, make_json_response, helpers_get_db_connection, helpers_init_db, helpers_build_dynamic_query, helpers_get_cache_path, ID_COL, BASE_DIR as MW_BASE_DIR, CONFIG_DIR
 
 app = FastAPI()
 
@@ -333,7 +332,6 @@ async def endpoint_post_commit_stage(
         con.execute(f"INSERT INTO commits VALUES ('{staging_id}', '{now}', '{filename}', '{summary}')")
         
         con.execute("COMMIT")
-        helpers_refresh_filter_cache(year)
         
         return {"status": "success", "message": "Database updated successfully."}
         
@@ -413,30 +411,55 @@ def endpoint_get_query_data(
 @app.get("/history/versions/{year}")
 def endpoint_get_history_versions(year: str):
     """
-    Returns list of source files (versions) uploaded
+    Returns metadata for initialization:
+    1. List of versions (commits)
+    2. Hierarchy tree (Prov -> Kab -> Kec) built live from DuckDB
     """
     con, _ = helpers_get_db_connection(year)
+    response_data = {
+        "versions": [],
+        "hierarchy": {}
+    }
+
     try:
-        # Return distinct timestamps from the commits table
-        # Format: "2025-01-13 17:00:00"
-        commit_timestamp = con.execute("SELECT timestamp, filename FROM commits ORDER BY timestamp DESC").fetchall()
-        # Return list of {timestamp, label}
-        return [{"ts": str(r[0]), "label": f"{r[0]} - {r[1]}"} for r in commit_timestamp]
-    except:
-        return []
+        # 1. Fetch Versions
+        try:
+            commits = con.execute("SELECT timestamp, filename FROM commits ORDER BY timestamp DESC").fetchall()
+            response_data["versions"] = [{"ts": str(r[0]), "label": f"{r[0]} - {r[1]}"} for r in commits]
+        except duckdb.CatalogException:
+            # Table might not exist yet if fresh install
+            pass
+
+        # 2. Fetch Hierarchy (Live Distinct Query)
+        try:
+            # Check if master_data exists first
+            tables = [t[0] for t in con.execute("SHOW TABLES").fetchall()]
+            if 'master_data' in tables:
+                query = """
+                    SELECT DISTINCT "Provinsi", "Kabupaten/ Kota", "Kecamatan" 
+                    FROM master_data
+                    WHERE valid_to IS NULL AND "Provinsi" IS NOT NULL
+                    ORDER BY "Provinsi", "Kabupaten/ Kota", "Kecamatan"
+                """
+                rows = con.execute(query).fetchall()
+                
+                # Build Tree
+                tree = {}
+                for prov, kab, kec in rows:
+                    if prov not in tree: tree[prov] = {}
+                    if kab not in tree[prov]: tree[prov][kab] = []
+                    if kec not in tree[prov][kab]: tree[prov][kab].append(kec)
+                
+                response_data["hierarchy"] = tree
+        except Exception as e:
+            print(f"Hierarchy Error: {e}")
+            
+        return response_data
+
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
     finally:
         con.close()
-
-# HIERARCHY
-@app.get("/hierarchy/{year}") 
-def endpoint_get_filter_hierarchy(year: str):
-    """
-    Returns the full location tree (Prov -> Kab -> Kec)
-    """
-    cache_path = helpers_get_cache_path(year)
-    if os.path.exists(cache_path):
-        return FileResponse(cache_path, media_type="application/json")
-    return {}
 
 # ==========================================
 # CALCULATION & DASHBOARD LOGIC
