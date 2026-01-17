@@ -384,7 +384,7 @@
       <button @click="isSidebarOpen = !isSidebarOpen"
         class="sidebar_toggle_btn absolute -right-3 top-20 w-6 h-6 bg-white border border-slate-200 dark:border-slate-600 dark:bg-slate-800 rounded-full shadow-md z-50 flex items-center justify-center hover:bg-slate-50 cursor-pointer text-slate-500 dark:text-slate-300 transform transition-transform duration-300 focus:outline-none"
         :class="isSidebarOpen ? 'rotate-0' : 'rotate-180'" title="Toggle Sidebar">
-        <span class="text-[20px] leading-none font-bold">↔</span>
+        <span class="text-[14px] leading-none font-bold">↔</span>
       </button>
 
       <div
@@ -392,186 +392,294 @@
 
         <div class="sidebar_inner_content w-80 h-full overflow-y-auto custom-scrollbar flex flex-col p-4">
 
-          <div class="sidebar_section_upload mb-5 border-b border-gray-100 pb-4 dark:border-slate-700">
-            <h3 class="sidebar_section_title text-xs font-bold text-gray-400 uppercase mb-3 tracking-wider">🚀 Actions
-            </h3>
+          <div class="sidebar_section_upload mb-5 border-b border-gray-100 pb-4 dark:border-slate-700"
+            x-data="{ open: false }">
+            <div @click="open = !open" class="flex justify-between items-center cursor-pointer mb-3 group select-none">
+              <h3
+                class="sidebar_section_title text-xs font-bold text-gray-400 uppercase tracking-wider group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors">
+                🚀 Actions
+              </h3>
+              <span class="text-gray-400 text-[14px] font-bold transition-transform duration-200"
+                :class="open ? 'rotate-90' : 'rotate-0'">›</span>
+            </div>
 
-            <div class="sidebar_upload_group space-y-3">
-              <div class="sidebar_upload_label_group flex items-center gap-2 mb-1">
-                <span class="text-[12px] font-bold text-slate-500 uppercase tracking-wider dark:text-slate-400">Database
-                  Import</span>
-                <div class="h-px bg-slate-200 flex-1 dark:bg-slate-700"></div>
-              </div>
-
-              <div x-show="!stagingData_Object" class="sidebar_upload_dropzone_container">
-                <label
-                  class="sidebar_upload_dropzone flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-blue-300 rounded-lg cursor-pointer bg-blue-50/50 hover:bg-blue-100 hover:border-blue-400 transition-all dark:bg-slate-800 dark:border-slate-600 dark:hover:border-blue-500 dark:hover:bg-slate-700 group">
-                  <div class="flex flex-col items-center justify-center pt-2 pb-3">
-                    <div
-                      class="mb-1 text-blue-400 group-hover:text-blue-600 group-hover:scale-110 transition-transform dark:text-slate-400 dark:group-hover:text-blue-400">
-                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12">
-                        </path>
-                      </svg>
-                    </div>
-                    <p class="text-[12px] font-bold text-slate-600 group-hover:text-blue-700 dark:text-slate-300">Upload
-                      Data File</p>
-                    <p class="text-[9px] text-slate-400 dark:text-slate-500">.xlsb or .xlsx</p>
-                  </div>
-                  <input type="file" @change="action_UploadFile_ToStaging" class="sidebar_input_file hidden"
-                    accept=".xlsb, .xlsx" />
-                </label>
-                <div class="sidebar_status_msg_container min-h-[16px] mt-1 text-center">
-                  <p x-text="ui_StatusMessage"
-                    class="sidebar_status_msg text-[12px] text-blue-600 font-bold animate-pulse"
-                    x-show="ui_StatusMessage"></p>
+            <div x-show="open" x-collapse>
+              <div class="sidebar_upload_group space-y-3">
+                <div class="sidebar_upload_label_group flex items-center gap-2 mb-1">
+                  <span
+                    class="text-[12px] font-bold text-slate-500 uppercase tracking-wider dark:text-slate-400">Database
+                    Import</span>
+                  <div class="h-px bg-slate-200 flex-1 dark:bg-slate-700"></div>
                 </div>
-              </div>
 
-              <div x-show="stagingData_Object"
-                class="sidebar_staging_review_panel bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden dark:bg-slate-800 dark:border-slate-600"
-                style="display: none;">
-                <div
-                  class="sidebar_staging_header bg-amber-50 px-3 py-2 border-b border-amber-100 dark:bg-amber-900/20 dark:border-amber-800/50 flex items-center justify-between">
-                  <span class="text-[12px] font-bold text-amber-700 dark:text-amber-500">⚠️ Review Changes</span>
-                  <div class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></div>
-                </div>
-                <div class="p-3">
-                  <p class="sidebar_staging_filename text-[12px] text-slate-500 mb-3 truncate font-mono bg-slate-100 p-1 rounded dark:bg-slate-900 dark:text-slate-400"
-                    x-text="stagingData_Object?.filename"></p>
-                  <div class="sidebar_staging_stats_grid grid grid-cols-3 gap-2 mb-3 text-center">
-                    <div
-                      class="stat_box_new flex flex-col border border-green-200 bg-green-50 rounded p-1 dark:bg-green-900/20 dark:border-green-800">
-                      <span class="text-[9px] text-green-700 font-bold dark:text-green-400">NEW</span>
-                      <span class="text-xs font-mono font-bold text-slate-700 dark:text-slate-200"
-                        x-text="stagingData_Object?.diff.added">0</span>
+                <div x-show="!stagingData_Object" class="sidebar_upload_dropzone_container">
+                  <label
+                    class="sidebar_upload_dropzone flex flex-col items-center justify-center w-full h-12 border-2 border-dashed border-blue-300 rounded-lg cursor-pointer bg-blue-50/50 hover:bg-blue-100 hover:border-blue-400 transition-all dark:bg-slate-800 dark:border-slate-600 dark:hover:border-blue-500 dark:hover:bg-slate-700 group">
+                    <div class="flex flex-col items-center justify-center pt-2 pb-3">
+                      <div
+                        class="mb-1 text-blue-400 group-hover:text-blue-600 group-hover:scale-110 transition-transform dark:text-slate-400 dark:group-hover:text-blue-400">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                          xmlns="http://www.w3.org/2000/svg">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12">
+                          </path>
+                        </svg>
+                      </div>
+                      <p class="text-[10px] font-bold text-slate-600 group-hover:text-blue-700 dark:text-slate-300">
+                        Upload Data</p>
                     </div>
-                    <div
-                      class="stat_box_mod flex flex-col border border-blue-200 bg-blue-50 rounded p-1 dark:bg-blue-900/20 dark:border-blue-800">
-                      <span class="text-[9px] text-blue-700 font-bold dark:text-blue-400">MOD</span>
-                      <span class="text-xs font-mono font-bold text-slate-700 dark:text-slate-200"
-                        x-text="stagingData_Object?.diff.changed">0</span>
-                    </div>
-                    <div
-                      class="stat_box_del flex flex-col border border-red-200 bg-red-50 rounded p-1 dark:bg-red-900/20 dark:border-red-800">
-                      <span class="text-[9px] text-red-700 font-bold dark:text-red-400">DEL</span>
-                      <span class="text-xs font-mono font-bold text-slate-700 dark:text-slate-200"
-                        x-text="stagingData_Object?.diff.removed">0</span>
-                    </div>
-                  </div>
-                  <div class="sidebar_staging_actions flex gap-2">
-                    <button @click="action_CommitStagedData_ToDB"
-                      class="sidebar_btn_commit flex-1 bg-slate-800 text-white py-1.5 rounded text-[12px] font-bold hover:bg-slate-900 shadow-sm transition dark:bg-blue-600 dark:hover:bg-blue-500">Commit
-                      to DB</button>
-                    <button @click="stagingData_Object = null; ui_StatusMessage=''"
-                      class="sidebar_btn_cancel px-3 border border-slate-300 text-slate-600 rounded text-[12px] font-bold hover:bg-slate-50 transition dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700">Cancel</button>
+                    <input type="file" @change="action_UploadFile_ToStaging" class="sidebar_input_file hidden"
+                      accept=".xlsb, .xlsx" />
+                  </label>
+                  <div class="sidebar_status_msg_container min-h-[16px] mt-1 text-center">
+                    <p x-text="ui_StatusMessage"
+                      class="sidebar_status_msg text-[12px] text-blue-600 font-bold animate-pulse"
+                      x-show="ui_StatusMessage"></p>
                   </div>
                 </div>
-              </div>
 
-              <button @click="action_ExportToExcel"
-                class="sidebar_btn_download_excel w-full border border-green-600 text-green-700 bg-green-50 py-2 rounded text-xs font-bold hover:bg-green-100 transition flex justify-center items-center gap-2 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800 dark:hover:bg-green-900/40">
-                <span>📥</span> Download Excel
+                <div x-show="stagingData_Object"
+                  class="sidebar_staging_review_panel bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden dark:bg-slate-800 dark:border-slate-600"
+                  style="display: none;">
+                  <div
+                    class="sidebar_staging_header bg-amber-50 px-3 py-2 border-b border-amber-100 dark:bg-amber-900/20 dark:border-amber-800/50 flex items-center justify-between">
+                    <span class="text-[12px] font-bold text-amber-700 dark:text-amber-500">⚠️ Review
+                      Changes</span>
+                    <div class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></div>
+                  </div>
+                  <div class="p-3">
+                    <p class="sidebar_staging_filename text-[12px] text-slate-500 mb-3 truncate font-mono bg-slate-100 p-1 rounded dark:bg-slate-900 dark:text-slate-400"
+                      x-text="stagingData_Object?.filename"></p>
+                    <div class="sidebar_staging_stats_grid grid grid-cols-3 gap-2 mb-3 text-center">
+                      <div
+                        class="stat_box_new flex flex-col border border-green-200 bg-green-50 rounded p-1 dark:bg-green-900/20 dark:border-green-800">
+                        <span class="text-[9px] text-green-700 font-bold dark:text-green-400">NEW</span>
+                        <span class="text-xs font-mono font-bold text-slate-700 dark:text-slate-200"
+                          x-text="stagingData_Object?.diff.added">0</span>
+                      </div>
+                      <div
+                        class="stat_box_mod flex flex-col border border-blue-200 bg-blue-50 rounded p-1 dark:bg-blue-900/20 dark:border-blue-800">
+                        <span class="text-[9px] text-blue-700 font-bold dark:text-blue-400">MOD</span>
+                        <span class="text-xs font-mono font-bold text-slate-700 dark:text-slate-200"
+                          x-text="stagingData_Object?.diff.changed">0</span>
+                      </div>
+                      <div
+                        class="stat_box_del flex flex-col border border-red-200 bg-red-50 rounded p-1 dark:bg-red-900/20 dark:border-red-800">
+                        <span class="text-[9px] text-red-700 font-bold dark:text-red-400">DEL</span>
+                        <span class="text-xs font-mono font-bold text-slate-700 dark:text-slate-200"
+                          x-text="stagingData_Object?.diff.removed">0</span>
+                      </div>
+                    </div>
+                    <div class="sidebar_staging_actions flex gap-2">
+                      <button @click="action_CommitStagedData_ToDB"
+                        class="sidebar_btn_commit flex-1 bg-slate-800 text-white py-1.5 rounded text-[12px] font-bold hover:bg-slate-900 shadow-sm transition dark:bg-blue-600 dark:hover:bg-blue-500">Commit
+                        to DB</button>
+                      <button @click="stagingData_Object = null; ui_StatusMessage=''"
+                        class="sidebar_btn_cancel px-3 border border-slate-300 text-slate-600 rounded text-[12px] font-bold hover:bg-slate-50 transition dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700">Cancel</button>
+                    </div>
+                  </div>
+                </div>
+
+                <button @click="action_ExportToExcel"
+                  class="sidebar_btn_download_excel w-full border border-green-600 text-green-700 bg-green-50 py-2 rounded text-xs font-bold hover:bg-green-100 transition flex justify-center items-center gap-2 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800 dark:hover:bg-green-900/40">
+                  <span>📥</span> Download Excel
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="sidebar_section_delete mb-5 border-b border-gray-100 pb-4 dark:border-slate-700"
+            x-data="{ open: false }">
+            <div @click="open = !open" class="flex justify-between items-center cursor-pointer mb-2 group select-none">
+              <h3
+                class="sidebar_section_title text-xs font-bold text-red-400 uppercase tracking-wider group-hover:text-red-500 transition-colors">
+                🗑️ Soft Delete
+              </h3>
+              <span class="text-gray-400 text-[14px] font-bold transition-transform duration-200"
+                :class="open ? 'rotate-90' : 'rotate-0'">›</span>
+            </div>
+
+            <div x-show="open" x-collapse>
+              <div class="mb-2">
+                <textarea x-model="filter_DeleteListInput"
+                  class="sidebar_input_delete_ids w-full border border-red-200 p-2 rounded text-xs h-16 font-mono focus:border-red-500 focus:ring-1 focus:ring-red-200 outline-none text-gray-700 dark:bg-slate-900 dark:border-red-900/50 dark:text-red-100 dark:placeholder-red-100/50"
+                  placeholder="Paste IDs here to drop from Live view..."></textarea>
+              </div>
+              <button @click="action_SoftDeleteIDs_FromDB"
+                class="sidebar_btn_confirm_delete w-full bg-red-50 text-red-600 border border-red-200 py-1.5 rounded text-xs font-bold hover:bg-red-100 hover:text-red-700 transition dark:bg-red-900/20 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/40">
+                Confirm Delete
               </button>
             </div>
           </div>
 
-          <div class="sidebar_section_year mb-5 border-b border-gray-100 pb-4 dark:border-slate-700">
-             <h3 class="sidebar_section_title text-xs font-bold text-gray-400 uppercase mb-3 tracking-wider">📅 Database Year</h3>
-             <select x-model="targetYear" @change="action_YearChanged"
-               class="sidebar_select_year w-full border border-blue-300 p-2 rounded text-xs bg-blue-50 focus:ring-1 focus:ring-blue-500 outline-none text-blue-900 font-bold dark:bg-slate-900 dark:border-slate-600 dark:text-blue-400">
-               <template x-for="y in availableYears" :key="y">
-                 <option :value="y" x-text="y"></option>
-               </template>
-             </select>
-          </div>
-
-          <div class="sidebar_section_history mb-5 border-b border-gray-100 pb-4 dark:border-slate-700">
-            <h3 class="sidebar_section_title text-xs font-bold text-gray-400 uppercase mb-2 tracking-wider">⏳ History
-            </h3>
-            <select x-model="filter_SelectedVersion" @change="fetch_MainGridData_FromAPI"
-              class="sidebar_select_version w-full border border-gray-300 p-2 rounded text-xs bg-gray-50 focus:ring-1 focus:ring-blue-500 outline-none text-gray-700 dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300">
-              <option value="">🟢 Live (HEAD)</option>
-              <template x-for="v in meta_VersionsList" :key="v.ts">
-                <option :value="v.ts" x-text="v.label"></option>
-              </template>
-            </select>
-          </div>
-
-          <div class="sidebar_section_delete mb-5 border-b border-gray-100 pb-4 dark:border-slate-700">
-            <h3 class="sidebar_section_title text-xs font-bold text-red-400 uppercase mb-2 tracking-wider">🗑️ Soft
-              Delete</h3>
-            <div class="mb-2">
-              <textarea x-model="filter_DeleteListInput"
-                class="sidebar_input_delete_ids w-full border border-red-200 p-2 rounded text-xs h-16 font-mono focus:border-red-500 focus:ring-1 focus:ring-red-200 outline-none text-gray-700 dark:bg-slate-900 dark:border-red-900/50 dark:text-red-100 dark:placeholder-red-100/50"
-                placeholder="Paste IDs here to drop from Live view..."></textarea>
+          <div class="sidebar_section_history mb-5 border-b border-gray-100 pb-4 dark:border-slate-700"
+            x-data="{ open: false }">
+            <div @click="open = !open" class="flex justify-between items-center cursor-pointer mb-2 group select-none">
+              <h3
+                class="sidebar_section_title text-xs font-bold text-gray-400 uppercase tracking-wider group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors">
+                ⏳ History & Changes
+              </h3>
+              <span class="text-gray-400 text-[14px] font-bold transition-transform duration-200"
+                :class="open ? 'rotate-90' : 'rotate-0'">›</span>
             </div>
-            <button @click="action_SoftDeleteIDs_FromDB"
-              class="sidebar_btn_confirm_delete w-full bg-red-50 text-red-600 border border-red-200 py-1.5 rounded text-xs font-bold hover:bg-red-100 hover:text-red-700 transition dark:bg-red-900/20 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/40">
-              Confirm Delete
-            </button>
-          </div>
 
-          <div class="sidebar_section_location mb-5 border-b border-gray-100 pb-4 space-y-3 dark:border-slate-700">
-            <h3 class="sidebar_section_title text-xs font-bold text-gray-400 uppercase tracking-wider">📍 Location</h3>
+            <div x-show="open" x-collapse>
+              <div @click="ui_LoadVersion('')"
+                class="cursor-pointer mb-2 p-2 rounded border transition-colors flex justify-between items-center"
+                :class="!filter_SelectedVersion ? 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800' : 'bg-white border-gray-200 hover:bg-gray-50 dark:bg-slate-800 dark:border-slate-600'">
+                <span class="text-xs font-bold"
+                  :class="!filter_SelectedVersion ? 'text-green-700 dark:text-green-400' : 'text-gray-600 dark:text-gray-300'">
+                  🟢 Live (Current)
+                </span>
+                <span x-show="!filter_SelectedVersion" class="text-[10px] text-green-600 font-bold">ACTIVE</span>
+              </div>
 
-            <div class="sidebar_location_prov_group">
-              <label class="block text-[12px] font-bold text-gray-500 mb-1 dark:text-gray-400">PROVINSI</label>
-              <select x-model="filter_SelProv"
-                @change="filter_SelKab=''; filter_SelKec=''; fetch_MainGridData_FromAPI()"
-                class="sidebar_select_prov w-full border p-1.5 rounded text-xs bg-white focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300">
-                <option value="">- All -</option>
-                <template x-for="p in Object.keys(meta_HierarchyTree).sort()" :key="p">
-                  <option :value="p" x-text="p"></option>
+              <select x-model="targetYear" @change="action_YearChanged"
+                class="sidebar_select_year w-full border border-blue-300 mb-2 p-2 rounded text-xs bg-blue-50 focus:ring-1 focus:ring-blue-500 outline-none text-blue-900 font-bold dark:bg-slate-900 dark:border-slate-600 dark:text-blue-400">
+                <template x-for="y in availableYears" :key="y">
+                  <option :value="y" x-text="y"></option>
                 </template>
               </select>
-            </div>
 
-            <div class="sidebar_location_kab_group">
-              <label class="block text-[12px] font-bold text-gray-500 mb-1 dark:text-gray-400">KABUPATEN/KOTA</label>
-              <select x-model="filter_SelKab" @change="filter_SelKec=''; fetch_MainGridData_FromAPI()"
-                class="sidebar_select_kab w-full border p-1.5 rounded text-xs bg-white focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
-                :disabled="!filter_SelProv" :class="{'bg-gray-100 dark:bg-slate-800': !filter_SelProv}">
-                <option value="">- All -</option>
-                <template x-for="k in util_GetKabOptions()" :key="k">
-                  <option :value="k" x-text="k"></option>
+              <div class="space-y-2 max-h-[300px] overflow-y-auto custom-scrollbar pr-1">
+                <template x-for="v in meta_VersionsList" :key="v.ts">
+                  <div
+                    class="border rounded bg-white dark:bg-slate-800 dark:border-slate-700 overflow-hidden flex flex-col">
+
+                    <div
+                      class="p-2 flex flex-col gap-1 border-b border-gray-50 dark:border-slate-700 bg-gray-50/50 dark:bg-slate-800">
+                      <div class="flex justify-between items-start">
+                        <span class="text-[10px] font-mono text-gray-500 dark:text-gray-400" x-text="v.ts"></span>
+                        <span
+                          class="text-[9px] px-1 rounded bg-gray-200 text-gray-600 dark:bg-slate-700 dark:text-gray-300"
+                          x-text="v.label.split(' - ')[1] || 'Commit'"></span>
+                      </div>
+
+                      <div class="flex gap-2 mt-1">
+                        <button @click="ui_LoadVersion(v.ts)"
+                          class="flex-1 py-1 text-[10px] font-bold rounded border transition-colors"
+                          :class="filter_SelectedVersion === v.ts ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50 dark:bg-slate-700 dark:text-gray-300 dark:border-slate-600'">
+                          View Data
+                        </button>
+
+                        <button @click="ui_ToggleHistoryDetails(v.ts)"
+                          class="px-2 py-1 text-[10px] font-bold rounded border border-gray-300 text-gray-500 hover:bg-gray-100 dark:border-slate-600 dark:text-slate-400 dark:hover:bg-slate-700"
+                          x-text="history_OpenDetailsId === v.ts ? 'Hide' : 'Details'">
+                        </button>
+                      </div>
+                    </div>
+
+                    <div x-show="history_OpenDetailsId === v.ts" x-collapse
+                      class="bg-slate-50 border-t border-gray-200 p-2 dark:bg-slate-900 dark:border-slate-700">
+
+                      <div x-show="!history_DiffCache[v.ts]"
+                        class="text-center py-2 text-gray-400 text-[10px] animate-pulse">
+                        Loading diff...
+                      </div>
+
+                      <ul class="space-y-2 text-[10px] font-mono">
+                        <template x-for="change in (history_DiffCache[v.ts] || [])" :key="change.id + change.type">
+                          <li class="border-b border-gray-100 pb-1 last:border-0 dark:border-slate-700">
+                            <div class="flex items-center gap-1 mb-0.5">
+                              <span x-show="change.type === 'ADD'" class="text-green-600 font-bold">[+] ADD</span>
+                              <span x-show="change.type === 'DEL'" class="text-red-600 font-bold">[-] DEL</span>
+                              <span x-show="change.type === 'MOD'" class="text-blue-600 font-bold">[~] MOD</span>
+                              <span x-text="change.id" class="text-slate-700 dark:text-slate-300 font-bold"></span>
+                            </div>
+                            <div class="whitespace-pre-wrap pl-8 text-gray-500 dark:text-gray-400 leading-tight"
+                              x-text="change.desc"></div>
+                          </li>
+                        </template>
+                        <template x-if="history_DiffCache[v.ts] && history_DiffCache[v.ts].length === 0">
+                          <li class="text-gray-400 italic text-center">No structural changes found.</li>
+                        </template>
+                      </ul>
+                    </div>
+
+                  </div>
                 </template>
-              </select>
-            </div>
-
-            <div class="sidebar_location_kec_group">
-              <label class="block text-[12px] font-bold text-gray-500 mb-1 dark:text-gray-400">KECAMATAN</label>
-              <select x-model="filter_SelKec" @change="fetch_MainGridData_FromAPI"
-                class="sidebar_select_kec w-full border p-1.5 rounded text-xs bg-white focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
-                :disabled="!filter_SelKab" :class="{'bg-gray-100 dark:bg-slate-800': !filter_SelKab}">
-                <option value="">- All -</option>
-                <template x-for="c in util_GetKecOptions()" :key="c">
-                  <option :value="c" x-text="c"></option>
-                </template>
-              </select>
-            </div>
-
-            <div class="sidebar_location_search_group mb-3">
-              <input type="text" x-model="filter_NameSearch"
-                class="sidebar_input_search_name w-full border p-2 rounded text-xs focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
-                placeholder="Search Desa Name...">
+              </div>
             </div>
           </div>
 
-          <div class="sidebar_section_id_search mb-5 border-b border-gray-100 pb-4 dark:border-slate-700">
-            <h3 class="sidebar_section_title text-xs font-bold text-gray-400 uppercase mb-2 tracking-wider">🔍 Specific
-              Search</h3>
-            <div class="mb-3">
-              <textarea x-model="filter_IdListInput"
-                class="sidebar_input_search_ids w-full border p-2 rounded text-xs h-20 font-mono focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
-                placeholder="Paste IDs here (comma or newline separated) to search by ID Desa..."></textarea>
+          <div class="sidebar_section_location mb-5 border-b border-gray-100 pb-4 space-y-0 dark:border-slate-700"
+            x-data="{ open: true }">
+            <div @click="open = !open" class="flex justify-between items-center cursor-pointer mb-3 group select-none">
+              <h3
+                class="sidebar_section_title text-xs font-bold text-gray-400 uppercase tracking-wider group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors">
+                📍 Location
+              </h3>
+              <span class="text-gray-400 text-[14px] font-bold transition-transform duration-200"
+                :class="open ? 'rotate-90' : 'rotate-0'">›</span>
             </div>
-            <button @click="fetch_MainGridData_FromAPI"
-              class="sidebar_btn_apply_filter w-full bg-slate-700 text-white py-2 rounded text-xs font-bold hover:bg-slate-800 transition shadow-sm dark:bg-slate-600 dark:hover:bg-slate-500">
-              Apply Filters
-            </button>
+
+            <div x-show="open" x-collapse class="space-y-3">
+              <div class="sidebar_location_prov_group">
+                <label class="block text-[12px] font-bold text-gray-500 mb-1 dark:text-gray-400">PROVINSI</label>
+                <select x-model="filter_SelProv"
+                  @change="filter_SelKab=''; filter_SelKec=''; fetch_MainGridData_FromAPI()"
+                  class="sidebar_select_prov w-full border p-1.5 rounded text-xs bg-white focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300">
+                  <option value="">- All -</option>
+                  <template x-for="p in Object.keys(meta_HierarchyTree).sort()" :key="p">
+                    <option :value="p" x-text="p"></option>
+                  </template>
+                </select>
+              </div>
+
+              <div class="sidebar_location_kab_group">
+                <label class="block text-[12px] font-bold text-gray-500 mb-1 dark:text-gray-400">KABUPATEN/KOTA</label>
+                <select x-model="filter_SelKab" @change="filter_SelKec=''; fetch_MainGridData_FromAPI()"
+                  class="sidebar_select_kab w-full border p-1.5 rounded text-xs bg-white focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
+                  :disabled="!filter_SelProv" :class="{'bg-gray-100 dark:bg-slate-800': !filter_SelProv}">
+                  <option value="">- All -</option>
+                  <template x-for="k in util_GetKabOptions()" :key="k">
+                    <option :value="k" x-text="k"></option>
+                  </template>
+                </select>
+              </div>
+
+              <div class="sidebar_location_kec_group">
+                <label class="block text-[12px] font-bold text-gray-500 mb-1 dark:text-gray-400">KECAMATAN</label>
+                <select x-model="filter_SelKec" @change="fetch_MainGridData_FromAPI"
+                  class="sidebar_select_kec w-full border p-1.5 rounded text-xs bg-white focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
+                  :disabled="!filter_SelKab" :class="{'bg-gray-100 dark:bg-slate-800': !filter_SelKab}">
+                  <option value="">- All -</option>
+                  <template x-for="c in util_GetKecOptions()" :key="c">
+                    <option :value="c" x-text="c"></option>
+                  </template>
+                </select>
+              </div>
+
+              <div class="sidebar_location_search_group mb-3">
+                <input type="text" x-model="filter_NameSearch"
+                  class="sidebar_input_search_name w-full border p-2 rounded text-xs focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
+                  placeholder="Search Desa Name...">
+              </div>
+            </div>
+          </div>
+
+          <div class="sidebar_section_id_search mb-5 border-b border-gray-100 pb-4 dark:border-slate-700"
+            x-data="{ open: true }">
+            <div @click="open = !open" class="flex justify-between items-center cursor-pointer mb-2 group select-none">
+              <h3
+                class="sidebar_section_title text-xs font-bold text-gray-400 uppercase tracking-wider group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors">
+                🔍 Specific Search
+              </h3>
+              <span class="text-gray-400 text-[14px] font-bold transition-transform duration-200"
+                :class="open ? 'rotate-90' : 'rotate-0'">›</span>
+            </div>
+
+            <div x-show="open" x-collapse>
+              <div class="mb-3">
+                <textarea x-model="filter_IdListInput"
+                  class="sidebar_input_search_ids w-full border p-2 rounded text-xs h-20 font-mono focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
+                  placeholder="Paste IDs here (comma or newline separated) to search by ID Desa..."></textarea>
+              </div>
+              <button @click="fetch_MainGridData_FromAPI"
+                class="sidebar_btn_apply_filter w-full bg-slate-700 text-white py-2 rounded text-xs font-bold hover:bg-slate-800 transition shadow-sm dark:bg-slate-600 dark:hover:bg-slate-500">
+                Apply Filters
+              </button>
+            </div>
           </div>
 
         </div>
@@ -619,6 +727,10 @@
         stagingData_Object: null, // Stores uploaded file analysis
         agGridApiInstance: null, // AG Grid Object
 
+        // ADD THESE NEW VARS:
+        history_OpenDetailsId: null, // Tracks which card is expanded
+        history_DiffCache: {},       // Caches diffs so we don't re-fetch on every toggle
+
         // --- FILTERS & INPUTS ---
         isTranslationActive: false, // Toggle 1-5 vs Text
         filter_SelectedVersion: "", // Timestamp string
@@ -650,6 +762,40 @@
         },
 
         // ============================================
+        // ACTIONS: Version Diff sidebar 
+        // ============================================
+        ui_LoadVersion(ts) {
+          this.filter_SelectedVersion = ts;
+          this.fetch_MainGridData_FromAPI();
+        },
+
+        // Fetch & Toggle Details
+        async ui_ToggleHistoryDetails(ts) {
+          // If clicking same one, close it
+          if (this.history_OpenDetailsId === ts) {
+            this.history_OpenDetailsId = null;
+            return;
+          }
+
+          this.history_OpenDetailsId = ts;
+
+          // If already cached, don't fetch
+          if (this.history_DiffCache[ts]) return;
+
+          try {
+            // Use targetYear
+            let res = await fetch(`${this.apiBaseUrl}/history/details/${this.targetYear}?version=${ts}`);
+            let data = await res.json();
+
+            // Save to cache
+            this.history_DiffCache[ts] = data.changes || [];
+          } catch (e) {
+            console.error(e);
+            alert("Failed to load details");
+          }
+        },
+
+        // ============================================
         // VIEW SWITCHING
         // ============================================
         ui_SwitchViewMode(mode) {
@@ -673,18 +819,21 @@
         // ACTIONS: YEAR & FILTER
         // ============================================
         action_YearChanged() {
-            // Reset filters when changing year to avoid confusing states
-            this.filter_SelectedVersion = "";
-            this.filter_SelProv = "";
-            this.filter_SelKab = "";
-            this.filter_SelKec = "";
-            this.stagingData_Object = null;
-            this.stats_TotalRows = "0";
-            this.stats_LastUpdateLabel = "N/A";
-            
-            // Reload Data
-            this.fetchVersionHistoryAndHierarchy();
-            this.fetch_MainGridData_FromAPI();
+          // Reset filters when changing year to avoid confusing states
+          this.filter_SelectedVersion = "";
+          this.filter_SelProv = "";
+          this.filter_SelKab = "";
+          this.filter_SelKec = "";
+          this.stagingData_Object = null;
+          this.stats_TotalRows = "0";
+          this.stats_LastUpdateLabel = "N/A";
+          this.history_DiffCache = {}; // <--- CLEAR CACHE for sidebar diff
+          this.history_OpenDetailsId = null; // <--- RESET UI for sidebar diff
+
+
+          // Reload Data
+          this.fetchVersionHistoryAndHierarchy();
+          this.fetch_MainGridData_FromAPI();
         },
 
         // ============================================
@@ -700,13 +849,15 @@
               resizable: true,
               minWidth: 120,
               flex: 1,
-              wrapText: true,
+              wrapText: false,
               autoHeight: false
             },
-            pagination: true,
-            paginationPageSize: 1000,
+            pagination: false,
+            rowBuffer: 20,
             rowSelection: 'multiple',
-            animateRows: true
+            animateRows: false, 
+            suppressRowClickSelection: true,
+            debounceVerticalScrollbar: true
           };
           // Capture API instance correctly for v31+
           this.agGridApiInstance = agGrid.createGrid(document.getElementById('ag_grid_element'), gridOptions);
@@ -737,7 +888,7 @@
             // If Live, show the latest commit date
             this.stats_LastUpdateLabel = this.meta_VersionsList[0].ts;
           } else {
-             this.stats_LastUpdateLabel = "No Data";
+            this.stats_LastUpdateLabel = "No Data";
           }
 
           let params = new URLSearchParams({limit: 50000, translate: this.isTranslationActive});
@@ -758,8 +909,6 @@
               this.stats_TotalRows = data.length.toLocaleString();
 
               if (data.length > 0) {
-                // GRID UPDATE (Slice for performance)
-                const displayData = data.slice(0, 1000);
 
                 // Dynamic Column Generation
                 let cols = Object.keys(data[0]).map(k => ({
@@ -771,7 +920,7 @@
 
                 if (this.agGridApiInstance) {
                   this.agGridApiInstance.setGridOption('columnDefs', cols);
-                  this.agGridApiInstance.setGridOption('rowData', displayData);
+                  this.agGridApiInstance.setGridOption('rowData', data);
                 }
 
                 // Also trigger calculation if dashboard is active
@@ -779,23 +928,23 @@
               } else {
                 this.stats_TotalRows = "0";
                 if (this.agGridApiInstance) {
-                    this.agGridApiInstance.setGridOption('rowData', []);
-                    this.agGridApiInstance.setGridOption('columnDefs', []);
+                  this.agGridApiInstance.setGridOption('rowData', []);
+                  this.agGridApiInstance.setGridOption('columnDefs', []);
                 }
               }
             } else if (data.error) {
-               // Handle specific error
-               console.error(data.error);
-               if(data.error === "Table not found.") {
-                   this.stats_TotalRows = "0";
-                   this.stats_LastUpdateLabel = "Empty DB";
-                   if (this.agGridApiInstance) {
-                        this.agGridApiInstance.setGridOption('rowData', []);
-                        this.agGridApiInstance.setGridOption('columnDefs', []);
-                   }
-               } else {
-                   alert("Server Error: " + data.error);
-               }
+              // Handle specific error
+              console.error(data.error);
+              if (data.error === "Table not found.") {
+                this.stats_TotalRows = "0";
+                this.stats_LastUpdateLabel = "Empty DB";
+                if (this.agGridApiInstance) {
+                  this.agGridApiInstance.setGridOption('rowData', []);
+                  this.agGridApiInstance.setGridOption('columnDefs', []);
+                }
+              } else {
+                alert("Server Error: " + data.error);
+              }
             }
           } catch (e) {console.error(e);}
 
@@ -1074,7 +1223,7 @@
             this.isTableStructureLoaded = true;
           } catch (e) {
             // Only alert if we are actually looking at the dashboard
-            if(this.viewModeState === 'dashboard') alert("Error: " + e.message);
+            if (this.viewModeState === 'dashboard') alert("Error: " + e.message);
             console.error(e);
             this.ui_StatusMessage = "❌ Error";
           }
@@ -1082,8 +1231,8 @@
 
         // Explicit Action for Button Click (Force Switch)
         action_CalculateDashboardStats() {
-            this.ui_SwitchViewMode('dashboard');
-            this.calculate_DashboardStats_FromAPI();
+          this.ui_SwitchViewMode('dashboard');
+          this.calculate_DashboardStats_FromAPI();
         },
 
         // ============================================
@@ -1167,7 +1316,7 @@
               this.ui_StatusMessage = "";
             } else if (data.status === "warning") {
               // This is likely what is happening now
-              alert("⚠️ Server Warning: " + data.message);
+              alert("��️ Server Warning: " + data.message);
               this.ui_StatusMessage = "⚠️ ID Not Found";
             } else {
               alert("❌ Error: " + (data.error || "Unknown error"));

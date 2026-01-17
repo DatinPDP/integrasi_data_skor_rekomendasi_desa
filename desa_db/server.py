@@ -752,6 +752,78 @@ async def endpoint_post_delete_ids(
     finally:
         con.close()
 
+# Check diff version sidebar
+@app.get("/history/details/{year}")
+def endpoint_get_history_details(year: str, version: str = Query(...)):
+    """
+    Calculates the 'Git Diff' for a specific commit version.
+    1. Finds rows that EXPIRED at this timestamp (Old State).
+    2. Finds rows that STARTED at this timestamp (New State).
+    3. Compares them to determine: ADDED, DELETED, or MODIFIED.
+    """
+    con, _ = helpers_get_db_connection(year)
+    try:
+        # 1. Fetch Old State (Rows valid_to = version)
+        old_rows_df = con.execute(f"SELECT * FROM master_data WHERE valid_to = ?", [version]).pl()
+        
+        # 2. Fetch New State (Rows valid_from = version)
+        new_rows_df = con.execute(f"SELECT * FROM master_data WHERE valid_from = ?", [version]).pl()
+        
+        # Convert to Dictionary { ID: {row_data} }
+        # Uses ID_COL from middleware (Kode Wilayah Administrasi Desa)
+        old_map = {str(row[ID_COL]): row for row in old_rows_df.to_dicts()}
+        new_map = {str(row[ID_COL]): row for row in new_rows_df.to_dicts()}
+        
+        changes = []
+        ignored_cols = ["valid_from", "valid_to", "commit_id", "source_file"]
+
+        # A. Detect MODIFIED and ADDED
+        for uid, new_row in new_map.items():
+            if uid in old_map:
+                # It existed before -> Check for MODIFICATIONS
+                old_row = old_map[uid]
+                diffs = []
+                for k, v in new_row.items():
+                    if k not in ignored_cols and old_row.get(k) != v:
+                        diffs.append(k)
+                
+                if diffs:
+                    changes.append({
+                        "type": "MOD", 
+                        "id": uid, 
+                        "desc": f"Updated headers:\n- " + "\n- ".join(diffs)
+                    })
+            else:
+                # It did not exist before -> ADDED
+                changes.append({
+                    "type": "ADD", 
+                    "id": uid, 
+                    "desc": "New Record Added"
+                })
+
+        # B. Detect DELETED (In Old but NOT in New)
+        for uid in old_map:
+            if uid not in new_map:
+                changes.append({
+                    "type": "DEL", 
+                    "id": uid, 
+                    "desc": f"Dropped (Valid To: {version})"
+                })
+        
+        # Safety: Limit to first 100 changes to prevent UI crash on massive uploads
+        if len(changes) > 100:
+            remaining = len(changes) - 100
+            changes = changes[:100]
+            changes.append({"type": "INFO", "id": "...", "desc": f"...and {remaining} more changes"})
+
+        return JSONResponse(content={"changes": changes})
+
+    except Exception as e:
+        traceback.print_exc()
+        return JSONResponse(status_code=500, content={"error": str(e)})
+    finally:
+        con.close()
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
