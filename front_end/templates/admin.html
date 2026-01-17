@@ -478,6 +478,16 @@
             </div>
           </div>
 
+          <div class="sidebar_section_year mb-5 border-b border-gray-100 pb-4 dark:border-slate-700">
+             <h3 class="sidebar_section_title text-xs font-bold text-gray-400 uppercase mb-3 tracking-wider">📅 Database Year</h3>
+             <select x-model="targetYear" @change="action_YearChanged"
+               class="sidebar_select_year w-full border border-blue-300 p-2 rounded text-xs bg-blue-50 focus:ring-1 focus:ring-blue-500 outline-none text-blue-900 font-bold dark:bg-slate-900 dark:border-slate-600 dark:text-blue-400">
+               <template x-for="y in availableYears" :key="y">
+                 <option :value="y" x-text="y"></option>
+               </template>
+             </select>
+          </div>
+
           <div class="sidebar_section_history mb-5 border-b border-gray-100 pb-4 dark:border-slate-700">
             <h3 class="sidebar_section_title text-xs font-bold text-gray-400 uppercase mb-2 tracking-wider">⏳ History
             </h3>
@@ -594,6 +604,8 @@
         // --- CONFIGURATION ---
         apiBaseUrl: "{{ api_url }}",
         targetYear: "2025",
+        // Add years if the data actually exists
+        availableYears: [2024, 2025, 2026],
 
         // --- GLOBAL STATE ---
         isSidebarOpen: true,
@@ -658,6 +670,24 @@
         },
 
         // ============================================
+        // ACTIONS: YEAR & FILTER
+        // ============================================
+        action_YearChanged() {
+            // Reset filters when changing year to avoid confusing states
+            this.filter_SelectedVersion = "";
+            this.filter_SelProv = "";
+            this.filter_SelKab = "";
+            this.filter_SelKec = "";
+            this.stagingData_Object = null;
+            this.stats_TotalRows = "0";
+            this.stats_LastUpdateLabel = "N/A";
+            
+            // Reload Data
+            this.fetchVersionHistoryAndHierarchy();
+            this.fetch_MainGridData_FromAPI();
+        },
+
+        // ============================================
         // AG-GRID LOGIC
         // ============================================
         initializeAgGridConfig() {
@@ -706,6 +736,8 @@
           } else if (this.meta_VersionsList.length > 0) {
             // If Live, show the latest commit date
             this.stats_LastUpdateLabel = this.meta_VersionsList[0].ts;
+          } else {
+             this.stats_LastUpdateLabel = "No Data";
           }
 
           let params = new URLSearchParams({limit: 50000, translate: this.isTranslationActive});
@@ -717,6 +749,7 @@
           if (this.filter_IdListInput.trim()) params.append("ids", this.filter_IdListInput.replace(/\n/g, ","));
 
           try {
+            // Use targetYear dynamically
             let res = await fetch(`${this.apiBaseUrl}/query/${this.targetYear}?${params}`);
             let data = await res.json();
 
@@ -745,10 +778,24 @@
                 this.calculate_DashboardStats_FromAPI();
               } else {
                 this.stats_TotalRows = "0";
-                if (this.agGridApiInstance) this.agGridApiInstance.setGridOption('rowData', []);
+                if (this.agGridApiInstance) {
+                    this.agGridApiInstance.setGridOption('rowData', []);
+                    this.agGridApiInstance.setGridOption('columnDefs', []);
+                }
               }
             } else if (data.error) {
-              alert("Server Error: " + data.error);
+               // Handle specific error
+               console.error(data.error);
+               if(data.error === "Table not found.") {
+                   this.stats_TotalRows = "0";
+                   this.stats_LastUpdateLabel = "Empty DB";
+                   if (this.agGridApiInstance) {
+                        this.agGridApiInstance.setGridOption('rowData', []);
+                        this.agGridApiInstance.setGridOption('columnDefs', []);
+                   }
+               } else {
+                   alert("Server Error: " + data.error);
+               }
             }
           } catch (e) {console.error(e);}
 
@@ -963,6 +1010,7 @@
           let fd = new FormData();
           fd.append("file", file);
           try {
+            // Use targetYear
             let res = await fetch(`${this.apiBaseUrl}/stage/${this.targetYear}`, {method: "POST", body: fd});
             let d = await res.json();
             if (d.status === "staged") {
@@ -981,6 +1029,7 @@
             filename: this.stagingData_Object.filename
           });
           try {
+            // Use targetYear
             let res = await fetch(`${this.apiBaseUrl}/commit/${this.targetYear}?${p}`, {method: "POST"});
             let d = await res.json();
             if (d.status === "success") {
@@ -996,13 +1045,12 @@
         // ACTIONS: CALCULATION
         // ============================================
         async calculate_DashboardStats_FromAPI() {
-          // Force view switch if needed
-          if (this.viewModeState !== 'dashboard') {
-            this.viewModeState = 'dashboard';
-          }
+          // Do not force switch logic here. 
+          // Only calculate. If view is grid, just calculate in background
+          // to keep data ready still calculate. 
 
           this.ui_StatusMessage = "Calculating...";
-          // Show a simple loading indicator in the table
+          // Only clear/show loading if the table actually exists
           const tbody = document.querySelector('#dashboard_table_element tbody');
           if (tbody) tbody.innerHTML = '<tr><td colspan="100" class="text-center p-4">Calculating...</td></tr>';
 
@@ -1016,6 +1064,7 @@
           if (this.filter_IdListInput.trim()) params.append("ids", this.filter_IdListInput.replace(/\n/g, ","));
 
           try {
+            // Use targetYear
             let res = await fetch(`${this.apiBaseUrl}/dashboard/calculate/${this.targetYear}?${params.toString()}`, {method: "POST"});
             if (!res.ok) throw new Error("Calculation failed");
 
@@ -1024,9 +1073,17 @@
             this.ui_StatusMessage = "✅ Done";
             this.isTableStructureLoaded = true;
           } catch (e) {
-            alert("Error: " + e.message);
+            // Only alert if we are actually looking at the dashboard
+            if(this.viewModeState === 'dashboard') alert("Error: " + e.message);
+            console.error(e);
             this.ui_StatusMessage = "❌ Error";
           }
+        },
+
+        // Explicit Action for Button Click (Force Switch)
+        action_CalculateDashboardStats() {
+            this.ui_SwitchViewMode('dashboard');
+            this.calculate_DashboardStats_FromAPI();
         },
 
         // ============================================
@@ -1095,6 +1152,7 @@
           params.append("summary", "User deleted from dashboard");
 
           try {
+            // Use targetYear
             let res = await fetch(`${this.apiBaseUrl}/delete/${this.targetYear}?${params}`, {method: "POST"});
             let data = await res.json();
 
