@@ -205,7 +205,32 @@ async def endpoint_post_stage_upload(
         df = df[:, :limit]
         df.columns = stage_upload_header[:limit]
 
-        # Save Staged Data
+        # OPTIMIZATION
+        # Identify Text Columns (same as middleware)
+        TEXT_COLUMNS = {
+            "Provinsi", "Kabupaten/ Kota", "Kecamatan", 
+            "Kode Wilayah Administrasi Desa", "Desa", "TAHUN DATA"
+        }
+        
+        # Identify Score Columns
+        score_cols = [c for c in df.columns if c not in TEXT_COLUMNS]
+        
+        # Cast Score Columns to Int8 (TINYINT)
+        # strict=False converts non-numeric garbage to Null
+        if score_cols:
+            df = df.with_columns(
+                [pl.col(c).cast(pl.Int8, strict=False) for c in score_cols]
+            )
+        
+        # Cast Identity Columns to String (Ensure IDs are not read as numbers)
+        ident_cols = [c for c in df.columns if c in TEXT_COLUMNS]
+        if ident_cols:
+             df = df.with_columns(
+                [pl.col(c).cast(pl.String) for c in ident_cols]
+            )
+        # OPTIMIZATION END
+
+        # Save Staged Data (Parquet will now store these as Integers)
         df.write_parquet(temp_path)
 
         # --- 4. Database Merge Logic (DuckDB) ---

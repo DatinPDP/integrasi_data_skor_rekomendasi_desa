@@ -4,6 +4,7 @@
 *.xlsb
 *.duckdb
 *.zip
+*.parquet
 installed.txt
 notes.md
 .ignore/

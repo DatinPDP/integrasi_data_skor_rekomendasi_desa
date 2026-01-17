@@ -86,8 +86,7 @@ def apply_rekomendasis(df: pl.DataFrame) -> pl.DataFrame:
         if col_name in df.columns:
             expr = (
                 pl.col(col_name)
-                # Cast to Int64 to ensure "5.0" (float) or "5" (str) matches the dictionary keys (1,2,3,4)
-                .cast(pl.Int64, strict=False) # Ensure we are matching numbers
+                # OPTIMIZATION: Data is already Int from DB.
                 # This explicitly handles the 'default' and 'return_dtype' logic
                 .replace_strict(logic_map, default=None, return_dtype=pl.String)
                 .alias(col_name)
@@ -135,11 +134,29 @@ def helpers_init_db(con: duckdb.DuckDBPyConnection, headers: list[str]):
     - valid_from: Timestamp when this row became active.
     - valid_to: Timestamp when this row was replaced/deleted (NULL = Currently Active).
     - commit_id: Groups changes by upload transaction.
+    - Metadata/Identity columns -> VARCHAR
+    - Score columns -> TINYINT (1 byte integer)
     """
     # Construct column definitions for SQL (e.g., "Col1" VARCHAR, "Col2" VARCHAR...)
     # Note: Wrap headers in double quotes to handle spaces or special chars in column names.
-    cols_def = ", ".join([f'"{h}" VARCHAR' for h in headers])
     
+    # define columns that MUST remain text/string
+    TEXT_COLUMNS = {
+        "valid_from", "valid_to", "commit_id", "source_file",
+        "Provinsi", "Kabupaten/ Kota", "Kecamatan", 
+        "Kode Wilayah Administrasi Desa", "Desa", "TAHUN DATA"
+    }
+
+    cols_def = []
+    for h in headers:
+        if h in TEXT_COLUMNS:
+            cols_def.append(f'"{h}" VARCHAR')
+        else:
+            # OPTIMIZATION: Use TINYINT for 1-5 scores
+            cols_def.append(f'"{h}" TINYINT')
+
+    cols_optimized = ", ".join(cols_def)
+
     # Create the MAIN table (Latest Snapshot)
     # Includes metadata: 'last_updated' and 'source_file'
     con.execute(f"""
@@ -148,7 +165,7 @@ def helpers_init_db(con: duckdb.DuckDBPyConnection, headers: list[str]):
             valid_to TIMESTAMP,
             commit_id VARCHAR,
             source_file VARCHAR,
-            {cols_def}
+            {cols_optimized}
         )
     """)
 
