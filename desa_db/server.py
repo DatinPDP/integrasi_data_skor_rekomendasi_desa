@@ -810,10 +810,10 @@ def endpoint_get_history_details(year: str, version: str = Query(...)):
                     "desc": f"Dropped (Valid To: {version})"
                 })
         
-        # Safety: Limit to first 100 changes to prevent UI crash on massive uploads
-        if len(changes) > 100:
-            remaining = len(changes) - 100
-            changes = changes[:100]
+        # Safety: Limit to first 99999 changes to prevent UI crash on massive uploads
+        if len(changes) > 99999:
+            remaining = len(changes) - 99999
+            changes = changes[:99999]
             changes.append({"type": "INFO", "id": "...", "desc": f"...and {remaining} more changes"})
 
         return JSONResponse(content={"changes": changes})

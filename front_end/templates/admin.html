@@ -303,34 +303,60 @@
 
     <div class="header_left_group flex items-center gap-6">
       <h1 class="header_title_label text-lg font-bold flex items-center gap-2">
-        <span>🛡️</span> Admin | data skor rekomendasi desa
+        Admin | data skor rekomendasi desa
       </h1>
-
-      <div class="header_view_toggles bg-slate-700 p-1 rounded flex gap-1">
-        <button @click="ui_SwitchViewMode('grid')"
-          :class="viewModeState === 'grid' ? 'bg-blue-600 text-white shadow' : 'text-gray-300 hover:bg-slate-600'"
-          class="header_toggle_grid_btn px-3 py-1 rounded text-xs font-bold transition flex items-center gap-1">
-          <span>▦</span> Grid
-        </button>
-        <button @click="ui_SwitchViewMode('dashboard')"
-          :class="viewModeState === 'dashboard' ? 'bg-blue-600 text-white shadow' : 'text-gray-300 hover:bg-slate-600'"
-          class="header_toggle_dashboard_btn px-3 py-1 rounded text-xs font-bold transition flex items-center gap-1">
-          <span>📊</span> Dashboard
-        </button>
-      </div>
 
       <div
         class="header_stats_bar bg-slate-900/50 px-3 py-1 rounded flex items-center gap-4 text-xs border border-slate-600">
-        <div class="stat_total_rows flex flex-col leading-none">
+
+        <div class="header_stat_total_rows flex flex-col leading-none">
           <span class="text-slate-400 text-[9px] uppercase tracking-wider">Total Rows</span>
           <span class="font-mono font-bold text-white text-sm" x-text="stats_TotalRows">0</span>
         </div>
+
         <div class="h-6 w-px bg-slate-600"></div>
-        <div class="stat_last_update flex flex-col leading-none">
+
+        <div class="header_stat_last_update flex flex-col leading-none">
           <span class="text-slate-400 text-[9px] uppercase tracking-wider">Last Update</span>
           <span class="font-mono font-bold text-green-400 text-sm" x-text="stats_LastUpdateLabel">N/A</span>
         </div>
-        <div class="h-6 w-px bg-slate-600"></div>
+      </div>
+
+      <div
+        class="header_stats_bar bg-slate-900/50 px-1 py-1 rounded flex items-center gap-1 text-xs border border-slate-600">
+
+        <div class="header_search_header relative" x-data="{ open: false, term: '' }" @click.outside="open = false">
+          <input type="text" x-model="term" @focus="open = true" @input="open = true" placeholder="search header"
+            class="bg-slate-800 border border-slate-600 rounded px-2 py-1 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 w-32 focus:w-56 transition-all">
+
+          <div x-show="open && term" x-transition
+            class="header_search_header_transition absolute top-full left-0 mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded shadow-xl max-h-60 overflow-y-auto z-50">
+            <template x-for="col in meta_ColumnList.filter(c => c.toLowerCase().includes(term.toLowerCase()))"
+              :key="col">
+              <button @click="action_JumpToColumn(col); open = false; term = ''"
+                class="w-full text-left px-3 py-2 text-xs border-b border-gray-100 dark:border-slate-700 hover:bg-blue-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 block truncate transition-colors">
+                <span x-text="col"></span>
+              </button>
+            </template>
+            <div x-show="meta_ColumnList.filter(c => c.toLowerCase().includes(term.toLowerCase())).length === 0"
+              class="px-3 py-2 text-xs text-gray-400 italic">
+              No headers found
+            </div>
+          </div>
+        </div>
+
+        <div class="header_view_toggles bg-slate-700 p-0.5 rounded flex gap-1">
+          <button @click="ui_SwitchViewMode('grid')"
+            :class="viewModeState === 'grid' ? 'bg-blue-600 text-white shadow' : 'text-gray-300 hover:bg-slate-600'"
+            class="header_toggle_grid_btn px-3 py-1 rounded text-xs font-bold transition flex items-center gap-1">
+            <span>▦</span> Grid
+          </button>
+          <button @click="ui_SwitchViewMode('dashboard')"
+            :class="viewModeState === 'dashboard' ? 'bg-blue-600 text-white shadow' : 'text-gray-300 hover:bg-slate-600'"
+            class="header_toggle_dashboard_btn px-3 py-1 rounded text-xs font-bold transition flex items-center gap-1">
+            <span>📊</span> Dashboard
+          </button>
+        </div>
 
         <div class="header_translation_controls bg-slate-700 p-0.5 rounded flex gap-1">
           <button @click="ui_ToggleTranslate(false)"
@@ -347,8 +373,6 @@
           </button>
         </div>
 
-        <div class="h-6 w-px bg-slate-600"></div>
-
         <div class="header_calc_controls bg-slate-700 p-0.5 rounded flex gap-1">
           <button @click="action_CalculateDashboardStats" :class="'bg-blue-600 text-white shadow'"
             class="header_btn_calculate px-2 py-1 rounded text-[12px] font-bold transition flex items-center gap-1"
@@ -356,6 +380,7 @@
             calculate
           </button>
         </div>
+
       </div>
     </div>
 
@@ -541,7 +566,7 @@
                 </template>
               </select>
 
-              <div class="space-y-2 max-h-[300px] overflow-y-auto custom-scrollbar pr-1">
+              <div class="space-y-2 max-h-[700px] overflow-y-auto custom-scrollbar pr-1">
                 <template x-for="v in meta_VersionsList" :key="v.ts">
                   <div
                     class="border rounded bg-white dark:bg-slate-800 dark:border-slate-700 overflow-hidden flex flex-col">
@@ -577,6 +602,27 @@
                         Loading diff...
                       </div>
 
+                      <div x-show="history_DiffCache[v.ts]" class="grid grid-cols-3 gap-2 text-center">
+                        
+                        <div class="flex flex-col border border-green-200 bg-green-50 rounded p-1 dark:bg-green-900/20 dark:border-green-800">
+                          <span class="text-[9px] font-bold text-green-700 dark:text-green-400">ADD</span>
+                          <span class="text-xs font-mono font-bold text-slate-700 dark:text-slate-200"
+                            x-text="(history_DiffCache[v.ts] || []).filter(x => x.type === 'ADD').length">0</span>
+                        </div>
+
+                        <div class="flex flex-col border border-blue-200 bg-blue-50 rounded p-1 dark:bg-blue-900/20 dark:border-blue-800">
+                          <span class="text-[9px] font-bold text-blue-700 dark:text-blue-400">MOD</span>
+                          <span class="text-xs font-mono font-bold text-slate-700 dark:text-slate-200"
+                            x-text="(history_DiffCache[v.ts] || []).filter(x => x.type === 'MOD').length">0</span>
+                        </div>
+
+                        <div class="flex flex-col border border-red-200 bg-red-50 rounded p-1 dark:bg-red-900/20 dark:border-red-800">
+                          <span class="text-[9px] font-bold text-red-700 dark:text-red-400">DEL</span>
+                          <span class="text-xs font-mono font-bold text-slate-700 dark:text-slate-200"
+                            x-text="(history_DiffCache[v.ts] || []).filter(x => x.type === 'DEL').length">0</span>
+                        </div>
+                      </div>
+
                       <ul class="space-y-2 text-[10px] font-mono">
                         <template x-for="change in (history_DiffCache[v.ts] || [])" :key="change.id + change.type">
                           <li class="border-b border-gray-100 pb-1 last:border-0 dark:border-slate-700">
@@ -594,8 +640,8 @@
                           <li class="text-gray-400 italic text-center">No structural changes found.</li>
                         </template>
                       </ul>
-                    </div>
 
+                    </div>
                   </div>
                 </template>
               </div>
@@ -655,24 +701,9 @@
                   class="sidebar_input_search_name w-full border p-2 rounded text-xs focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
                   placeholder="Search Desa Name...">
               </div>
-            </div>
-          </div>
-
-          <div class="sidebar_section_id_search mb-5 border-b border-gray-100 pb-4 dark:border-slate-700"
-            x-data="{ open: true }">
-            <div @click="open = !open" class="flex justify-between items-center cursor-pointer mb-2 group select-none">
-              <h3
-                class="sidebar_section_title text-xs font-bold text-gray-400 uppercase tracking-wider group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors">
-                🔍 Specific Search
-              </h3>
-              <span class="text-gray-400 text-[14px] font-bold transition-transform duration-200"
-                :class="open ? 'rotate-90' : 'rotate-0'">›</span>
-            </div>
-
-            <div x-show="open" x-collapse>
-              <div class="mb-3">
+              <div class="sidebar_search_ids mb-3">
                 <textarea x-model="filter_IdListInput"
-                  class="sidebar_input_search_ids w-full border p-2 rounded text-xs h-20 font-mono focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
+                  class="sidebar_input_search_ids w-full mb-2 border p-2 rounded text-xs h-20 font-mono focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
                   placeholder="Paste IDs here (comma or newline separated) to search by ID Desa..."></textarea>
               </div>
               <button @click="fetch_MainGridData_FromAPI"
@@ -681,7 +712,6 @@
               </button>
             </div>
           </div>
-
         </div>
       </div>
     </div>
@@ -713,7 +743,7 @@
         apiBaseUrl: "{{ api_url }}",
         targetYear: "2025",
         // Add years if the data actually exists
-        availableYears: [2024, 2025, 2026],
+        availableYears: [2025, 2024,],
 
         // --- GLOBAL STATE ---
         isSidebarOpen: true,
@@ -726,6 +756,7 @@
         meta_HierarchyTree: {}, // From /history/versions (used for dropdowns)
         stagingData_Object: null, // Stores uploaded file analysis
         agGridApiInstance: null, // AG Grid Object
+        meta_ColumnList: [],
 
         // ADD THESE NEW VARS:
         history_OpenDetailsId: null, // Tracks which card is expanded
@@ -767,6 +798,25 @@
         ui_LoadVersion(ts) {
           this.filter_SelectedVersion = ts;
           this.fetch_MainGridData_FromAPI();
+        },
+
+        // Header search
+        action_JumpToColumn(colName) {
+          // Force switch to Grid View if not already there
+          if (this.viewModeState !== 'grid') {
+            this.ui_SwitchViewMode('grid');
+          }
+
+          // Scroll and Highlight
+          setTimeout(() => {
+            if (this.agGridApiInstance) {
+              // Scroll horizontally to the column
+              this.agGridApiInstance.ensureColumnVisible(colName);
+
+              // Flash the column to catch the eye
+              this.agGridApiInstance.flashCells({columns: [colName], flashDelay: 1000, fadeDelay: 500});
+            }
+          }, 100); // Short delay to allow View Switch to render
         },
 
         // Fetch & Toggle Details
@@ -855,9 +905,11 @@
             pagination: false,
             rowBuffer: 20,
             rowSelection: 'multiple',
-            animateRows: false, 
+            animateRows: false,
             suppressRowClickSelection: true,
-            debounceVerticalScrollbar: true
+            debounceVerticalScrollbar: true,
+            enableCellTextSelection: true,
+            ensureDomOrder: true
           };
           // Capture API instance correctly for v31+
           this.agGridApiInstance = agGrid.createGrid(document.getElementById('ag_grid_element'), gridOptions);
@@ -909,6 +961,9 @@
               this.stats_TotalRows = data.length.toLocaleString();
 
               if (data.length > 0) {
+
+                // Save header to state, to be searchable
+                this.meta_ColumnList = Object.keys(data[0]);
 
                 // Dynamic Column Generation
                 let cols = Object.keys(data[0]).map(k => ({
@@ -1096,9 +1151,9 @@
             // Score Columns
             ["SKOR Rata-Rata", "SKOR 1", "SKOR 2", "SKOR 3", "SKOR 4", "SKOR 5"].forEach(k => {
               const td = document.createElement('td');
-              const inp = document.createElement('input');
-              inp.value = row[k] || "";
-              td.appendChild(inp);
+              // Set text directly
+              td.textContent = row[k] || "";
+              td.style.textAlign = "center";
               tr.appendChild(td);
             });
 
@@ -1106,16 +1161,14 @@
             pelaksanaConfig.forEach(c => {
               const td = document.createElement('td');
 
-              // Use textarea instead of input for these columns
-              const inp = document.createElement('textarea');
-              inp.value = row[c.key] || "";
-              inp.className = "input-cell";
+              // Set text directly
+              const textContent = row[c.key] || "";
+              td.textContent = textContent;
 
-              // Auto-resize height based on content
-              inp.style.height = 'auto';
-              inp.rows = (inp.value.match(/\n/g) || []).length + 1;
-
-              td.appendChild(inp);
+              // Style to match previous look (wrapping text, padding)
+              td.style.whiteSpace = "pre-wrap";
+              td.style.padding = "6px";
+              td.style.verticalAlign = "top";
               tr.appendChild(td);
             });
 
@@ -1238,6 +1291,7 @@
         // ============================================
         // ACTIONS: EXPORT & DELETE
         // ============================================
+        // Still failed to save filters, need a way to better way to do it
         async action_ExportToExcel() {
           this.ui_StatusMessage = "Preparing download...";
 
@@ -1247,17 +1301,18 @@
             // SHEET 1: GRID
             let gridData = [];
             if (this.agGridApiInstance) {
-              this.agGridApiInstance.forEachNode(node => {
+              // Use 'forEachNodeAfterFilterAndSort' to respect BOTH Filter AND Sort order
+              this.agGridApiInstance.forEachNodeAfterFilter(node => {
                 gridData.push(node.data);
               });
             }
 
             if (gridData.length === 0) {
-              throw new Error("No data loaded. Please load data first.");
+              throw new Error("No data found in current filter view.");
             }
 
             const ws_grid = XLSX.utils.json_to_sheet(gridData);
-            XLSX.utils.book_append_sheet(wb, ws_grid, "Grid");
+            XLSX.utils.book_append_sheet(wb, ws_grid, "Grid (Filtered)");
 
             // SHEET 2: DASHBOARD
             const dashTable = document.getElementById('dashboard_table_element');
