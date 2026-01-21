@@ -505,7 +505,7 @@
                   </div>
                 </div>
 
-                <button @click="action_ExportToExcel"
+                <button @click="action_DownloadToExcel"
                   class="sidebar_btn_download_excel w-full border border-green-600 text-green-700 bg-green-50 py-2 rounded text-xs font-bold hover:bg-green-100 transition flex justify-center items-center gap-2 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800 dark:hover:bg-green-900/40">
                   <span>📥</span> Download Excel
                 </button>
@@ -660,7 +660,7 @@
             </div>
 
             <div x-show="open" x-collapse class="space-y-3">
-              <div class="sidebar_location_prov_group">
+              <div class="sidebar_location_filter_prov_group">
                 <label class="block text-[12px] font-bold text-gray-500 mb-1 dark:text-gray-400">PROVINSI</label>
                 <select x-model="filter_SelProv"
                   @change="filter_SelKab=''; filter_SelKec=''; fetch_MainGridData_FromAPI()"
@@ -672,7 +672,7 @@
                 </select>
               </div>
 
-              <div class="sidebar_location_kab_group">
+              <div class="sidebar_location_filter_kab_group">
                 <label class="block text-[12px] font-bold text-gray-500 mb-1 dark:text-gray-400">KABUPATEN/KOTA</label>
                 <select x-model="filter_SelKab" @change="filter_SelKec=''; fetch_MainGridData_FromAPI()"
                   class="sidebar_select_kab w-full border p-1.5 rounded text-xs bg-white focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
@@ -684,7 +684,7 @@
                 </select>
               </div>
 
-              <div class="sidebar_location_kec_group">
+              <div class="sidebar_location_filter_kec_group">
                 <label class="block text-[12px] font-bold text-gray-500 mb-1 dark:text-gray-400">KECAMATAN</label>
                 <select x-model="filter_SelKec" @change="fetch_MainGridData_FromAPI"
                   class="sidebar_select_kec w-full border p-1.5 rounded text-xs bg-white focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
@@ -696,7 +696,7 @@
                 </select>
               </div>
 
-              <div class="sidebar_location_search_group mb-3">
+              <div class="sidebar_location_filter_search_group mb-3">
                 <input type="text" x-model="filter_NameSearch"
                   class="sidebar_input_search_name w-full border p-2 rounded text-xs focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
                   placeholder="Search Desa Name...">
@@ -1292,7 +1292,7 @@
         // ACTIONS: EXPORT & DELETE
         // ============================================
         // Still failed to save filters, need a way to better way to do it
-        async action_ExportToExcel() {
+        async action_DownloadToExcel() {
           this.ui_StatusMessage = "Preparing download...";
 
           try {

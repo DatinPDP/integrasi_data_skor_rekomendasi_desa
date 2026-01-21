@@ -3,7 +3,7 @@
 /root
 /.config/headers.txt
 /.config/intervensi_kegiatan.json
-/.config/recommendation.json
+/.config/rekomendasi.json
 /.config/table_structure.csv
 ```
 # Requirements

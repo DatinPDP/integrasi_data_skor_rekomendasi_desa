@@ -39,6 +39,9 @@ STAGING_FOLDER = os.path.join(BASE_DIR, "staging")
 # Config Files
 JSON_PATH = os.path.join(CONFIG_DIR, "rekomendasi.json")
 
+# intervensi_kegiatan files
+INTERVENTION_FILE = os.path.join(CONFIG_DIR, "intervensi_kegiatan.json")
+
 # Data Structure Constants
 # ID_COL acts as the Primary Key for deduplication and version control.
 ID_COL = "Kode Wilayah Administrasi Desa" 
@@ -230,3 +233,51 @@ def helpers_build_dynamic_query(con, base_query, request_params):
             base_query += f" WHERE {filter_str}"
         
     return base_query, values
+
+def helpers_get_or_create_intervensi_kegiatan(items: list[str]):
+    """
+    Loads intervensi_kegiatan. If missing, creates a default file 
+    using the ITEM names as keys.
+    """
+    # 1. Try Load
+    if os.path.exists(INTERVENTION_FILE):
+        try:
+            with open(INTERVENTION_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except: pass # Fallback if corrupt
+
+    # 2. Create Defaults (using rekomendasi.json logic if available, else generic)
+    defaults = {}
+    
+    # Try to load existing rekomendasis to pre-seed
+    recs = {}
+    rec_path = os.path.join(CONFIG_DIR, "rekomendasi.json")
+    if os.path.exists(rec_path):
+        try:
+            with open(rec_path, "r", encoding="utf-8") as f: recs = json.load(f)
+        except: pass
+
+    for item in items:
+        # If we have specific logic in rekomendasi.json, map it. 
+        # Otherwise create a generic placeholder.
+        if item in recs:
+            defaults[item] = recs[item]
+        else:
+            # Generic Fallback Template that is WRONG. 
+            # YOU NEED TO EDIT THE TEMPLATE
+            defaults[item] = {
+                "1": f"Perlu peningkatan {item} (Sangat Kurang)",
+                "2": f"Perlu peningkatan {item} (Kurang)",
+                "3": f"Perlu peningkatan {item} (Cukup)",
+                "4": f"Perlu peningkatan {item} (Baik)",
+                "5": None
+            }
+            
+    # 3. Save to Disk
+    try:
+        with open(INTERVENTION_FILE, "w", encoding="utf-8") as f:
+            json.dump(defaults, f, indent=4, ensure_ascii=False)
+    except Exception as e:
+        print(f"⚠️ Could not save intervensi_kegiatan: {e}")
+        
+    return defaults
