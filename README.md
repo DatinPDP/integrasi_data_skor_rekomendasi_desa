@@ -17,6 +17,7 @@ pip install -r .config/requirements.txt
 ```
 
 # Run backend+middleware
+run backend
 ```bash
 python desa_db/server.py
 ```
@@ -24,6 +25,17 @@ python desa_db/server.py
 or run both front and backend
 ```bash
 python run_system.py
+```
+nodejs requirements
+```
+npm install ag-grid-react ag-grid-community xlsx
+npm install -D tailwindcss postcss autoprefixer
+```
+
+run frontend nextjs
+```
+cd js_front_end
+npm run dev
 ```
 
 # Run mock frontend

@@ -457,9 +457,9 @@
                       accept=".xlsb, .xlsx" />
                   </label>
                   <div class="sidebar_status_msg_container min-h-[16px] mt-1 text-center">
-                    <p x-text="ui_StatusMessage"
+                    <p x-text="setUiStatusMessage"
                       class="sidebar_status_msg text-[12px] text-blue-600 font-bold animate-pulse"
-                      x-show="ui_StatusMessage"></p>
+                      x-show="setUiStatusMessage"></p>
                   </div>
                 </div>
 
@@ -499,7 +499,7 @@
                       <button @click="action_CommitStagedData_ToDB"
                         class="sidebar_btn_commit flex-1 bg-slate-800 text-white py-1.5 rounded text-[12px] font-bold hover:bg-slate-900 shadow-sm transition dark:bg-blue-600 dark:hover:bg-blue-500">Commit
                         to DB</button>
-                      <button @click="stagingData_Object = null; ui_StatusMessage=''"
+                      <button @click="stagingData_Object = null; setUiStatusMessage=''"
                         class="sidebar_btn_cancel px-3 border border-slate-300 text-slate-600 rounded text-[12px] font-bold hover:bg-slate-50 transition dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700">Cancel</button>
                     </div>
                   </div>
@@ -775,8 +775,7 @@
         // --- UI DISPLAY STATS ---
         stats_TotalRows: "0",
         stats_LastUpdateLabel: "N/A",
-        ui_StatusMessage: "",
-
+        setUiStatusMessage: "",
 
         // ============================================
         // INITIALIZATION
@@ -1208,7 +1207,7 @@
         async action_UploadFile_ToStaging(e) {
           let file = e.target.files[0];
           if (!file) return;
-          this.ui_StatusMessage = "Analyzing...";
+          this.setUiStatusMessage = "Analyzing...";
           let fd = new FormData();
           fd.append("file", file);
           try {
@@ -1217,15 +1216,15 @@
             let d = await res.json();
             if (d.status === "staged") {
               this.stagingData_Object = d;
-              this.ui_StatusMessage = "";
+              this.setUiStatusMessage = "";
               e.target.value = null;
-            } else this.ui_StatusMessage = "❌ " + d.error;
-          } catch (err) {this.ui_StatusMessage = "❌ Connection Fail";}
+            } else this.setUiStatusMessage = "❌ " + d.error;
+          } catch (err) {this.setUiStatusMessage = "❌ Connection Fail";}
         },
 
         async action_CommitStagedData_ToDB() {
           if (!this.stagingData_Object) return;
-          this.ui_StatusMessage = "Saving...";
+          this.setUiStatusMessage = "Saving...";
           let p = new URLSearchParams({
             staging_id: this.stagingData_Object.staging_id,
             filename: this.stagingData_Object.filename
@@ -1251,7 +1250,7 @@
           // Only calculate. If view is grid, just calculate in background
           // to keep data ready still calculate. 
 
-          this.ui_StatusMessage = "Calculating...";
+          this.setUiStatusMessage = "Calculating...";
           // Only clear/show loading if the table actually exists
           const tbody = document.querySelector('#dashboard_table_element tbody');
           if (tbody) tbody.innerHTML = '<tr><td colspan="100" class="text-center p-4">Calculating...</td></tr>';
@@ -1272,13 +1271,13 @@
 
             let data = await res.json();
             this.constructDashboardTableDOM(data);
-            this.ui_StatusMessage = "✅ Done";
+            this.setUiStatusMessage = "✅ Done";
             this.isTableStructureLoaded = true;
           } catch (e) {
             // Only alert if we are actually looking at the dashboard
             if (this.viewModeState === 'dashboard') alert("Error: " + e.message);
             console.error(e);
-            this.ui_StatusMessage = "❌ Error";
+            this.setUiStatusMessage = "❌ Error";
           }
         },
 
@@ -1293,7 +1292,7 @@
         // ============================================
         // Still failed to save filters, need a way to better way to do it
         async action_DownloadToExcel() {
-          this.ui_StatusMessage = "Preparing download...";
+          this.setUiStatusMessage = "Preparing download...";
 
           try {
             const wb = XLSX.utils.book_new();
@@ -1334,12 +1333,12 @@
             // Download
             XLSX.writeFile(wb, `export_${this.targetYear}_${new Date().toISOString().split('T')[0]}.xlsx`);
 
-            this.ui_StatusMessage = "✅ Downloaded";
-            setTimeout(() => this.ui_StatusMessage = "", 2000);
+            this.setUiStatusMessage = "✅ Downloaded";
+            setTimeout(() => this.setUiStatusMessage = "", 2000);
 
           } catch (error) {
             console.error('Download error:', error);
-            this.ui_StatusMessage = "❌ Download failed";
+            this.setUiStatusMessage = "❌ Download failed";
             alert('Download failed: ' + error.message);
           }
         },
@@ -1349,7 +1348,7 @@
 
           if (!confirm("⚠️ Are you sure?")) return;
 
-          this.ui_StatusMessage = "Deleting...";
+          this.setUiStatusMessage = "Deleting...";
 
           let params = new URLSearchParams();
           params.append("ids", this.filter_DeleteListInput);
@@ -1368,11 +1367,11 @@
               this.filter_DeleteListInput = "";
               this.fetchVersionHistoryAndHierarchy();
               this.fetch_MainGridData_FromAPI();
-              this.ui_StatusMessage = "";
+              this.setUiStatusMessage = "";
             } else if (data.status === "warning") {
               // This is likely what is happening now
               alert("��️ Server Warning: " + data.message);
-              this.ui_StatusMessage = "⚠️ ID Not Found";
+              this.setUiStatusMessage = "⚠️ ID Not Found";
             } else {
               alert("❌ Error: " + (data.error || "Unknown error"));
             }
