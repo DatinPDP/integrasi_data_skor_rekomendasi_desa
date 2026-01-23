@@ -1,227 +1,216 @@
-import os
 import sys
-import pytest
-import polars as pl
-from fastapi.testclient import TestClient
+import os
 import json
+import csv
+import pytest
+from fastapi.testclient import TestClient
+from openpyxl import Workbook
 
 # ==========================================
-# 1. PATH CONFIGURATION
+# PATH FIX FOR IMPORTS
 # ==========================================
-# We need to add the project root to sys.path so we can import 'desa_db'
-current_dir = os.path.dirname(os.path.abspath(__file__))
-project_root = os.path.abspath(os.path.join(current_dir, ".."))
+# Add the 'desa_db' directory to the Python path so we can import server and middleware
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+DESA_DB_DIR = os.path.abspath(os.path.join(CURRENT_DIR, "../desa_db"))
+sys.path.insert(0, DESA_DB_DIR)
 
-# Add root folder (for 'desa_db' package resolution)
-sys.path.insert(0, project_root)
-# Add 'desa_db' folder (for internal imports inside server.py)
-sys.path.insert(0, os.path.join(project_root, "desa_db"))
-
-# ==========================================
-# 2. IMPORTS & MOCKING TARGETS
-# ==========================================
-# We import the modules *directly* so we can overwrite their variables
-import desa_db.server as server_module
-import desa_db.middleware as middleware_module
-from desa_db.server import app, DB_FOLDER, ID_COL, STAGING_FOLDER
-
-client = TestClient(app)
+# Now we can import from the desa_db folder
+import server
+import middleware
 
 # ==========================================
-# 3. TEST CONSTANTS
+# FIXTURES (Setup Mock Environment)
 # ==========================================
-TEST_YEAR = "test_2025"
-TEST_DB_PATH = os.path.join(DB_FOLDER, f"data_{TEST_YEAR}.duckdb")
 
-# We will create this file locally inside /tests/, avoiding the real .config folder
-TEST_HEADER_FILE_PATH = os.path.join(current_dir, "temp_test_headers.txt") 
+@pytest.fixture(scope="session")
+def test_year():
+    return "2023"
 
-# This is the column we will test translation on
-TEST_LOGIC_COL = "Ketersediaan PAUD/ TK/ Sederajat di Desa"
-
-# Mock Rules for Middleware (Since the real JSON might not exist in test env)
-TEST_RULES = {
-    TEST_LOGIC_COL: {
-        1: "Perlu menyediakan PAUD", # Value 1 translates to this
-        5: None
-    }
-}
-
-# ==========================================
-# 4. FIXTURE (SETUP & TEARDOWN)
-# ==========================================
 @pytest.fixture(autouse=True)
-def setup_teardown():
+def setup_environment(tmp_path, monkeypatch):
     """
-    Safely sets up test environment:
-    1. Creates a TEMP header file.
-    2. PATCHES server.py to read our temp file instead of real config.
-    3. PATCHES middleware.py to use our TEST_RULES instead of reading JSON.
-    4. Cleans up afterwards.
+    Creates a temporary directory structure and overrides all absolute paths 
+    in the server and middleware modules to prevent touching real files.
     """
-    # --- SETUP ---
-    # HEADERS: Must include Location columns for the Hierarchy Cache to work
-    headers = [
-        ID_COL,
-        "Nama Desa",
-        "Provinsi",
-        "Kabupaten/ Kota",
-        "Kecamatan",
-        TEST_LOGIC_COL
-    ]
+    # 1. Create temporary directories
+    config_dir = tmp_path / ".config"
+    db_dir = tmp_path / "dbs"
+    staging_dir = tmp_path / "staging"
     
-    # Create a temporary headers.txt just for this test
-    with open(TEST_HEADER_FILE_PATH, "w", encoding="utf-8") as f:
+    config_dir.mkdir()
+    db_dir.mkdir()
+    staging_dir.mkdir()
+
+    # 2. Patch absolute paths in BOTH modules
+    monkeypatch.setattr(middleware, "CONFIG_DIR", str(config_dir))
+    monkeypatch.setattr(middleware, "DB_FOLDER", str(db_dir))
+    monkeypatch.setattr(middleware, "STAGING_FOLDER", str(staging_dir))
+    monkeypatch.setattr(server, "CONFIG_DIR", str(config_dir))
+    monkeypatch.setattr(server, "STAGING_FOLDER", str(staging_dir))
+    monkeypatch.setattr(middleware, "INTERVENTION_FILE", str(config_dir / "intervensi_kegiatan.json"))
+    monkeypatch.setattr(server, "HEADER_FILE", str(config_dir / "headers.txt"))
+
+    # 3. Create mock headers.txt
+    headers = [
+        "Kode Wilayah Administrasi Desa", "Desa", "Kecamatan", 
+        "Kabupaten/ Kota", "Provinsi", "TAHUN DATA", "Score A", "Score B"
+    ]
+    with open(config_dir / "headers.txt", "w", encoding="utf-8") as f:
         f.write("\n".join(headers))
 
-    # 2. SAVE ORIGINAL STATES (So we don't break the actual app config)
-    original_header_path = server_module.HEADER_FILE
-    original_logic = middleware_module.RECOMMENDATION_LOGIC
+    # 4. Create mock table_structure.csv
+    with open(config_dir / "table_structure.csv", "w", encoding="utf-8-sig", newline="") as f:
+        writer = csv.writer(f, delimiter=";")
+        writer.writerow(["DIMENSI", "ITEM"])
+        writer.writerow(["Dimensi 1", "Score A"])
+        writer.writerow(["Dimensi 2", "Score B"])
 
-    # APPLY PATCHES (The Magic)
-    # Tell server.py: "Don't look at .config, look at this temp file"
-    server_module.HEADER_FILE = TEST_HEADER_FILE_PATH
-    
-    # Tell middleware.py: "Don't load JSON, use this dict"
-    middleware_module.RECOMMENDATION_LOGIC = TEST_RULES
+    # 5. Create mock rekomendasi.json
+    mock_logic = {
+        "Score A": { "1": "Sangat Kurang A", "5": "Sangat Baik A" }
+    }
+    with open(config_dir / "rekomendasi.json", "w", encoding="utf-8") as f:
+        json.dump(mock_logic, f)
 
-    # Clean previous DB artifacts
-    if os.path.exists(TEST_DB_PATH):
-        try: os.remove(TEST_DB_PATH)
-        except: pass
-    # Ensure staging folder exists
-    os.makedirs(STAGING_FOLDER, exist_ok=True)
+    return tmp_path
 
-    yield
+@pytest.fixture
+def client():
+    """Provides a FastAPI test client."""
+    return TestClient(server.app)
 
-    # --- TEARDOWN ---
-    
-    # RESTORE ORIGINAL STATE
-    server_module.HEADER_FILE = original_header_path
-    middleware_module.RECOMMENDATION_LOGIC = original_logic
+@pytest.fixture
+def mock_excel(tmp_path):
+    """
+    Generates a valid temporary .xlsx file configured exactly 
+    how the polars 'calamine' engine expects it in server.py (skipping first 3 rows).
+    """
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Skor"
 
-    # Define files to clean
-    # Note: We must locate the cache file exactly where server.py put it (.config folder)
-    real_config_dir = os.path.abspath(os.path.join(current_dir, "../.config"))
-    cache_file = os.path.join(real_config_dir, f"unique_cache_{TEST_YEAR}.json")
+    # Row 1-3: Garbage titles (server.py slices 3 rows)
+    ws.append(["JUDUL LAPORAN"])
+    ws.append(["SUB JUDUL"])
+    ws.append(["--- EMPTY METADATA ROW ---"])
 
-    files_to_clean = [
-        TEST_DB_PATH, 
-        TEST_HEADER_FILE_PATH, 
-        os.path.join(current_dir, "test_upload.xlsx"), 
-        os.path.join(current_dir, "downloaded_test.xlsx"),
-        cache_file
-    ]
+    # Row 4: Headers (matches mock headers.txt)
+    ws.append([
+        "Index", "Kode Wilayah Administrasi Desa", "Desa", "Kecamatan", 
+        "Kabupaten/ Kota", "Provinsi", "TAHUN DATA", "Score A", "Score B"
+    ])
 
-    # Cleanup Temp Files
-    for f in files_to_clean:
-        if os.path.exists(f):
-            try: os.remove(f)
-            except: pass
+    # Row 5+: Valid Data (ID must be 10 digits as per regex)
+    ws.append([1, "1111111111", "Desa Mock", "Kec Mock", "Kab Mock", "Prov Mock", "2023", 1, 5])
+    ws.append([2, "2222222222", "Desa Dua", "Kec Mock", "Kab Mock", "Prov Mock", "2023", 4, 3])
 
+    excel_path = tmp_path / "test_upload.xlsx"
+    wb.save(excel_path)
+    return excel_path
 
 # ==========================================
-# 5. HELPER FUNCTION
+# TESTS
 # ==========================================
-def create_dummy_xlsb(filename):
-    """
-    Creates dummy data WITH Location columns so cache generation succeeds.
-    Note: Writes as .xlsx (XML format) via xlsxwriter default.
-    """
-    df = pl.DataFrame({
-        # Column 0: Index (Dropped)
-        "Index": [""] * 8, 
-        
-        # Column 1: ID
-        "A": ["metadata"]*6 + [ID_COL, "1234567890"],
-        
-        # Column 2: Nama Desa
-        "B": [""]*6 + ["Nama Desa", "Desa Test"],
-        
-        # Column 3: Provinsi
-        "C": [""]*6 + ["Provinsi", "Jawa Barat"],
-        
-        # Column 4: Kab
-        "D": [""]*6 + ["Kabupaten/ Kota", "Bandung"],
-        
-        # Column 5: Kec
-        "E": [""]*6 + ["Kecamatan", "Coblong"],
-        
-        # Column 6: Logic
-        "F": [""]*6 + [TEST_LOGIC_COL, "1"] 
-    })
- 
-    # Explicitly name the worksheet "Skor"
-    df.write_excel(filename, worksheet="Skor")
-    return filename
 
-# ==========================================
-# 6. THE TEST
-# ==========================================
-def test_staging_and_commit_flow():
+def test_get_table_structure(client):
+    """Tests the /config/table_structure endpoint."""
+    response = client.get("/config/table_structure")
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 2
+    assert data[0]["ITEM"] == "Score A"
+
+def test_full_etl_pipeline(client, test_year, mock_excel):
     """
-    Integration Test: Stage -> Commit -> Query
+    Tests the sequential ETL flow:
+    1. Upload/Stage
+    2. Commit
+    3. Query Data
+    4. Calculate Dashboard
+    5. Soft Delete
+    6. History Diffs
     """
-    
-    # Paths for temp files
-    dummy_file = os.path.join(current_dir, "test_upload.xlsx")
-    downloaded_file = os.path.join(current_dir, "downloaded_test.xlsx")
-    
-    create_dummy_xlsb(dummy_file)
 
-    try:
-        # --- STEP 1: STAGE (Analyze) ---
-        with open(dummy_file, "rb") as f:
-            # We explicitly name it .xlsx so the server preserves the extension
-            stage_response = client.post(
-                f"/stage/{TEST_YEAR}", 
-                files={"file": ("test_upload.xlsx", f, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")}
-            )
-        
-        # Debugging output if it fails
-        if stage_response.status_code != 200:
-            print(f"\nStage Error: {stage_response.text}")
-
-        assert stage_response.status_code == 200
-        stage_data = stage_response.json()
-        
-        # Verify Staging Response Structure
-        assert "staging_id" in stage_data
-        assert "diff" in stage_data
-        assert stage_data["diff"]["added"] == 1
-        
-        staging_id = stage_data["staging_id"]
-
-        # --- STEP 2: COMMIT (Write to DB) ---
-        commit_response = client.post(
-            f"/commit/{TEST_YEAR}", 
-            params={"staging_id": staging_id, "filename": "test_upload.xlsx"}
+    # --- STEP 1: UPLOAD / STAGE ---
+    with open(mock_excel, "rb") as f:
+        response = client.post(
+            f"/stage/{test_year}",
+            files={"file": ("test_upload.xlsx", f, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")}
         )
-        assert commit_response.status_code == 200
+    
+    assert response.status_code == 200
+    stage_data = response.json()
+    assert stage_data["status"] == "staged"
+    assert stage_data["diff"]["added"] == 2 # 2 new rows
+    
+    staging_id = stage_data["staging_id"]
+    filename = stage_data["filename"]
 
-        # --- STEP 3: HIERARCHY CHECK ---
-        res_hierarchy = client.get(f"/hierarchy/{TEST_YEAR}")
-        assert res_hierarchy.status_code == 200
-        tree = res_hierarchy.json()
-        assert "Jawa Barat" in tree
+    # --- STEP 2: COMMIT ---
+    commit_response = client.post(
+        f"/commit/{test_year}",
+        params={"staging_id": staging_id, "filename": filename}
+    )
+    assert commit_response.status_code == 200
+    assert commit_response.json()["status"] == "success"
 
-        # --- STEP 4: DOWNLOAD ---
-        download_response = client.get(f"/download/{TEST_YEAR}")
-        assert download_response.status_code == 200
-        with open(downloaded_file, "wb") as f:
-            f.write(download_response.content)
+    # --- STEP 3: QUERY ---
+    # Test standard query
+    query_response = client.get(f"/query/{test_year}?limit=50")
+    assert query_response.status_code == 200
+    q_data = query_response.json()
+    assert len(q_data) == 2
+    assert q_data[0]["Kode Wilayah Administrasi Desa"] == "1111111111"
 
-        # --- STEP 5: QUERY & TRANSLATION ---
-        res_trans = client.get(f"/query/{TEST_YEAR}?translate=true")
-        assert res_trans.status_code == 200
-        data_trans = res_trans.json()
-        
-        # Handle list-of-dicts format (New Server Standard)
-        assert isinstance(data_trans, list)
-        assert len(data_trans) > 0
-        first_row = data_trans[0]
-        assert "Perlu menyediakan PAUD" in first_row[TEST_LOGIC_COL]
+    # Test dynamic filtering (e.g., specific Desa)
+    filter_response = client.get(f"/query/{test_year}?Desa=Dua")
+    assert filter_response.status_code == 200
+    assert len(filter_response.json()) == 1
 
-    finally:
-        if os.path.exists(dummy_file): os.remove(dummy_file)
-        if os.path.exists(downloaded_file): os.remove(downloaded_file)
+    # --- STEP 4: DASHBOARD CALCULATION ---
+    calc_response = client.post(f"/dashboard/calculate/{test_year}")
+    assert calc_response.status_code == 200
+    calc_data = calc_response.json()
+    assert len(calc_data) == 2 # Structure has 2 rows
+    # Check if calculation populated (e.g., SKOR 1 count for Score A)
+    assert calc_data[0]["ITEM"] == "Score A"
+    assert calc_data[0]["SKOR 1"] == "1" # 1 row had score 1
+
+    # --- STEP 5: VERSIONS & HISTORY ---
+    hist_response = client.get(f"/history/versions/{test_year}")
+    assert hist_response.status_code == 200
+    hist_data = hist_response.json()
+    assert len(hist_data["versions"]) == 1
+    
+    # Get the latest timestamp for details check
+    latest_version = hist_data["versions"][0]["ts"]
+
+    # --- STEP 6: HISTORY DETAILS (DIFF) ---
+    details_response = client.get(f"/history/details/{test_year}?version={latest_version}")
+    assert details_response.status_code == 200
+    diff_data = details_response.json()["changes"]
+    assert any(c["type"] == "ADD" for c in diff_data)
+
+    # --- STEP 7: DELETE ---
+    delete_response = client.post(
+        f"/delete/{test_year}",
+        params={"ids": "1111111111", "summary": "Test Delete"}
+    )
+    assert delete_response.status_code == 200
+    assert delete_response.json()["status"] == "success"
+    assert delete_response.json()["deleted_count"] == 1
+
+    # Verify ID is removed from standard query
+    final_query = client.get(f"/query/{test_year}")
+    assert len(final_query.json()) == 1 # Only "2222222222" remains
+
+def test_stage_upload_missing_header_file(client, test_year, mock_excel, tmp_path, monkeypatch):
+    """Tests failure when headers.txt is missing."""
+    # Point header to a non-existent path
+    monkeypatch.setattr(server, "HEADER_FILE", str(tmp_path / "not_exist.txt"))
+
+    with open(mock_excel, "rb") as f:
+        response = client.post(f"/stage/{test_year}", files={"file": ("test.xlsx", f)})
+    
+    assert response.status_code == 500
+    assert "Configuration file not found" in response.json()["error"]
