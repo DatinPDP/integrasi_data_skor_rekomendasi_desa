@@ -133,8 +133,9 @@ async def login(creds: LoginRequest, response: JSONResponse = None):
         value=access_token, 
         httponly=True,   # JavaScript cannot read this (Security +)
         max_age=86400,   # 1 day
-        samesite="lax",  # Allows cookie to work on navigation
-        secure=False     # Set to True if using HTTPS
+        # ESSENTIAL FOR CLOUDFLARE TUNNELS (Different Domains):
+        samesite="none", 
+        secure=True      
     )
     return resp
 

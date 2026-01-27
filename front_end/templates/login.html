@@ -35,7 +35,8 @@
 
       try {
         // Call Python Backend
-        const res = await fetch('http://localhost:8000/api/login', {
+        const apiUrl = "{{ api_url }}";
+        const res = await fetch(`${apiUrl}/api/login`, {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           credentials: 'include', //Tells browser to save the cookie
