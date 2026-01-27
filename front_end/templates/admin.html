@@ -941,13 +941,9 @@
             return;
           }
 
-          console.log("🔄 Setting up Infinite DataSource...");
-
           const dataSource = {
             rowCount: null,
             getRows: async (params) => {
-              console.log(`📡 [AG-Grid] Asking for rows: ${params.startRow} to ${params.endRow}`);
-
               const offset = params.startRow;
               const limit = params.endRow - params.startRow;
 
@@ -968,20 +964,15 @@
               try {
                 this.agGridApiInstance.showLoadingOverlay();
                 const reqUrl = `${this.apiBaseUrl}/query/${this.targetYear}?${urlParams}`;
-                console.log(`🚀 [Fetch] ${reqUrl}`);
-
                 let res = await fetch(reqUrl, {credentials: 'include'});
 
                 if (!res.ok) {
                   throw new Error(`Server returned status ${res.status}`);
                 }
 
-                console.log("⬇️ [Fetch] Response received. Parsing JSON...");
                 let data = await res.json();
-                console.log(`✅ [Fetch] JSON Parsed. Rows: ${Array.isArray(data) ? data.length : 'Not Array'}`);
 
                 let totalCount = parseInt(res.headers.get("X-Total-Count") || "0");
-                console.log(`🔢 [Count] X-Total-Count header: ${totalCount}`);
 
                 this.stats_TotalRows = totalCount.toLocaleString();
 
@@ -989,12 +980,10 @@
                   // DYNAMIC COLUMNS: Only set if we have data and columns aren't set yet
                   if (data.length > 0) {
                     const firstRowKeys = Object.keys(data[0]);
-                    console.log("📋 [Columns] Detected keys:", firstRowKeys);
 
                     // Check if we need to update columns (only on first load or structure change)
                     const currentCols = this.agGridApiInstance.getColumnDefs();
                     if (!currentCols || currentCols.length === 0) {
-                      console.log("⚙️ [AG-Grid] Setting Column Definitions...");
                       this.meta_ColumnList = firstRowKeys;
                       let cols = firstRowKeys.map(k => ({
                         field: k,
@@ -1009,7 +998,6 @@
                     }
                   }
 
-                  console.log(`💾 [AG-Grid] Passing ${data.length} rows to successCallback. Total: ${totalCount}`);
                   params.successCallback(data, totalCount);
 
                   if (totalCount === 0) {
@@ -1530,9 +1518,6 @@
               credentials: 'include'
             });
             let data = await res.json();
-
-            // DEBUG: Show exactly what happened
-            console.log("Delete Response:", data);
 
             if (data.status === "success") {
               alert(`✅ Deleted ${data.deleted_count} records.\nIDs: ${data.deleted_ids.join(", ")}`);
