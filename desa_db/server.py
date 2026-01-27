@@ -62,6 +62,8 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    # Allow JS to read this specific header
+    expose_headers=["X-Total-Count"]
 )
 
 
@@ -167,7 +169,7 @@ def endpoint_get_table_structure():
             f.seek(0)
             sniffer = csv.Sniffer()
             # Default to semicolon if sniffer fails
-            try: dialect = sniffer.sniff(sample, delimiters=";,")
+            try: dialect = sniffer.sniff(sample, delimiters=";")
             except: dialect = None
  
             reader = csv.DictReader(f, delimiter=dialect.delimiter if dialect else ";")
@@ -406,7 +408,8 @@ async def endpoint_post_commit_stage(
 def endpoint_get_query_data(
     year: str,
     request: Request,
-    limit: int = 500,
+    limit: int = 10000,
+    offset: int = 0,
     filter_col: str = None,
     filter_val: str = None,
     translate: bool = False,
@@ -451,7 +454,16 @@ def endpoint_get_query_data(
         params_dict = dict(request.query_params)
         final_query, values = helpers_build_dynamic_query(con, base_query, params_dict)
  
-        final_query += f" LIMIT {limit}"
+        # GET TRUE TOTAL COUNT (Before Limit/Offset)
+        # wrap the final query to count rows that match filters
+        count_sql = f"SELECT COUNT(*) FROM ({final_query})"
+        total_rows = con.execute(count_sql, values).fetchone()[0]
+
+        # Add paginaiton & stable sort
+        # sort to ensure pages don't shuffle rows. 
+        # Using ID_COL or rowid if available, but valid_from/Provinsi is a safe fallback.
+        # Assuming ID_COL is stable.
+        final_query += f" ORDER BY \"{ID_COL}\" LIMIT {limit} OFFSET {offset}"
  
         res = con.execute(final_query, values).pl()
         if translate: res = apply_rekomendasis(res)
@@ -459,8 +471,15 @@ def endpoint_get_query_data(
         # Sanitize NaNs
         records = res.to_dicts()
         clean = [{k: (None if isinstance(v, float) and math.isnan(v) else v) for k,v in r.items()} for r in records]
- 
-        return make_json_response(res)
+        # Return with header
+        # Instead of make_json_response (which returns Response), we use JSONResponse 
+        # so we can easily attach headers while keeping the data structure.
+        # OR use make_json_response and attach headers.
+        
+        # Let's use your existing helper but attach header
+        response = make_json_response(res) 
+        response.headers["X-Total-Count"] = str(total_rows)
+        return response
  
     except Exception as e:
         traceback.print_exc()
@@ -566,7 +585,7 @@ async def endpoint_post_calculate_dashboard(year: str, request: Request):
             sniffer = csv.Sniffer()
             sample = f.read(1024)
             f.seek(0)
-            try: dialect = sniffer.sniff(sample, delimiters=";,")
+            try: dialect = sniffer.sniff(sample, delimiters=";")
             except: dialect = None
             reader = csv.DictReader(f, delimiter=dialect.delimiter if dialect else ";")
             structure = list(reader)
@@ -669,7 +688,7 @@ async def endpoint_post_calculate_dashboard(year: str, request: Request):
 @app.post("/delete/{year}", dependencies=[Depends(auth_get_current_user)])
 async def endpoint_post_delete_ids(
     year: str,
-    ids: str = Query(..., description="Comma or newline separated list of IDs"),
+    ids: str = Query(..., description="Semicolon or newline separated list of IDs"),
     summary: str = Query("Manual Delete", description="Reason for deletion"),
     # We can inject the user info if we want to log WHO deleted it
     current_user: str = Depends(auth_get_current_user)
@@ -681,8 +700,8 @@ async def endpoint_post_delete_ids(
     """
     con, _ = helpers_get_db_connection(year)
     try:
-        # Parse IDs
-        raw_ids = re.split(r'[,\n\r]+', ids)
+        # STRICT RULE: Split by SEMICOLON (;) or Newline. NO COMMAS.
+        raw_ids = re.split(r'[;\n\r]+', ids)
         # Ensure we are searching for clean, stripped strings
         id_list = [x.strip() for x in raw_ids if x.strip()]
  

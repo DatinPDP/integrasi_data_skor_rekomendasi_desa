@@ -10,6 +10,7 @@
       darkMode: 'class',
     }
   </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/ag-grid-community/dist/ag-grid-community.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/spark-md5@3.0.2/spark-md5.min.js"></script>
@@ -894,7 +895,9 @@
         // ============================================
         initializeAgGridConfig() {
           const gridOptions = {
-            rowData: [],
+            rowModelType: 'infinite',
+            cacheBlockSize: 10000,
+            infiniteInitialRowCount: 10000,
             columnDefs: [],
             defaultColDef: {
               sortable: true,
@@ -933,80 +936,100 @@
         },
 
         async fetch_MainGridData_FromAPI() {
-          if (this.agGridApiInstance) this.agGridApiInstance.showLoadingOverlay();
-
-          // Update Date Display based on selection
-          if (this.filter_SelectedVersion) {
-            // If viewing a snapshot, show that snapshot's date
-            this.stats_LastUpdateLabel = this.filter_SelectedVersion;
-          } else if (this.meta_VersionsList.length > 0) {
-            // If Live, show the latest commit date
-            this.stats_LastUpdateLabel = this.meta_VersionsList[0].ts;
-          } else {
-            this.stats_LastUpdateLabel = "No Data";
+          if (!this.agGridApiInstance) {
+            console.error("❌ AG Grid API not ready yet.");
+            return;
           }
 
-          let params = new URLSearchParams({limit: 50000, translate: this.isTranslationActive});
-          if (this.filter_SelectedVersion) params.append("version", this.filter_SelectedVersion);
-          if (this.filter_SelProv) params.append("Provinsi", this.filter_SelProv);
-          if (this.filter_SelKab) params.append("Kabupaten/ Kota", this.filter_SelKab);
-          if (this.filter_SelKec) params.append("Kecamatan", this.filter_SelKec);
-          if (this.filter_NameSearch) params.append("Desa", this.filter_NameSearch);
-          if (this.filter_IdListInput.trim()) params.append("ids", this.filter_IdListInput.replace(/\n/g, ","));
+          console.log("🔄 Setting up Infinite DataSource...");
 
-          try {
-            // Use targetYear dynamically & INCLUDE CREDENTIALS
-            let res = await fetch(`${this.apiBaseUrl}/query/${this.targetYear}?${params}`, {credentials: 'include'});
-            let data = await res.json();
+          const dataSource = {
+            rowCount: null,
+            getRows: async (params) => {
+              console.log(`📡 [AG-Grid] Asking for rows: ${params.startRow} to ${params.endRow}`);
 
-            if (Array.isArray(data)) {
-              // Update Stats
-              this.stats_TotalRows = data.length.toLocaleString();
+              const offset = params.startRow;
+              const limit = params.endRow - params.startRow;
 
-              if (data.length > 0) {
+              let urlParams = new URLSearchParams({
+                limit: limit,
+                offset: offset,
+                translate: this.isTranslationActive
+              });
 
-                // Save header to state, to be searchable
-                this.meta_ColumnList = Object.keys(data[0]);
+              if (this.filter_SelectedVersion) urlParams.append("version", this.filter_SelectedVersion);
+              if (this.filter_SelProv) urlParams.append("Provinsi", this.filter_SelProv);
+              if (this.filter_SelKab) urlParams.append("Kabupaten/ Kota", this.filter_SelKab);
+              if (this.filter_SelKec) urlParams.append("Kecamatan", this.filter_SelKec);
+              if (this.filter_NameSearch) urlParams.append("Desa", this.filter_NameSearch);
+              // Ensure Newlines are replaced with semicolons for ID list
+              if (this.filter_IdListInput.trim()) urlParams.append("ids", this.filter_IdListInput.replace(/\n/g, ";"));
 
-                // Dynamic Column Generation
-                let cols = Object.keys(data[0]).map(k => ({
-                  field: k,
-                  headerName: k,
-                  tooltipField: k,
-                  valueGetter: params => params.data[k]
-                }));
+              try {
+                this.agGridApiInstance.showLoadingOverlay();
+                const reqUrl = `${this.apiBaseUrl}/query/${this.targetYear}?${urlParams}`;
+                console.log(`🚀 [Fetch] ${reqUrl}`);
 
-                if (this.agGridApiInstance) {
-                  this.agGridApiInstance.setGridOption('columnDefs', cols);
-                  this.agGridApiInstance.setGridOption('rowData', data);
+                let res = await fetch(reqUrl, {credentials: 'include'});
+
+                if (!res.ok) {
+                  throw new Error(`Server returned status ${res.status}`);
                 }
 
-                // Also trigger calculation if dashboard is active
-                this.calculate_DashboardStats_FromAPI();
-              } else {
-                this.stats_TotalRows = "0";
-                if (this.agGridApiInstance) {
-                  this.agGridApiInstance.setGridOption('rowData', []);
-                  this.agGridApiInstance.setGridOption('columnDefs', []);
+                console.log("⬇️ [Fetch] Response received. Parsing JSON...");
+                let data = await res.json();
+                console.log(`✅ [Fetch] JSON Parsed. Rows: ${Array.isArray(data) ? data.length : 'Not Array'}`);
+
+                let totalCount = parseInt(res.headers.get("X-Total-Count") || "0");
+                console.log(`🔢 [Count] X-Total-Count header: ${totalCount}`);
+
+                this.stats_TotalRows = totalCount.toLocaleString();
+
+                if (Array.isArray(data)) {
+                  // DYNAMIC COLUMNS: Only set if we have data and columns aren't set yet
+                  if (data.length > 0) {
+                    const firstRowKeys = Object.keys(data[0]);
+                    console.log("📋 [Columns] Detected keys:", firstRowKeys);
+
+                    // Check if we need to update columns (only on first load or structure change)
+                    const currentCols = this.agGridApiInstance.getColumnDefs();
+                    if (!currentCols || currentCols.length === 0) {
+                      console.log("⚙️ [AG-Grid] Setting Column Definitions...");
+                      this.meta_ColumnList = firstRowKeys;
+                      let cols = firstRowKeys.map(k => ({
+                        field: k,
+                        headerName: k,
+                        tooltipField: k,
+                        filter: true,
+                        sortable: true,
+                        // Safety: Handle missing data fields
+                        valueGetter: p => (p.data && p.data[k] !== undefined) ? p.data[k] : ""
+                      }));
+                      this.agGridApiInstance.setGridOption('columnDefs', cols);
+                    }
+                  }
+
+                  console.log(`💾 [AG-Grid] Passing ${data.length} rows to successCallback. Total: ${totalCount}`);
+                  params.successCallback(data, totalCount);
+
+                  if (totalCount === 0) {
+                    this.agGridApiInstance.showNoRowsOverlay();
+                  } else {
+                    this.agGridApiInstance.hideOverlay();
+                  }
+                } else {
+                  console.error("❌ [AG-Grid] Data is not an array:", data);
+                  params.failCallback();
                 }
-              }
-            } else if (data.error) {
-              // Handle specific error
-              console.error(data.error);
-              if (data.error === "Table not found.") {
-                this.stats_TotalRows = "0";
-                this.stats_LastUpdateLabel = "Empty DB";
-                if (this.agGridApiInstance) {
-                  this.agGridApiInstance.setGridOption('rowData', []);
-                  this.agGridApiInstance.setGridOption('columnDefs', []);
-                }
-              } else {
-                alert("Server Error: " + data.error);
+              } catch (e) {
+                console.error("❌ [AG-Grid] Error in getRows:", e);
+                this.agGridApiInstance.showNoRowsOverlay(); // Or show error
+                params.failCallback();
               }
             }
-          } catch (e) {console.error(e);}
+          };
 
-          if (this.agGridApiInstance) this.agGridApiInstance.hideOverlay();
+          this.agGridApiInstance.setGridOption('datasource', dataSource);
         },
 
         async fetchVersionHistoryAndHierarchy() {
@@ -1403,7 +1426,7 @@
           if (this.filter_SelKab) params.append("Kabupaten/ Kota", this.filter_SelKab);
           if (this.filter_SelKec) params.append("Kecamatan", this.filter_SelKec);
           if (this.filter_NameSearch) params.append("Kode Wilayah Administrasi Desa", this.filter_NameSearch);
-          if (this.filter_IdListInput.trim()) params.append("ids", this.filter_IdListInput.replace(/\n/g, ","));
+          if (this.filter_IdListInput.trim()) params.append("ids", this.filter_IdListInput.replace(/\n/g, ";"));
 
           try {
             // Use targetYear

@@ -348,8 +348,8 @@ def helpers_build_dynamic_query(con, base_query, request_params):
     if "ids" in request_params and request_params["ids"]:
         raw_ids = request_params["ids"]
  
-        # Split by comma, newline, or carriage return
-        filtered_ids = re.split(r'[,\n\r]+', raw_ids)
+        # STRICT RULE: Split by SEMICOLON (;) or Newline. NO COMMAS.
+        filtered_ids = re.split(r'[;\n\r]+', raw_ids)
  
         # Strip each token and remove empty strings in one pass
         id_list = [x.strip() for x in filtered_ids if x.strip()]
