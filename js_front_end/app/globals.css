@@ -1,14 +1,14 @@
 @import "tailwindcss";
 @import "ag-grid-community/styles/ag-grid.css"; 
 @import "ag-grid-community/styles/ag-theme-alpine.css"; 
-
+ 
 /* AG Grid Settings */
 .ag-theme-alpine {
   --ag-font-size: 13px;
   --ag-header-height: 32px;
   --ag-row-height: 32px;
 }
-
+ 
 /* Dark Mode Overrides for AG Grid */
 .dark .ag-theme-alpine {
   /* Backgrounds */
@@ -16,18 +16,18 @@
   --ag-odd-row-background-color: #1e293b !important; /* Fixes zebra striping */
   --ag-header-background-color: #0f172a !important;  /* slate-900 */
   --ag-control-panel-background-color: #1e293b !important;
-  
+ 
   /* Text & Borders */
   --ag-foreground-color: #cbd5e1 !important;         /* slate-300 */
   --ag-border-color: #334155 !important;             /* slate-700 */
   --ag-secondary-border-color: #334155 !important;
-  
+ 
   /* Interactions */
   --ag-row-hover-color: #334155 !important;
   --ag-selected-row-background-color: #3b82f6 !important; /* Blue selection */
   --ag-selected-row-background-color-opacity: 0.3 !important;
 }
-
+ 
 /* Dashboard Table Styles */
 :root {
   --border-color: #c0c0c0;
@@ -36,14 +36,14 @@
   --hover-row: #f9f9fa;
   --header-row-height: 32px;
 }
-
+ 
 .dark {
   --border-color: #475569;
   --header-bg: #1e293b;
   --header-text: #e2e8f0;
   --hover-row: #334155;
 }
-
+ 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 10px;
@@ -72,7 +72,7 @@
 .dark ::-webkit-scrollbar-corner {
   background: #0f172a;
 }
-
+ 
 /* Dashboard Container */
 .dashboard-container {
   overflow: auto;
@@ -84,7 +84,7 @@
 .dark .dashboard-container {
   background: #0f172a;
 }
-
+ 
 /* Table Specifics */
 .dash-table {
   border-collapse: collapse;
@@ -95,7 +95,7 @@
   table-layout: fixed;
   padding: 4px;
 }
-
+ 
 /* Sticky Headers */
 .dash-table thead th {
   background-color: var(--header-bg);
@@ -111,7 +111,7 @@
   vertical-align: middle;
   background-clip: padding-box;
 }
-
+ 
 .dash-table thead tr:first-child th {
   top: 0;
   z-index: 11;
@@ -121,7 +121,7 @@
   z-index: 11;
   border-top: none;
 }
-
+ 
 .dash-table td {
   border: 1px solid var(--border-color);
   padding: 0px;
@@ -132,7 +132,7 @@
 .dark .dash-table td {
   color: #cbd5e1;
 }
-
+ 
 /* Specific Column Classes */
 .col-no { width: 40px; min-width: 40px; text-align: center; padding: 0 !important; }
 .col-dimensi { width: 40px; max-width: 100px; text-align: center; }
@@ -147,7 +147,7 @@
 .col-kab { width: 200px; min-width: 150px; }
 .col-desa { width: 200px; min-width: 150px; }
 .col-lain { width: 200px; min-width: 150px; }
-
+ 
 .merged-cell {
   background-color: #fff;
   vertical-align: top;

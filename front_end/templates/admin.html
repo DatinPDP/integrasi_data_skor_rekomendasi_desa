@@ -12,8 +12,8 @@
   </script>
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/ag-grid-community/dist/ag-grid-community.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/spark-md5@3.0.2/spark-md5.min.js"></script>
   <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-
   <style>
     /* --- AG Grid Settings --- */
     .ag-theme-alpine {
@@ -453,7 +453,7 @@
                       <p class="text-[10px] font-bold text-slate-600 group-hover:text-blue-700 dark:text-slate-300">
                         Upload Data</p>
                     </div>
-                    <input type="file" @change="action_UploadFile_ToStaging" class="sidebar_input_file hidden"
+                    <input type="file" @change="action_UploadFile" class="sidebar_input_file hidden"
                       accept=".xlsb, .xlsx" />
                   </label>
                   <div class="sidebar_status_msg_container min-h-[16px] mt-1 text-center">
@@ -603,20 +603,23 @@
                       </div>
 
                       <div x-show="history_DiffCache[v.ts]" class="grid grid-cols-3 gap-2 text-center">
-                        
-                        <div class="flex flex-col border border-green-200 bg-green-50 rounded p-1 dark:bg-green-900/20 dark:border-green-800">
+
+                        <div
+                          class="flex flex-col border border-green-200 bg-green-50 rounded p-1 dark:bg-green-900/20 dark:border-green-800">
                           <span class="text-[9px] font-bold text-green-700 dark:text-green-400">ADD</span>
                           <span class="text-xs font-mono font-bold text-slate-700 dark:text-slate-200"
                             x-text="(history_DiffCache[v.ts] || []).filter(x => x.type === 'ADD').length">0</span>
                         </div>
 
-                        <div class="flex flex-col border border-blue-200 bg-blue-50 rounded p-1 dark:bg-blue-900/20 dark:border-blue-800">
+                        <div
+                          class="flex flex-col border border-blue-200 bg-blue-50 rounded p-1 dark:bg-blue-900/20 dark:border-blue-800">
                           <span class="text-[9px] font-bold text-blue-700 dark:text-blue-400">MOD</span>
                           <span class="text-xs font-mono font-bold text-slate-700 dark:text-slate-200"
                             x-text="(history_DiffCache[v.ts] || []).filter(x => x.type === 'MOD').length">0</span>
                         </div>
 
-                        <div class="flex flex-col border border-red-200 bg-red-50 rounded p-1 dark:bg-red-900/20 dark:border-red-800">
+                        <div
+                          class="flex flex-col border border-red-200 bg-red-50 rounded p-1 dark:bg-red-900/20 dark:border-red-800">
                           <span class="text-[9px] font-bold text-red-700 dark:text-red-400">DEL</span>
                           <span class="text-xs font-mono font-bold text-slate-700 dark:text-slate-200"
                             x-text="(history_DiffCache[v.ts] || []).filter(x => x.type === 'DEL').length">0</span>
@@ -833,7 +836,8 @@
 
           try {
             // Use targetYear
-            let res = await fetch(`${this.apiBaseUrl}/history/details/${this.targetYear}?version=${ts}`);
+            // Added credentials to all fetch calls
+            let res = await fetch(`${this.apiBaseUrl}/history/details/${this.targetYear}?version=${ts}`, {credentials: 'include'});
             let data = await res.json();
 
             // Save to cache
@@ -951,8 +955,8 @@
           if (this.filter_IdListInput.trim()) params.append("ids", this.filter_IdListInput.replace(/\n/g, ","));
 
           try {
-            // Use targetYear dynamically
-            let res = await fetch(`${this.apiBaseUrl}/query/${this.targetYear}?${params}`);
+            // Use targetYear dynamically & INCLUDE CREDENTIALS
+            let res = await fetch(`${this.apiBaseUrl}/query/${this.targetYear}?${params}`, {credentials: 'include'});
             let data = await res.json();
 
             if (Array.isArray(data)) {
@@ -1008,7 +1012,8 @@
         async fetchVersionHistoryAndHierarchy() {
           try {
             // Reusing the /history/versions endpoint but it now returns { versions: [], hierarchy: {} }
-            let res = await fetch(`${this.apiBaseUrl}/history/versions/${this.targetYear}`);
+            // Added credentials
+            let res = await fetch(`${this.apiBaseUrl}/history/versions/${this.targetYear}`, {credentials: 'include'});
             if (res.ok) {
               let data = await res.json();
 
@@ -1030,7 +1035,8 @@
         async fetchDashboardConfigAndRenderTable() {
           if (this.isTableStructureLoaded) return;
           try {
-            let res = await fetch(`${this.apiBaseUrl}/config/table_structure`);
+            // Added credentials
+            let res = await fetch(`${this.apiBaseUrl}/config/table_structure`, {credentials: 'include'});
             if (!res.ok) throw new Error("Config not found");
             let data = await res.json();
             this.constructDashboardTableDOM(data);
@@ -1202,24 +1208,155 @@
         },
 
         // ============================================
-        // ACTIONS: STAGING & UPLOAD
+        // ACTIONS: STAGING & UPLOAD (RESUMABLE CHUNKED)
         // ============================================
-        async action_UploadFile_ToStaging(e) {
+        async action_UploadFile(e) {
           let file = e.target.files[0];
           if (!file) return;
-          this.setUiStatusMessage = "Analyzing...";
-          let fd = new FormData();
-          fd.append("file", file);
+
+          // Reset UI
+          this.setUiStatusMessage = "Preparing...";
+          this.stagingData_Object = null;
+
           try {
-            // Use targetYear
-            let res = await fetch(`${this.apiBaseUrl}/stage/${this.targetYear}`, {method: "POST", body: fd});
-            let d = await res.json();
-            if (d.status === "staged") {
-              this.stagingData_Object = d;
-              this.setUiStatusMessage = "";
+            // --- ROBUST HASH CACHING ---
+            // If user refreshes, we don't want to re-calculate MD5 for 10 seconds.
+            // We cache the hash in LocalStorage keyed by the file's unique signature.
+            const cacheKey = `upload_hash_${file.name}_${file.size}_${file.lastModified}`;
+            let fileHash = localStorage.getItem(cacheKey);
+
+            if (!fileHash) {
+              this.setUiStatusMessage = "Hashing file (Integrity Check)...";
+              fileHash = await this.helpers_compute_md5(file);
+              try {localStorage.setItem(cacheKey, fileHash);} catch (e) { } // Save for next refresh
+            }
+
+            // Generate the Unique ID for the server
+            // If you refresh and pick this file again, this ID stays the same, so server finds the .tmp file.
+            const fileUid = `${fileHash}_${file.size}_${file.lastModified}`;
+
+            // --- CHECK RESUME STATUS ---
+            this.setUiStatusMessage = "Checking server resume status...";
+
+            // Query server: "Do you have this file?"
+            // Added credentials
+            let initRes = await fetch(`${this.apiBaseUrl}/upload/init/${this.targetYear}`, {
+              method: "POST",
+              headers: {"Content-Type": "application/json"},
+              credentials: 'include',
+              body: JSON.stringify({
+                filename: file.name,
+                file_uid: fileUid,
+                total_size: file.size,
+                total_hash: fileHash
+              })
+            });
+            let initData = await initRes.json();
+
+            if (initData.status === "exists") {
+              // File already fully uploaded on server, jump to processing
+              this.setUiStatusMessage = "File exists. Processing...";
+              await this.helpers_finalize_upload(initData.upload_id, file.name, fileHash);
               e.target.value = null;
-            } else this.setUiStatusMessage = "❌ " + d.error;
-          } catch (err) {this.setUiStatusMessage = "❌ Connection Fail";}
+              return;
+            }
+
+            // Start Chunking Loop
+            let offset = initData.received_bytes || 0;
+            const CHUNK_SIZE = 1024 * 1024 * 2; // 2MB Chunks (safe for slow connections)
+            const totalSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+
+            while (offset < file.size) {
+              const chunkBlob = file.slice(offset, offset + CHUNK_SIZE);
+
+              // UI Progress
+              // Example: "Uploading: 12.50 / 50.00 MB (25%)"
+              const currentMB = (offset / (1024 * 1024)).toFixed(2);
+              const percent = Math.round((offset / file.size) * 100);
+              this.setUiStatusMessage = `Uploading: ${currentMB} / ${totalSizeMB} MB (${percent}%)`;
+
+              // Retry Loop for current chunk
+              let retries = 5;
+              let chunkSuccess = false;
+
+              while (retries > 0 && !chunkSuccess) {
+                try {
+                  let fd = new FormData();
+                  fd.append("chunk", chunkBlob);
+                  fd.append("upload_id", initData.upload_id);
+                  fd.append("offset", offset);
+                  fd.append("chunk_hash", await this.helpers_compute_md5(chunkBlob)); // Hash Check per chunk
+
+                  // Added credentials
+                  let chunkRes = await fetch(`${this.apiBaseUrl}/upload/chunk/${this.targetYear}`, {
+                    method: "POST",
+                    credentials: 'include',
+                    body: fd
+                  });
+
+                  if (!chunkRes.ok) throw new Error("Server rejected chunk");
+
+                  chunkSuccess = true;
+                  offset += CHUNK_SIZE; // Move to next chunk
+                } catch (err) {
+                  retries--;
+                  console.warn(`Chunk failed, retrying... (${retries} left)`);
+                  // Exponential backoff: Wait 1s, then 2s, etc.
+                  await new Promise(r => setTimeout(r, 1000 * (5 - retries)));
+                }
+              }
+
+              if (!chunkSuccess) throw new Error("Connection unstable. Upload failed after retries.");
+            }
+
+            // Finalize & Process
+            this.setUiStatusMessage = "Verifying & Analyzing...";
+            await this.helpers_finalize_upload(initData.upload_id, file.name, fileHash);
+
+            // Success
+            e.target.value = null;
+
+          } catch (err) {
+            console.error(err);
+            this.setUiStatusMessage = "❌ " + (err.message || "Upload Failed");
+          }
+        },
+
+        // Helper: Call Finalize Endpoint
+        async helpers_finalize_upload(uploadId, filename, fileHash) {
+          // Added credentials
+          let res = await fetch(`${this.apiBaseUrl}/upload/finalize/${this.targetYear}`, {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            credentials: 'include',
+            body: JSON.stringify({
+              upload_id: uploadId,
+              filename: filename,
+              total_hash: fileHash
+            })
+          });
+          let d = await res.json();
+
+          if (d.status === "staged") {
+            this.stagingData_Object = d;
+            this.setUiStatusMessage = "";
+          } else {
+            throw new Error(d.error || "Processing failed");
+          }
+        },
+
+        // Helper: Compute MD5 using SparkMD5 (Memory efficient)
+        helpers_compute_md5(blob) {
+          return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsArrayBuffer(blob);
+            reader.onload = (e) => {
+              // Note: For massive files (2GB+), you'd want incremental hashing, 
+              // but for standard admin uploads (10-100MB) ArrayBuffer is fine.
+              resolve(SparkMD5.ArrayBuffer.hash(e.target.result));
+            };
+            reader.onerror = reject;
+          });
         },
 
         async action_CommitStagedData_ToDB() {
@@ -1231,7 +1368,11 @@
           });
           try {
             // Use targetYear
-            let res = await fetch(`${this.apiBaseUrl}/commit/${this.targetYear}?${p}`, {method: "POST"});
+            // Added credentials
+            let res = await fetch(`${this.apiBaseUrl}/commit/${this.targetYear}?${p}`, {
+              method: "POST",
+              credentials: 'include'
+            });
             let d = await res.json();
             if (d.status === "success") {
               alert("✅ Saved Successfully!");
@@ -1266,7 +1407,11 @@
 
           try {
             // Use targetYear
-            let res = await fetch(`${this.apiBaseUrl}/dashboard/calculate/${this.targetYear}?${params.toString()}`, {method: "POST"});
+            // Added credentials
+            let res = await fetch(`${this.apiBaseUrl}/dashboard/calculate/${this.targetYear}?${params.toString()}`, {
+              method: "POST",
+              credentials: 'include'
+            });
             if (!res.ok) throw new Error("Calculation failed");
 
             let data = await res.json();
@@ -1356,7 +1501,11 @@
 
           try {
             // Use targetYear
-            let res = await fetch(`${this.apiBaseUrl}/delete/${this.targetYear}?${params}`, {method: "POST"});
+            // Added credentials
+            let res = await fetch(`${this.apiBaseUrl}/delete/${this.targetYear}?${params}`, {
+              method: "POST",
+              credentials: 'include'
+            });
             let data = await res.json();
 
             // DEBUG: Show exactly what happened

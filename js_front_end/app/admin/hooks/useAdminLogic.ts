@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import {
   ModuleRegistry,
@@ -10,6 +10,7 @@ import {
   ValueGetterParams
 } from 'ag-grid-community';
 import * as XLSX from 'xlsx';
+import SparkMD5 from 'spark-md5';
 import { DashboardRow, StagingData, HistoryChange, VersionMeta } from '../types';
 
 // Register AG Grid Modules
@@ -74,6 +75,7 @@ export const useAdminLogic = () => {
   const isFirstRender = useRef(true);
 
   // ==========================================
+  // ==========================================
   // ACTIONS & LOGIC
   // ==========================================
 
@@ -113,7 +115,7 @@ export const useAdminLogic = () => {
   };
 
   // --- Fetch Metadata ---
-  const fetchVersionHistoryAndHierarchy = async () => {
+  const fetchVersionHistoryAndHierarchy = useCallback(async () => {
     try {
       const res = await fetch(`${API_BASE_URL}/history/versions/${targetYear}`);
       if (res.ok) {
@@ -125,10 +127,10 @@ export const useAdminLogic = () => {
         }
       }
     } catch (e) { console.error("Meta Fetch Error", e); }
-  };
+  }, [targetYear, filterSelectedVersion]);
 
   // --- Main Query Logic ---
-  const fetchMainGridDataFromAPI = async () => {
+  const fetchMainGridDataFromAPI = useCallback(async () => {
     if (gridRef.current?.api) gridRef.current.api.showLoadingOverlay();
 
     if (filterSelectedVersion) setStatsLastUpdateLabel(filterSelectedVersion);
@@ -181,7 +183,7 @@ export const useAdminLogic = () => {
       }
     } catch (e) { console.error(e); }
     if (gridRef.current?.api) gridRef.current.api.hideOverlay();
-  };
+  }, [targetYear, isTranslationActive, filterSelectedVersion, filterSelProv, filterSelKab, filterSelKec, filterNameSearch, filterIdListInput, metaVersionsList]);
 
   // --- Dashboard Calculation & RowSpan Logic ---
   const calculateDashboardStatsFromAPI = async () => {
@@ -285,18 +287,144 @@ export const useAdminLogic = () => {
   const action_UploadFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setUiStatusMessage("Analyzing...");
-    const fd = new FormData();
-    fd.append("file", file);
+
+    // Reset UI
+    setUiStatusMessage("Preparing...");
+    setStagingDataObject(null);
+
     try {
-      const res = await fetch(`${API_BASE_URL}/stage/${targetYear}`, { method: "POST", body: fd });
-      const d = await res.json();
-      if (d.status === "staged") {
-        setStagingDataObject(d);
-        setUiStatusMessage("");
+      // --- ROBUST HASH CACHING ---
+      // If user refreshes, we don't want to re-calculate MD5 for 10 seconds.
+      // We cache the hash in LocalStorage keyed by the file's unique signature.
+      const cacheKey = `upload_hash_${file.name}_${file.size}_${file.lastModified}`;
+      let fileHash = localStorage.getItem(cacheKey);
+
+      if (!fileHash) {
+        setUiStatusMessage("Hashing file (Integrity Check)...");
+        fileHash = await helpers_compute_md5(file);
+        try { localStorage.setItem(cacheKey, fileHash); } catch (e) { console.error(e); }
+      }
+
+      // Generate the Unique ID for the server
+      // If you refresh and pick this file again, this ID stays the same, so server finds the .tmp file.
+      const fileUid = `${fileHash}_${file.size}_${file.lastModified}`;
+
+      // --- CHECK RESUME STATUS ---
+      setUiStatusMessage("Checking server resume status...");
+
+      // Query server: "Do you have this file?"
+      const initRes = await fetch(`${API_BASE_URL}/upload/init/${targetYear}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          filename: file.name,
+          file_uid: fileUid,
+          total_size: file.size,
+          total_hash: fileHash
+        })
+      });
+      const initData = await initRes.json();
+
+      if (initData.status === "exists") {
+        // File already fully uploaded on server, jump to processing
+        setUiStatusMessage("File exists. Processing...");
+        await helpers_finalize_upload(initData.upload_id, file.name, fileHash);
         e.target.value = "";
-      } else setUiStatusMessage("❌ " + d.error);
-    } catch (err) { setUiStatusMessage("❌ Connection Fail" + (err as Error).message); }
+        return;
+      }
+
+      // Start Chunking Loop
+      let offset = initData.received_bytes || 0;
+      const CHUNK_SIZE = 1024 * 1024 * 2; // 2MB Chunks (safe for slow connections)
+      const totalSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+
+      while (offset < file.size) {
+        const chunkBlob = file.slice(offset, offset + CHUNK_SIZE);
+
+        // UI Progress
+        // Example: "Uploading: 12.50 / 50.00 MB (25%)"
+        const currentMB = (offset / (1024 * 1024)).toFixed(2);
+        const percent = Math.round((offset / file.size) * 100);
+        setUiStatusMessage(`Uploading: ${currentMB} / ${totalSizeMB} MB (${percent}%)`);
+
+        // Retry Loop for current chunk
+        let retries = 5;
+        let chunkSuccess = false;
+
+        while (retries > 0 && !chunkSuccess) {
+          try {
+            const fd = new FormData();
+            fd.append("chunk", chunkBlob);
+            fd.append("upload_id", initData.upload_id);
+            fd.append("offset", String(offset));
+            fd.append("chunk_hash", await helpers_compute_md5(chunkBlob)); // Hash Check per chunk
+
+            const chunkRes = await fetch(`${API_BASE_URL}/upload/chunk/${targetYear}`, {
+              method: "POST",
+              body: fd
+            });
+
+            if (!chunkRes.ok) throw new Error("Server rejected chunk");
+
+            chunkSuccess = true;
+            offset += CHUNK_SIZE; // Move to next chunk
+          } catch (err) {
+            retries--;
+            console.warn(`Chunk failed, retrying... (${retries} left)`);
+            // Exponential backoff: Wait 1s, then 2s, etc.
+            await new Promise(r => setTimeout(r, 1000 * (5 - retries)));
+          }
+        }
+
+        if (!chunkSuccess) throw new Error("Connection unstable. Upload failed after retries.");
+      }
+
+      // Finalize & Process
+      setUiStatusMessage("Verifying & Analyzing...");
+      await helpers_finalize_upload(initData.upload_id, file.name, fileHash);
+
+      // Success
+      e.target.value = "";
+
+    } catch (err) {
+      console.error(err);
+      setUiStatusMessage("❌ " + ((err as Error).message || "Upload Failed"));
+    }
+  };
+
+  const helpers_compute_md5 = (blob: Blob): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsArrayBuffer(blob);
+      reader.onload = (e) => {
+        if (e.target?.result) {
+          resolve(SparkMD5.ArrayBuffer.hash(e.target.result as ArrayBuffer));
+        } else {
+          reject(new Error("Failed to read file for hashing"));
+        }
+      };
+      reader.onerror = reject;
+    });
+  };
+
+  const helpers_finalize_upload = async (uploadId: string, filename: string, fileHash: string) => {
+    const res = await fetch(`${API_BASE_URL}/upload/finalize/${targetYear}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        upload_id: uploadId,
+        filename: filename,
+        total_hash: fileHash
+      })
+    });
+    const d = await res.json();
+
+    if (d.status === "staged") {
+      setStagingDataObject(d);
+      setUiStatusMessage("");
+    } else {
+      throw new Error(d.error || "Processing failed");
+    }
   };
 
   const action_CommitStaged = async () => {
@@ -349,7 +477,7 @@ export const useAdminLogic = () => {
   // INITIALIZATION & EFFECTS
   // ==========================================
 
-// Theme Initialization (Run once on mount)
+  // Theme Initialization (Run once on mount)
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme === 'dark') {
@@ -372,11 +500,7 @@ export const useAdminLogic = () => {
     }, 50);
     return () => clearTimeout(timer);
   }, [
-    targetYear,
-    filterSelProv,
-    filterSelKab,
-    filterSelKec,
-    filterSelectedVersion,
+    fetchMainGridDataFromAPI, // Dependency added via useCallback
   ]);
 
   // for instant translation toggle

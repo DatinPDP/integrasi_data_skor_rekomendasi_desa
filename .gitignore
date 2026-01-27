@@ -25,9 +25,12 @@ notes.md
 !.config/
 !.config/table_structure.csv
 *.xlsb
+*.xlsx
 *.duckdb
 *.zip
 *.parquet
+*.part
+*.tmp
 
 # ==========================
 # FRONTEND (Next.js / Node)

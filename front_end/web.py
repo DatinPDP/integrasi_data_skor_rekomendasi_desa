@@ -21,11 +21,15 @@ async def login_page(request: Request):
 # Logic to check cookie
 @app.get("/admin", response_class=HTMLResponse)
 async def admin_dashboard(request: Request):
-    # Simple Cookie Check
+    # Check for presence of JWT cookie
     auth_token = request.cookies.get("session_token")
-    if auth_token != "admin_secret_123":
+    
+    # If no token exists, redirect to login
+    if not auth_token:
         return RedirectResponse(url="/login", status_code=302)
 
+    # Note: don't verify the token content here to avoid import complexity.
+    # The API (port 8000) will check it. If invalid, the dashboard will just show errors/empty data.
     return templates.TemplateResponse("admin.html", {
         "request": request, 
         "api_url": API_BASE_URL
@@ -40,7 +44,7 @@ async def logout():
         path="/",
         httponly=True,
         secure=False,
-        samesite="strict"
+        samesite="lax"
     )
     # Optional: prevent caching
     response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"

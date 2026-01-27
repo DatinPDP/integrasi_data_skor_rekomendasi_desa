@@ -1,45 +1,65 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <title>Login</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8">
+  <title>Login</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
+
 <body class="global_body_container bg-gray-200 h-screen flex items-center justify-center">
-    <div class="global_box_login_container bg-white p-8 rounded shadow-md w-96">
-        <h2 class="text-2xl font-bold mb-6 text-center text-gray-700">Login data skor rekomendasi desa</h2>
-        <form onsubmit="handleLogin(event)">
-            <div class="mb-4">
-                <label class="block text-sm font-bold mb-2">Username</label>
-                <input type="text" id="user" class="w-full border p-2 rounded" placeholder="admin / user">
-            </div>
-            <div class="mb-6">
-                <label class="block text-sm font-bold mb-2">Password</label>
-                <input type="password" id="pass" class="w-full border p-2 rounded" placeholder="admin / user">
-            </div>
-            <button class="w-full bg-blue-600 text-white py-2 rounded font-bold hover:bg-blue-700">Login</button>
-        </form>
-    </div>
+  <div class="global_box_login_container bg-white p-8 rounded shadow-md w-96">
+    <h2 class="text-2xl font-bold mb-6 text-center text-gray-700">Login data skor rekomendasi desa</h2>
+    <form onsubmit="handleLogin(event)">
+      <div class="mb-4">
+        <label class="block text-sm font-bold mb-2">Username</label>
+        <input type="text" id="user" class="w-full border p-2 rounded" placeholder="admin / user">
+      </div>
+      <div class="mb-6">
+        <label class="block text-sm font-bold mb-2">Password</label>
+        <input type="password" id="pass" class="w-full border p-2 rounded" placeholder="admin / user">
+      </div>
+      <button class="w-full bg-blue-600 text-white py-2 rounded font-bold hover:bg-blue-700">Login</button>
+    </form>
+  </div>
 
-    <script>
-        function handleLogin(e) {
-            e.preventDefault();
-            const u = document.getElementById('user').value;
-            const p = document.getElementById('pass').value;
+  <script>
+    async function handleLogin(e) {
+      e.preventDefault();
+      const u = document.getElementById('user').value;
+      const p = document.getElementById('pass').value;
+      const btn = e.target.querySelector('button');
 
-            // Simple hardcoded check
-            if (u === 'admin' && p === 'ubuntuServer2026') {
-                // Set Cookie before redirecting
-                // Expires in 1 day
-                const d = new Date();
-                d.setTime(d.getTime() + (24*60*60*1000));
-                document.cookie = "session_token=admin_secret_123; expires="+ d.toUTCString() +"; path=/";
-                
-                window.location.href = '/admin';
-            } else {
-                alert("Invalid Credentials");
-            }
-}
-    </script>
+      btn.innerText = "Verifying...";
+      btn.disabled = true;
+
+      try {
+        // Call Python Backend
+        const res = await fetch('http://localhost:8000/api/login', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          credentials: 'include', //Tells browser to save the cookie
+          body: JSON.stringify({username: u, password: p})
+        });
+
+        if (res.ok) {
+          // Success! Cookie is already set by server (HttpOnly)
+          // Redirect to Admin
+          window.location.href = '/admin';
+        } else {
+          const data = await res.json();
+          alert(data.error || "Login failed");
+          btn.innerText = "Login";
+          btn.disabled = false;
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Connection error");
+        btn.innerText = "Login";
+        btn.disabled = false;
+      }
+    }
+  </script>
 </body>
+
 </html>

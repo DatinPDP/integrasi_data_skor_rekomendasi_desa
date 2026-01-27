@@ -1,6 +1,7 @@
 # Config
 ```
 /root
+/.config/auth_users.json
 /.config/headers.txt
 /.config/intervensi_kegiatan.json
 /.config/rekomendasi.json
@@ -26,13 +27,19 @@ or run both front and backend
 ```bash
 python run_system.py
 ```
-nodejs requirements
+# add user
+```
+python add_user.py <user> <password>
+```
+it will be saved in .config/
+
+# nodejs requirements
 ```
 npm install ag-grid-react ag-grid-community xlsx
 npm install -D tailwindcss postcss autoprefixer
+npm install spark-md5
 ```
-
-run frontend nextjs
+# run frontend nextjs
 ```
 cd js_front_end
 npm run dev
