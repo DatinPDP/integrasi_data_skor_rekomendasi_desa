@@ -1,4 +1,4 @@
-## Project Structure – Configuration Files
+## Configuration Files
 All configuration files are stored in the `.config/` directory:
 
 ```
@@ -13,7 +13,7 @@ All configuration files are stored in the `.config/` directory:
 ## System Requirements
 - Python 3.11.9
 
-## 1. Virtual Environment Setup (run once)
+## Virtual Environment Setup (run once)
 ```bash
 Python311 -m venv .venv
 source .venv/Scripts/activate

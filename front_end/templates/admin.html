@@ -1,1768 +1,2099 @@
 <!DOCTYPE html>
-<html lang="en" x-data="AdminDashboardApp()" :class="{ 'dark': isDarkModeEnabled }">
+<html
+  lang="en"
+  x-data="AdminDashboardApp()"
+  :class="{ 'dark': isDarkModeEnabled }"
+>
 
-<head>
-  <meta charset="UTF-8">
-  <title>Admin Dashboard</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-    }
-  </script>
-  <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/ag-grid-community/dist/ag-grid-community.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/spark-md5@3.0.2/spark-md5.min.js"></script>
-  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-  <style>
-    /* --- AG Grid Settings --- */
-    .ag-theme-alpine {
-      --ag-font-size: 13px;
-      --ag-header-height: 32px;
-      --ag-row-height: 32px;
-    }
+  <head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+      }
+    </script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"
+    ></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/ag-grid-community/dist/ag-grid-community.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/spark-md5@3.0.2/spark-md5.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+    <style>
+      /* --- AG Grid Settings --- */
+      .ag-theme-alpine {
+        --ag-font-size: 13px;
+        --ag-header-height: 32px;
+        --ag-row-height: 32px;
+      }
 
-    /* Dark Mode Overrides for AG Grid */
-    .dark .ag-theme-alpine {
-      --ag-background-color: #1e293b;
-      /* slate-800 */
-      --ag-foreground-color: #cbd5e1;
-      /* slate-300 */
-      --ag-border-color: #334155;
-      /* slate-700 */
-      --ag-header-background-color: #0f172a;
+      /* Dark Mode Overrides for AG Grid */
+      .dark .ag-theme-alpine {
+        --ag-background-color: #1e293b;
+        /* slate-800 */
+        --ag-foreground-color: #cbd5e1;
+        /* slate-300 */
+        --ag-border-color: #334155;
+        /* slate-700 */
+        --ag-header-background-color: #0f172a;
+        /* slate-900 */
+        --ag-row-hover-color: #334155;
+      }
+
+      /* --- Dashboard Table Styles --- */
+      :root {
+        --border-color: #c0c0c0;
+        --header-bg: #f2f2f2;
+        --header-text: #333;
+        --hover-row: #f9f9fa;
+        --header-row-height: 32px;
+      }
+
+      /* Dark Mode Vars */
+      html.dark {
+        --border-color: #475569;
+        --header-bg: #1e293b;
+        --header-text: #e2e8f0;
+        --hover-row: #334155;
+      }
+
+      /* --- Custom Scrollbar --- */
+      /* Webkit (Chrome/Edge/Safari) */
+      ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 5px;
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
+      }
+
+      /* Dark Mode Scrollbar */
+      .dark ::-webkit-scrollbar-track {
+        background: #0f172a;
+      }
+
       /* slate-900 */
-      --ag-row-hover-color: #334155;
-    }
+      .dark ::-webkit-scrollbar-thumb {
+        background: #475569;
+        border: 1px solid #0f172a;
+      }
 
-    /* --- Dashboard Table Styles --- */
-    :root {
-      --border-color: #c0c0c0;
-      --header-bg: #f2f2f2;
-      --header-text: #333;
-      --hover-row: #f9f9fa;
-      --header-row-height: 32px;
-    }
+      /* slate-600 */
+      .dark ::-webkit-scrollbar-thumb:hover {
+        background: #64748b;
+      }
 
-    /* Dark Mode Vars */
-    html.dark {
-      --border-color: #475569;
-      --header-bg: #1e293b;
-      --header-text: #e2e8f0;
-      --hover-row: #334155;
-    }
+      /* slate-500 */
+      .dark ::-webkit-scrollbar-corner {
+        background: #0f172a;
+      }
 
-    /* --- Custom Scrollbar --- */
-    /* Webkit (Chrome/Edge/Safari) */
-    ::-webkit-scrollbar {
-      width: 10px;
-      height: 10px;
-    }
+      .dashboard-container {
+        overflow: auto;
+        height: 100%;
+        border: 1px solid var(--border-color);
+        background: white;
+        position: relative;
+      }
 
-    ::-webkit-scrollbar-track {
-      background: #f1f1f1;
-    }
+      .dark .dashboard-container {
+        background: #0f172a;
+      }
 
-    ::-webkit-scrollbar-thumb {
-      background: #c1c1c1;
-      border-radius: 5px;
-    }
+      .dash-table {
+        border-collapse: collapse;
+        width: max-content;
+        /* Important for resizing */
+        min-width: 100%;
+        font-size: 13px;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        table-layout: fixed;
+        padding: 4px;
+      }
 
-    ::-webkit-scrollbar-thumb:hover {
-      background: #a8a8a8;
-    }
+      /* Sticky Headers */
+      .dash-table thead th {
+        background-color: var(--header-bg);
+        color: var(--header-text);
+        font-weight: 600;
+        border: 1px solid var(--border-color);
+        padding: 4px;
+        box-sizing: border-box;
+        position: sticky;
+        z-index: 10;
+        height: var(--header-row-height);
+        text-align: center;
+        vertical-align: middle;
+        background-clip: padding-box;
+      }
 
-    /* Dark Mode Scrollbar */
-    .dark ::-webkit-scrollbar-track {
-      background: #0f172a;
-    }
+      /* Handle double-row headers sticking */
+      .dash-table thead tr:first-child th {
+        top: 0;
+        z-index: 11;
+      }
 
-    /* slate-900 */
-    .dark ::-webkit-scrollbar-thumb {
-      background: #475569;
-      border: 1px solid #0f172a;
-    }
+      .dash-table thead tr:nth-child(2) th {
+        top: var(--header-row-height);
+        z-index: 11;
+        border-top: none;
+      }
 
-    /* slate-600 */
-    .dark ::-webkit-scrollbar-thumb:hover {
-      background: #64748b;
-    }
+      .dash-table td {
+        border: 1px solid var(--border-color);
+        padding: 0px;
+        padding-left: 4px !important;
+        vertical-align: top;
+        color: #2c3e50;
+      }
 
-    /* slate-500 */
-    .dark ::-webkit-scrollbar-corner {
-      background: #0f172a;
-    }
+      .dark .dash-table td {
+        color: #cbd5e1;
+      }
 
-    .dashboard-container {
-      overflow: auto;
-      height: 100%;
-      border: 1px solid var(--border-color);
-      background: white;
-      position: relative;
-    }
+      .input-cell {
+        width: 100%;
+        height: 100%;
+        border: none;
+        padding: 6px;
+        background: transparent;
+        outline: none;
+        font-family: inherit;
+        font-size: inherit;
+        resize: none;
+        overflow: hidden;
+        white-space: pre-wrap;
+        display: block;
+        min-height: 40px;
+      }
 
-    .dark .dashboard-container {
-      background: #0f172a;
-    }
+      .merged-cell {
+        background-color: #fff;
+        vertical-align: top;
+        font-weight: 500;
+      }
 
-    .dash-table {
-      border-collapse: collapse;
-      width: max-content;
-      /* Important for resizing */
-      min-width: 100%;
-      font-size: 13px;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      table-layout: fixed;
-      padding: 4px;
-    }
+      .dark .merged-cell {
+        background-color: #0f172a;
+      }
 
-    /* Sticky Headers */
-    .dash-table thead th {
-      background-color: var(--header-bg);
-      color: var(--header-text);
-      font-weight: 600;
-      border: 1px solid var(--border-color);
-      padding: 4px;
-      box-sizing: border-box;
-      position: sticky;
-      z-index: 10;
-      height: var(--header-row-height);
-      text-align: center;
-      vertical-align: middle;
-      background-clip: padding-box;
-    }
+      /* Column Width Utilities */
+      .col-no {
+        width: 40px;
+        min-width: 40px;
+        text-align: center;
+        padding: 0 !important;
+      }
 
-    /* Handle double-row headers sticking */
-    .dash-table thead tr:first-child th {
-      top: 0;
-      z-index: 11;
-    }
+      .col-dimensi {
+        width: 40px;
+        max-width: 100px;
+        text-align: center;
+      }
 
-    .dash-table thead tr:nth-child(2) th {
-      top: var(--header-row-height);
-      z-index: 11;
-      border-top: none;
-    }
+      .col-sub_dimensi {
+        width: 40px;
+        max-width: 200px;
+        text-align: center;
+      }
 
-    .dash-table td {
-      border: 1px solid var(--border-color);
-      padding: 0px;
-      padding-left: 4px !important;
-      vertical-align: top;
-      color: #2c3e50;
-    }
+      .col-indikator {
+        width: 40px;
+        max-width: 200px;
+        text-align: center;
+      }
 
-    .dark .dash-table td {
-      color: #cbd5e1;
-    }
+      .col-item {
+        width: 300px;
+        min-width: 150px;
+        background-color: #fafafa;
+      }
 
-    .input-cell {
-      width: 100%;
-      height: 100%;
-      border: none;
-      padding: 6px;
-      background: transparent;
-      outline: none;
-      font-family: inherit;
-      font-size: inherit;
-      resize: none;
-      overflow: hidden;
-      white-space: pre-wrap;
-      display: block;
-      min-height: 40px;
-    }
+      .dark .col-item {
+        background-color: #1e293b;
+      }
 
-    .merged-cell {
-      background-color: #fff;
-      vertical-align: top;
-      font-weight: 500;
-    }
+      .col-score {
+        width: 60px;
+        min-width: 60px;
+        text-align: center;
+        padding: 0 4px;
+      }
 
-    .dark .merged-cell {
-      background-color: #0f172a;
-    }
+      .col-intervensi {
+        width: 1100px;
+        min-width: 150px;
+      }
 
-    /* Column Width Utilities */
-    .col-no {
-      width: 40px;
-      min-width: 40px;
-      text-align: center;
-      padding: 0 !important;
-    }
+      .col-pusat {
+        width: 200px;
+        min-width: 150px;
+      }
 
-    .col-dimensi {
-      width: 40px;
-      max-width: 100px;
-      text-align: center;
-    }
+      .col-prov {
+        width: 200px;
+        min-width: 150px;
+      }
 
-    .col-sub_dimensi {
-      width: 40px;
-      max-width: 200px;
-      text-align: center;
-    }
+      .col-kab {
+        width: 200px;
+        min-width: 150px;
+      }
 
-    .col-indikator {
-      width: 40px;
-      max-width: 200px;
-      text-align: center;
-    }
+      .col-desa {
+        width: 200px;
+        min-width: 150px;
+      }
 
-    .col-item {
-      width: 300px;
-      min-width: 150px;
-      background-color: #fafafa;
-    }
+      .col-lain {
+        width: 200px;
+        min-width: 150px;
+      }
 
-    .dark .col-item {
-      background-color: #1e293b;
-    }
+      /* Draggable Resizer */
+      .resizer {
+        position: absolute;
+        right: 0;
+        top: 0;
+        height: 100%;
+        width: 5px;
+        background: transparent;
+        cursor: col-resize;
+        user-select: none;
+        touch-action: none;
+        z-index: 100;
+      }
 
-    .col-score {
-      width: 60px;
-      min-width: 60px;
-      text-align: center;
-      padding: 0 4px;
-    }
+      .resizer:hover,
+      .resizing {
+        background-color: #007bff;
+      }
 
-    .col-intervensi {
-      width: 1100px;
-      min-width: 150px;
-    }
+      /* Input Styling inside Table */
+      .dash-table input {
+        width: 100%;
+        height: 100%;
+        border: none;
+        padding: 4px;
+        background: transparent;
+        text-align: center;
+        outline: none;
+      }
 
-    .col-pusat {
-      width: 200px;
-      min-width: 150px;
-    }
+      .dash-table input:focus {
+        background-color: #e8f0fe;
+      }
 
-    .col-prov {
-      width: 200px;
-      min-width: 150px;
-    }
+      .dark .dash-table input:focus {
+        background-color: #334155;
+      }
+    </style>
+  </head>
 
-    .col-kab {
-      width: 200px;
-      min-width: 150px;
-    }
-
-    .col-desa {
-      width: 200px;
-      min-width: 150px;
-    }
-
-    .col-lain {
-      width: 200px;
-      min-width: 150px;
-    }
-
-    /* Draggable Resizer */
-    .resizer {
-      position: absolute;
-      right: 0;
-      top: 0;
-      height: 100%;
-      width: 5px;
-      background: transparent;
-      cursor: col-resize;
-      user-select: none;
-      touch-action: none;
-      z-index: 100;
-    }
-
-    .resizer:hover,
-    .resizing {
-      background-color: #007bff;
-    }
-
-    /* Input Styling inside Table */
-    .dash-table input {
-      width: 100%;
-      height: 100%;
-      border: none;
-      padding: 4px;
-      background: transparent;
-      text-align: center;
-      outline: none;
-    }
-
-    .dash-table input:focus {
-      background-color: #e8f0fe;
-    }
-
-    .dark .dash-table input:focus {
-      background-color: #334155;
-    }
-  </style>
-</head>
-
-<body class="global_body_container font-mono bg-gray-100 h-screen flex flex-col transition-colors
+  <body class="global_body_container font-mono bg-gray-100 h-screen flex flex-col transition-colors
   duration-300 dark:bg-slate-900 dark:text-slate-100">
 
-  <div
-    class="header_main_container bg-slate-800 text-white p-3 flex justify-between items-center shadow-md z-20 shrink-0 border-b border-slate-700 h-14">
+    <div class="header_main_container bg-slate-800 text-white p-3 flex justify-between items-center shadow-md z-20
+      shrink-0 border-b border-slate-700 h-14">
 
-    <div class="header_left_group flex items-center gap-1">
+      <div class="header_left_group flex items-center gap-1">
 
-      <div class="transition-all duration-300 ease-in-out shrink-0 h-full flex items-center"
-        :class="isSidebarOpen ? 'w-80 opacity-100' : 'w-0 opacity-0 overflow-hidden'">
-        <h1
-          class="header_title_label text-sm font-bold flex items-center gap-2 truncate text-slate-100 border-r border-slate-600/50 h-8 w-full">
-          <span class="text-blue-400">Admin</span> | Data skor rekomendasi desa
-        </h1>
-      </div>
+        <div
+          class="transition-all duration-300 ease-in-out shrink-0 h-full flex items-center"
+          :class="isSidebarOpen ? 'w-80 opacity-100' : 'w-0 opacity-0 overflow-hidden'"
+        >
+          <h1 class="header_title_label text-sm font-bold flex items-center gap-2 truncate text-slate-100 border-r
+            border-slate-600/50 h-8 w-full">
+            <span class="text-blue-400">Admin</span> | Data skor rekomendasi desa
+          </h1>
+        </div>
 
-      <div
-        class="header_toolbar_container bg-slate-900/50 border border-slate-600 rounded-md p-1 flex items-center gap-2 shadow-sm">
+        <div class="header_toolbar_container bg-slate-900/50 border border-slate-600 rounded-md p-1 flex items-center
+          gap-2 shadow-sm">
 
-        <div x-show="viewModeState === 'grid'" class="flex items-center gap-2 mr-1 pr-2 border-r border-slate-600"
-          x-transition:enter="transition ease-out duration-300"
-          x-transition:enter-start="opacity-0 -translate-x-4 scale-95"
-          x-transition:enter-end="opacity-100 translate-x-0 scale-100"
-          x-transition:leave="transition ease-in duration-200"
-          x-transition:leave-start="opacity-100 translate-x-0 scale-100"
-          x-transition:leave-end="opacity-0 -translate-x-4 scale-95">
+          <div
+            x-show="viewModeState === 'grid'"
+            class="flex items-center gap-2 mr-1 pr-2 border-r border-slate-600"
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 -translate-x-4 scale-95"
+            x-transition:enter-end="opacity-100 translate-x-0 scale-100"
+            x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="opacity-100 translate-x-0 scale-100"
+            x-transition:leave-end="opacity-0 -translate-x-4 scale-95"
+          >
 
-          <div class="header_search_header relative" x-data="{ open: false, term: '' }" @click.outside="open = false">
-            <input type="text" x-model="term" @focus="open = true" @input="open = true" placeholder="Search headers..."
-              class="bg-slate-800 border border-slate-600 rounded px-2 py-1 text-[11px] text-white 
+            <div
+              class="header_search_header relative"
+              x-data="{ open: false, term: '' }"
+              @click.outside="open = false"
+            >
+              <input
+                type="text"
+                x-model="term"
+                @focus="open = true"
+                @input="open = true"
+                placeholder="Search headers..."
+                class="bg-slate-800 border border-slate-600 rounded px-2 py-1 text-[11px] text-white 
               placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:bg-slate-700 
-              w-32 focus:w-64 transition-all duration-300 shadow-inner">
+              w-32 focus:w-64 transition-all duration-300 shadow-inner"
+              >
 
-            <div x-show="open && term" x-transition class="absolute top-full left-0 mt-2 w-max max-w-[600px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 
-                rounded shadow-xl max-h-[80vh] overflow-y-auto z-50 custom-scrollbar">
-              <template x-for="col in meta_ColumnList.filter(c => c.toLowerCase().includes(term.toLowerCase()))"
-                :key="col">
-                <button @click="action_JumpToColumn(col); open = false; term = ''" class="w-full text-left px-3 py-2 text-xs border-b border-gray-100 dark:border-slate-700 
+              <div
+                x-show="open && term"
+                x-transition
+                class="absolute top-full left-0 mt-2 w-max max-w-[600px] bg-white dark:bg-slate-800 border
+                border-slate-200 dark:border-slate-700 
+                rounded shadow-xl max-h-[80vh] overflow-y-auto z-50 custom-scrollbar"
+              >
+                <template
+                  x-for="col in meta_ColumnList.filter(c => c.toLowerCase().includes(term.toLowerCase()))"
+                  :key="col"
+                >
+                  <button
+                    @click="action_JumpToColumn(col); open = false; term = ''"
+                    class="w-full text-left px-3 py-2 text-xs border-b border-gray-100 dark:border-slate-700 
                  hover:bg-blue-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 block truncate"
-                  :title="col"> <span x-text="col"></span>
-                </button>
-              </template>
-              <div x-show="meta_ColumnList.filter(c => c.toLowerCase().includes(term.toLowerCase())).length === 0"
-                class="px-3 py-2 text-xs text-gray-400 italic">
-                No headers found
+                    :title="col"
+                  > <span x-text="col"></span>
+                  </button>
+                </template>
+                <div
+                  x-show="meta_ColumnList.filter(c => c.toLowerCase().includes(term.toLowerCase())).length === 0"
+                  class="px-3 py-2 text-xs text-gray-400 italic"
+                >
+                  No headers found
+                </div>
               </div>
+            </div>
+
+            <div class="flex bg-slate-800 rounded p-0.5 border border-slate-700">
+              <button
+                @click="ui_ToggleTranslate(false)"
+                :class="!isTranslationActive ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-400 hover:text-white
+                hover:bg-slate-700'"
+                class="px-2 py-0.5 rounded text-[10px] font-bold transition-all flex items-center gap-1"
+                title="Raw Numbers"
+              >
+                Raw
+              </button>
+              <button
+                @click="ui_ToggleTranslate(true)"
+                :class="isTranslationActive ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-400 hover:text-white
+                hover:bg-slate-700'"
+                class="px-2 py-0.5 rounded text-[10px] font-bold transition-all flex items-center gap-1"
+                title="Text Recommendations"
+              >
+                Text
+              </button>
             </div>
           </div>
 
           <div class="flex bg-slate-800 rounded p-0.5 border border-slate-700">
-            <button @click="ui_ToggleTranslate(false)"
-              :class="!isTranslationActive ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-400 hover:text-white hover:bg-slate-700'"
-              class="px-2 py-0.5 rounded text-[10px] font-bold transition-all flex items-center gap-1"
-              title="Raw Numbers">
-              Raw
+            <button
+              @click="ui_SwitchViewMode('grid')"
+              :class="viewModeState === 'grid' ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-400 hover:text-white
+              hover:bg-slate-700'"
+              class="px-3 py-1 rounded text-[11px] font-bold transition-all flex items-center gap-1.5"
+            >
+              <span>▦</span> Grid
             </button>
-            <button @click="ui_ToggleTranslate(true)"
-              :class="isTranslationActive ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-400 hover:text-white hover:bg-slate-700'"
-              class="px-2 py-0.5 rounded text-[10px] font-bold transition-all flex items-center gap-1"
-              title="Text Recommendations">
-              Text
+            <button
+              @click="ui_SwitchViewMode('dashboard')"
+              :class="viewModeState === 'dashboard' ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-400 hover:text-white
+              hover:bg-slate-700'"
+              class="px-3 py-1 rounded text-[11px] font-bold transition-all flex items-center gap-1.5"
+            >
+              <span>📊</span> Dashboard
             </button>
+          </div>
+
+          <div class="h-6 w-px bg-slate-600"></div>
+
+          <div
+            class="flex bg-slate-800 rounded p-0.5 border border-slate-700 ml-1"
+            title="Freeze Columns"
+          >
+            <select
+              x-model.number="ui_FreezeColCount"
+              @change="ui_ApplyFreeze()"
+              class="bg-slate-800 text-[11px] font-bold text-gray-400 border-none outline-none cursor-pointer
+              hover:text-white appearance-none text-center w-9"
+            >
+              <option value="0">❄️ 0</option>
+              <option value="1">❄️ 1</option>
+              <option value="2">❄️ 2</option>
+              <option value="3">❄️ 3</option>
+              <option value="4">❄️ 4</option>
+              <option value="5">❄️ 5</option>
+              <option value="6">❄️ 6</option>
+            </select>
+          </div>
+
+          <div class="h-6 w-px bg-slate-600"></div>
+
+          <button
+            @click="action_CalculateDashboardStats"
+            class=" bg-slate-800 hover:bg-emerald-600 text-emerald-500 hover:text-white border border-slate-700
+            hover:border-emerald-500
+           px-3 py-1 rounded text-[11px] font-bold transition-all shadow-sm flex items-center gap-1 group"
+          >
+            <span class="group-hover:animate-spin">↻</span> Calc
+          </button>
+
+        </div>
+      </div>
+
+      <div class="header_right_group flex items-center gap-4">
+
+        <div class="flex items-center gap-2">
+
+          <div
+            x-show="filter_SelProv"
+            x-transition
+            class="flex items-center gap-1 bg-slate-500/10 border border-amber-500/30 px-2 py-1 rounded max-w-[150px]"
+          >
+            <span
+              class="text-xs font-bold text-amber-400 truncate"
+              x-text="filter_SelProv"
+            ></span>
+          </div>
+
+          <div
+            x-show="filter_SelKab"
+            x-transition
+            class="flex items-center gap-1 bg-slate-500/10 border border-amber-500/30 px-2 py-1 rounded max-w-[150px]"
+          >
+            <span
+              class="text-xs font-bold text-amber-400 truncate"
+              x-text="filter_SelKab"
+            ></span>
+          </div>
+
+          <div
+            x-show="filter_SelKec"
+            x-transition
+            class="flex items-center gap-1 bg-slate-500/10 border border-amber-500/30 px-2 py-1 rounded max-w-[150px]"
+          >
+            <span
+              class="text-xs font-bold text-amber-400 truncate"
+              x-text="filter_SelKec"
+            ></span>
+          </div>
+
+          <div
+            x-show="filter_NameSearch"
+            x-transition
+            class="flex items-center gap-1 bg-slate-500/10 border border-blue-500/30 px-2 py-1 rounded max-w-[150px]"
+          >
+            <span
+              class="text-xs font-bold text-blue-400 truncate"
+              x-text="filter_NameSearch"
+            ></span>
+          </div>
+
+          <div
+            x-show="filter_IdListInput && filter_IdListInput.trim()"
+            x-transition
+            class="flex items-center gap-1 bg-slate-500/10 border border-purple-500/30 px-2 py-1 rounded"
+          >
+            <span class="text-xs font-bold text-purple-400">Pasted IDs</span>
+          </div>
+
+        </div>
+
+        <div class="flex items-center gap-4">
+
+          <div class="flex flex-col items-end leading-none">
+            <span class="text-slate-500 text-[9px] uppercase tracking-wider font-bold">Total Rows</span>
+            <span
+              class="font-mono font-bold text-slate-200 text-sm"
+              x-text="stats_TotalRows"
+            >0</span>
+          </div>
+
+          <div class="flex flex-col items-end leading-none border-l border-slate-700 pl-4">
+            <span class="text-slate-500 text-[9px] uppercase tracking-wider font-bold">Last Update</span>
+            <span
+              class="font-mono font-bold text-emerald-400 text-sm"
+              x-text="stats_LastUpdateLabel"
+            >N/A</span>
           </div>
         </div>
 
-        <div class="flex bg-slate-800 rounded p-0.5 border border-slate-700">
-          <button @click="ui_SwitchViewMode('grid')"
-            :class="viewModeState === 'grid' ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-400 hover:text-white hover:bg-slate-700'"
-            class="px-3 py-1 rounded text-[11px] font-bold transition-all flex items-center gap-1.5">
-            <span>▦</span> Grid
-          </button>
-          <button @click="ui_SwitchViewMode('dashboard')"
-            :class="viewModeState === 'dashboard' ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-400 hover:text-white hover:bg-slate-700'"
-            class="px-3 py-1 rounded text-[11px] font-bold transition-all flex items-center gap-1.5">
-            <span>📊</span> Dashboard
-          </button>
-        </div>
+        <div class="h-6 w-px bg-slate-700"></div>
 
-        <div class="h-6 w-px bg-slate-600"></div>
+        <button
+          @click="ui_ToggleDarkMode"
+          class="header_btn_theme_toggle w-8 h-8 rounded hover:bg-slate-700 text-yellow-400 
+                         transition border border-transparent hover:border-slate-600 flex items-center justify-center"
+          title="Toggle Theme"
+        >
+          <svg
+            x-show="!isDarkModeEnabled"
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-4 h-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343
+              17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+            />
+          </svg>
+          <svg
+            x-show="isDarkModeEnabled"
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-4 h-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+            />
+          </svg>
+        </button>
 
-        <div class="flex bg-slate-800 rounded p-0.5 border border-slate-700 ml-1" title="Freeze Columns">
-          <select x-model.number="ui_FreezeColCount" @change="ui_ApplyFreeze()"
-            class="bg-slate-800 text-[11px] font-bold text-gray-400 border-none outline-none cursor-pointer hover:text-white appearance-none text-center w-9">
-            <option value="0">❄️ 0</option>
-            <option value="1">❄️ 1</option>
-            <option value="2">❄️ 2</option>
-            <option value="3">❄️ 3</option>
-            <option value="4">❄️ 4</option>
-            <option value="5">❄️ 5</option>
-            <option value="6">❄️ 6</option>
-          </select>
-        </div>
+        <div class="h-6 w-px bg-slate-700"></div>
 
-        <div class="h-6 w-px bg-slate-600"></div>
-
-        <button @click="action_CalculateDashboardStats" class=" bg-slate-800 hover:bg-emerald-600 text-emerald-500 hover:text-white border border-slate-700 hover:border-emerald-500
-           px-3 py-1 rounded text-[11px] font-bold transition-all shadow-sm flex items-center gap-1 group">
-          <span class="group-hover:animate-spin">↻</span> Calc
+        <button
+          @click="action_Logout"
+          class="flex items-center gap-2 text-xs font-bold text-gray-400 hover:text-red-300 transition 
+                         bg-slate-800 border border-red-900/50 px-3 py-1.5 rounded hover:bg-red-900/50"
+        >
+          <span>⏻</span> Logout
         </button>
 
       </div>
     </div>
 
-    <div class="header_right_group flex items-center gap-4">
+    <div class="main_layout_wrapper flex flex-1 overflow-hidden">
 
-      <div class="flex items-center gap-2">
-
-        <div x-show="filter_SelProv" x-transition
-          class="flex items-center gap-1 bg-slate-500/10 border border-amber-500/30 px-2 py-1 rounded max-w-[150px]">
-          <span class="text-xs font-bold text-amber-400 truncate" x-text="filter_SelProv"></span>
-        </div>
-
-        <div x-show="filter_SelKab" x-transition
-          class="flex items-center gap-1 bg-slate-500/10 border border-amber-500/30 px-2 py-1 rounded max-w-[150px]">
-          <span class="text-xs font-bold text-amber-400 truncate" x-text="filter_SelKab"></span>
-        </div>
-
-        <div x-show="filter_SelKec" x-transition
-          class="flex items-center gap-1 bg-slate-500/10 border border-amber-500/30 px-2 py-1 rounded max-w-[150px]">
-          <span class="text-xs font-bold text-amber-400 truncate" x-text="filter_SelKec"></span>
-        </div>
-
-        <div x-show="filter_NameSearch" x-transition
-          class="flex items-center gap-1 bg-slate-500/10 border border-blue-500/30 px-2 py-1 rounded max-w-[150px]">
-          <span class="text-xs font-bold text-blue-400 truncate" x-text="filter_NameSearch"></span>
-        </div>
-
-        <div x-show="filter_IdListInput && filter_IdListInput.trim()" x-transition
-          class="flex items-center gap-1 bg-slate-500/10 border border-purple-500/30 px-2 py-1 rounded">
-          <span class="text-xs font-bold text-purple-400">Pasted IDs</span>
-        </div>
-
-      </div>
-
-      <div class="flex items-center gap-4">
-
-        <div class="flex flex-col items-end leading-none">
-          <span class="text-slate-500 text-[9px] uppercase tracking-wider font-bold">Total Rows</span>
-          <span class="font-mono font-bold text-slate-200 text-sm" x-text="stats_TotalRows">0</span>
-        </div>
-
-        <div class="flex flex-col items-end leading-none border-l border-slate-700 pl-4">
-          <span class="text-slate-500 text-[9px] uppercase tracking-wider font-bold">Last Update</span>
-          <span class="font-mono font-bold text-emerald-400 text-sm" x-text="stats_LastUpdateLabel">N/A</span>
-        </div>
-      </div>
-
-      <div class="h-6 w-px bg-slate-700"></div>
-
-      <button @click="ui_ToggleDarkMode" class="header_btn_theme_toggle w-8 h-8 rounded hover:bg-slate-700 text-yellow-400 
-                         transition border border-transparent hover:border-slate-600 flex items-center justify-center"
-        title="Toggle Theme">
-        <svg x-show="!isDarkModeEnabled" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none"
-          viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round"
-            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-        </svg>
-        <svg x-show="isDarkModeEnabled" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none"
-          viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round"
-            d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-        </svg>
-      </button>
-
-      <div class="h-6 w-px bg-slate-700"></div>
-
-      <button @click="action_Logout" class="flex items-center gap-2 text-xs font-bold text-gray-400 hover:text-red-300 transition 
-                         bg-slate-800 border border-red-900/50 px-3 py-1.5 rounded hover:bg-red-900/50">
-        <span>⏻</span> Logout
-      </button>
-
-    </div>
-  </div>
-
-  <div class="main_layout_wrapper flex flex-1 overflow-hidden">
-
-    <div :class="isSidebarOpen ? 'w-80' : 'w-0'" class="sidebar_animation_wrapper
+      <div
+        :class="isSidebarOpen ? 'w-80' : 'w-0'"
+        class="sidebar_animation_wrapper
       relative z-20 shrink-0 transition-all
-      duration-300 ease-in-out bg-white dark:bg-slate-800">
+      duration-300 ease-in-out bg-white dark:bg-slate-800"
+      >
 
-      <button @click="isSidebarOpen = !isSidebarOpen" class="sidebar_toggle_btn
+        <button
+          @click="isSidebarOpen = !isSidebarOpen"
+          class="sidebar_toggle_btn
         absolute -right-3 top-20 w-6 h-6 bg-slate-500 border border-slate-200
         dark:border-slate-600 dark:bg-slate-500 rounded-full shadow-md z-50 flex items-center
         justify-center cursor-pointer text-slate-100 dark:text-slate-900
         transform transition-transform duration-300 focus:outline-none"
-        :class="isSidebarOpen ? 'rotate-0' : 'rotate-180'" title="Toggle Sidebar">
-        <span class="text-[14px] leading-none font-bold">↔</span>
-      </button>
+          :class="isSidebarOpen ? 'rotate-0' : 'rotate-180'"
+          title="Toggle Sidebar"
+        >
+          <span class="text-[14px] leading-none font-bold">↔</span>
+        </button>
 
-      <div class="sidebar_content_clipper h-full w-full overflow-hidden flex flex-col
+        <div class="sidebar_content_clipper h-full w-full overflow-hidden flex flex-col
         border-r border-slate-200 dark:border-slate-700">
 
-        <div class="sidebar_inner_content w-80 h-full overflow-y-auto custom-scrollbar flex flex-col p-4">
+          <div class="sidebar_inner_content w-80 h-full overflow-y-auto custom-scrollbar flex flex-col p-4">
 
-          <div class="sidebar_section_upload mb-5 border-b border-gray-100 pb-4 dark:border-slate-700"
-            x-data="{ open: false }">
-            <div @click="open = !open" class="flex justify-between items-center cursor-pointer mb-3 group select-none">
-              <h3 class="sidebar_section_title text-xs font-bold text-gray-400 uppercase
+            <div
+              class="sidebar_section_upload mb-5 border-b border-gray-100 pb-4 dark:border-slate-700"
+              x-data="{ open: false }"
+            >
+              <div
+                @click="open = !open"
+                class="flex justify-between items-center cursor-pointer mb-3 group select-none"
+              >
+                <h3 class="sidebar_section_title text-xs font-bold text-gray-400 uppercase
                 tracking-wider group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors">
-                🚀 Actions
-              </h3>
-              <span class="text-gray-400 text-[14px] font-bold transition-transform duration-200"
-                :class="open ? 'rotate-90' : 'rotate-0'">›</span>
-            </div>
+                  🚀 Actions
+                </h3>
+                <span
+                  class="text-gray-400 text-[14px] font-bold transition-transform duration-200"
+                  :class="open ? 'rotate-90' : 'rotate-0'"
+                >›</span>
+              </div>
 
-            <div x-show="open" x-collapse>
-              <div class="sidebar_upload_group space-y-3">
-                <div class="sidebar_upload_label_group flex items-center gap-2 mb-1">
-                  <span class="text-[12px] font-bold text-slate-500 uppercase tracking-wider dark:text-slate-400">
-                    Database Import
-                  </span>
-                  <div class="h-px bg-slate-200 flex-1 dark:bg-slate-700"></div>
-                </div>
+              <div
+                x-show="open"
+                x-collapse
+              >
+                <div class="sidebar_upload_group space-y-3">
+                  <div class="sidebar_upload_label_group flex items-center gap-2 mb-1">
+                    <span class="text-[12px] font-bold text-slate-500 uppercase tracking-wider dark:text-slate-400">
+                      Database Import
+                    </span>
+                    <div class="h-px bg-slate-200 flex-1 dark:bg-slate-700"></div>
+                  </div>
 
-                <div x-show="!stagingData_Object" class="sidebar_upload_dropzone_container">
-                  <label class="sidebar_upload_dropzone flex flex-col items-center justify-center w-full h-12
+                  <div
+                    x-show="!stagingData_Object"
+                    class="sidebar_upload_dropzone_container"
+                  >
+                    <label class="sidebar_upload_dropzone flex flex-col items-center justify-center w-full h-12
                     border-2 border-dashed border-blue-300 rounded-lg cursor-pointer bg-blue-50/50
                     hover:bg-blue-100 hover:border-blue-400 transition-all dark:bg-slate-800
                     dark:border-slate-600 dark:hover:border-blue-500 dark:hover:bg-slate-700 group">
 
-                    <div class="flex flex-col items-center justify-center pt-2 pb-3">
-                      <div class="mb-1 text-blue-400 group-hover:text-blue-600 group-hover:scale-110
+                      <div class="flex flex-col items-center justify-center pt-2 pb-3">
+                        <div class="mb-1 text-blue-400 group-hover:text-blue-600 group-hover:scale-110
                         transition-transform dark:text-slate-400 dark:group-hover:text-blue-400">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                          xmlns="http://www.w3.org/2000/svg">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12">
-                          </path>
-                        </svg>
+                          <svg
+                            class="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                            >
+                            </path>
+                          </svg>
+                        </div>
+                        <p class="text-[10px] font-bold text-slate-600 group-hover:text-blue-700 dark:text-slate-300">
+                          Upload Data</p>
                       </div>
-                      <p class="text-[10px] font-bold text-slate-600 group-hover:text-blue-700 dark:text-slate-300">
-                        Upload Data</p>
+                      <input
+                        type="file"
+                        @change="action_UploadFile"
+                        class="sidebar_input_file hidden"
+                        accept=".xlsb, .xlsx"
+                      />
+                    </label>
+                    <div class="sidebar_status_msg_container min-h-[16px] mt-1 text-center">
+                      <p
+                        x-text="setUiStatusMessage"
+                        class="sidebar_status_msg text-[12px] text-blue-600 font-bold animate-pulse"
+                        x-show="setUiStatusMessage"
+                      ></p>
                     </div>
-                    <input type="file" @change="action_UploadFile" class="sidebar_input_file hidden"
-                      accept=".xlsb, .xlsx" />
-                  </label>
-                  <div class="sidebar_status_msg_container min-h-[16px] mt-1 text-center">
-                    <p x-text="setUiStatusMessage"
-                      class="sidebar_status_msg text-[12px] text-blue-600 font-bold animate-pulse"
-                      x-show="setUiStatusMessage"></p>
                   </div>
-                </div>
 
-                <div x-show="stagingData_Object" class="sidebar_staging_review_panel
+                  <div
+                    x-show="stagingData_Object"
+                    class="sidebar_staging_review_panel
                   bg-white border border-slate-200 rounded-lg shadow-sm
-                  overflow-hidden dark:bg-slate-800 dark:border-slate-600" style="display: none;">
-                  <div class="sidebar_staging_header bg-amber-50 px-3 py-2 border-b border-amber-100
+                  overflow-hidden dark:bg-slate-800 dark:border-slate-600"
+                    style="display: none;"
+                  >
+                    <div class="sidebar_staging_header bg-amber-50 px-3 py-2 border-b border-amber-100
                     dark:bg-amber-900/20 dark:border-amber-800/50 flex items-center justify-between">
-                    <span class="text-[12px] font-bold text-amber-700 dark:text-amber-500">
-                      ⚠️ Review Changes
-                    </span>
-                    <div class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></div>
-                  </div>
-                  <div class="p-3">
-                    <p class="sidebar_staging_filename text-[12px] text-slate-500 mb-3 truncate font-mono
-                    bg-slate-100 p-1 rounded dark:bg-slate-900 dark:text-slate-400"
-                      x-text="stagingData_Object?.filename"></p>
-                    <div class="sidebar_staging_stats_grid grid grid-cols-3 gap-2 mb-3 text-center">
-                      <div class="stat_box_new flex flex-col border border-green-200 bg-green-50 rounded
-                        p-1 dark:bg-green-900/20 dark:border-green-800">
-                        <span class="text-[9px] text-green-700 font-bold dark:text-green-400">
-                          NEW
-                        </span>
-                        <span class="text-xs font-mono font-bold text-slate-700 dark:text-slate-200"
-                          x-text="stagingData_Object?.diff.added">0</span>
-                      </div>
-                      <div class="stat_box_mod flex flex-col border border-blue-200 bg-blue-50 rounded
-                        p-1 dark:bg-blue-900/20 dark:border-blue-800">
-                        <span class="text-[9px] text-blue-700 font-bold dark:text-blue-400">
-                          MOD
-                        </span>
-                        <span class="text-xs font-mono font-bold text-slate-700 dark:text-slate-200"
-                          x-text="stagingData_Object?.diff.changed">0</span>
-                      </div>
-                      <div class="stat_box_del flex flex-col border border-red-200 bg-red-50 rounded
-                        p-1 dark:bg-red-900/20 dark:border-red-800">
-                        <span class="text-[9px] text-red-700 font-bold dark:text-red-400">
-                          DEL
-                        </span>
-                        <span class="text-xs font-mono font-bold text-slate-700 dark:text-slate-200"
-                          x-text="stagingData_Object?.diff.removed">0</span>
-                      </div>
+                      <span class="text-[12px] font-bold text-amber-700 dark:text-amber-500">
+                        ⚠️ Review Changes
+                      </span>
+                      <div class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></div>
                     </div>
-                    <div class="sidebar_staging_actions flex gap-2">
-                      <button @click="action_CommitStagedData_ToDB" class="sidebar_btn_commit flex-1
+                    <div class="p-3">
+                      <p
+                        class="sidebar_staging_filename text-[12px] text-slate-500 mb-3 truncate font-mono
+                    bg-slate-100 p-1 rounded dark:bg-slate-900 dark:text-slate-400"
+                        x-text="stagingData_Object?.filename"
+                      ></p>
+                      <div class="sidebar_staging_stats_grid grid grid-cols-3 gap-2 mb-3 text-center">
+                        <div class="stat_box_new flex flex-col border border-green-200 bg-green-50 rounded
+                        p-1 dark:bg-green-900/20 dark:border-green-800">
+                          <span class="text-[9px] text-green-700 font-bold dark:text-green-400">
+                            NEW
+                          </span>
+                          <span
+                            class="text-xs font-mono font-bold text-slate-700 dark:text-slate-200"
+                            x-text="stagingData_Object?.diff.added"
+                          >0</span>
+                        </div>
+                        <div class="stat_box_mod flex flex-col border border-blue-200 bg-blue-50 rounded
+                        p-1 dark:bg-blue-900/20 dark:border-blue-800">
+                          <span class="text-[9px] text-blue-700 font-bold dark:text-blue-400">
+                            MOD
+                          </span>
+                          <span
+                            class="text-xs font-mono font-bold text-slate-700 dark:text-slate-200"
+                            x-text="stagingData_Object?.diff.changed"
+                          >0</span>
+                        </div>
+                        <div class="stat_box_del flex flex-col border border-red-200 bg-red-50 rounded
+                        p-1 dark:bg-red-900/20 dark:border-red-800">
+                          <span class="text-[9px] text-red-700 font-bold dark:text-red-400">
+                            DEL
+                          </span>
+                          <span
+                            class="text-xs font-mono font-bold text-slate-700 dark:text-slate-200"
+                            x-text="stagingData_Object?.diff.removed"
+                          >0</span>
+                        </div>
+                      </div>
+                      <div class="sidebar_staging_actions flex gap-2">
+                        <button
+                          @click="action_CommitStagedData_ToDB"
+                          class="sidebar_btn_commit flex-1
                         bg-slate-800 text-white py-1.5 rounded text-[12px]
-                        font-bold hover:bg-slate-900 shadow-sm transition dark:bg-blue-600 dark:hover:bg-blue-500">
-                        Commit to DB
-                      </button>
-                      <button @click="stagingData_Object = null; setUiStatusMessage=''" class="sidebar_btn_cancel
+                        font-bold hover:bg-slate-900 shadow-sm transition dark:bg-blue-600 dark:hover:bg-blue-500"
+                        >
+                          Commit to DB
+                        </button>
+                        <button
+                          @click="stagingData_Object = null; setUiStatusMessage=''"
+                          class="sidebar_btn_cancel
                         px-3 border border-slate-300 text-slate-600 rounded
                         text-[12px] font-bold hover:bg-slate-50 transition dark:border-slate-600
-                        dark:text-slate-300 dark:hover:bg-slate-700">
-                        Cancel
-                      </button>
+                        dark:text-slate-300 dark:hover:bg-slate-700"
+                        >
+                          Cancel
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <button @click="action_DownloadToExcel" class="sidebar_btn_download_excel w-full border
+                  <button
+                    @click="action_DownloadToExcel"
+                    class="sidebar_btn_download_excel w-full border
                   border-green-600 text-green-700 bg-green-50
                   py-2 rounded text-xs font-bold hover:bg-green-100 transition flex justify-center
                   items-center gap-2 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800
-                  dark:hover:bg-green-900/40">
-                  <span>📥</span> Download Excel
+                  dark:hover:bg-green-900/40"
+                  >
+                    <span>📥</span> Download Excel
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="sidebar_section_delete mb-5 border-b border-gray-100 pb-4 dark:border-slate-700"
+              x-data="{ open: false }"
+            >
+              <div
+                @click="open = !open"
+                class="flex justify-between items-center cursor-pointer mb-2 group select-none"
+              >
+                <h3 class="sidebar_section_title text-xs font-bold text-gray-400 uppercase tracking-wider
+                group-hover:text-red-500 transition-colors">
+                  🗑️ Soft Delete
+                </h3>
+                <span
+                  class="text-gray-400 text-[14px] font-bold transition-transform duration-200"
+                  :class="open ? 'rotate-90' : 'rotate-0'"
+                >›</span>
+              </div>
+
+              <div
+                x-show="open"
+                x-collapse
+              >
+                <div class="mb-2">
+                  <textarea
+                    x-model="filter_DeleteListInput"
+                    class="sidebar_input_delete_ids w-full
+                  border border-red-200 p-2 rounded text-xs
+                  h-16 font-mono focus:border-red-500 focus:ring-1 focus:ring-red-200 outline-none
+                  text-gray-700 dark:bg-slate-900 dark:border-red-900/50 dark:text-red-100 dark:placeholder-red-100/50"
+                    placeholder="Paste IDs here to drop from Live view..."
+                  ></textarea>
+                </div>
+                <button
+                  @click="action_SoftDeleteIDs_FromDB"
+                  class="sidebar_btn_confirm_delete w-full
+                bg-red-50 text-red-600 border border-red-200
+                py-1.5 rounded text-xs font-bold hover:bg-red-100 hover:text-red-700 transition
+                dark:bg-red-900/20 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/40"
+                >
+                  Confirm Delete
+                </button>
+              </div>
+            </div>
+
+            <div
+              class="sidebar_section_history mb-5 border-b border-gray-100 pb-4 dark:border-slate-700"
+              x-data="{ open: false }"
+            >
+              <div
+                @click="open = !open"
+                class="flex justify-between items-center cursor-pointer mb-2 group select-none"
+              >
+                <h3 class="sidebar_section_title text-xs font-bold text-gray-400 uppercase tracking-wider
+                group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors">
+                  ⏳ History & Changes
+                </h3>
+                <span
+                  class="text-gray-400 text-[14px] font-bold transition-transform duration-200"
+                  :class="open ? 'rotate-90' : 'rotate-0'"
+                >›</span>
+              </div>
+
+              <div
+                x-show="open"
+                x-collapse
+              >
+                <div
+                  @click="ui_LoadVersion('')"
+                  class="cursor-pointer mb-2 p-2 rounded border transition-colors flex justify-between items-center"
+                  :class="!filter_SelectedVersion ?
+                'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800' 
+                : 'bg-white border-gray-200 hover:bg-gray-50 dark:bg-slate-800 dark:border-slate-600'"
+                >
+                  <span
+                    class="text-xs font-bold"
+                    :class="!filter_SelectedVersion ?
+                  'text-green-700 dark:text-green-400' 
+                  : 'text-gray-600 dark:text-gray-300'"
+                  >
+                    🟢 Live (Current)
+                  </span>
+                  <span
+                    x-show="!filter_SelectedVersion"
+                    class="text-[10px] text-green-600 font-bold"
+                  >
+                    ACTIVE
+                  </span>
+                </div>
+
+                <select
+                  x-model="targetYear"
+                  @change="action_YearChanged"
+                  class="sidebar_select_year
+                w-full border border-blue-300 mb-2 p-2 rounded text-xs
+                bg-blue-50 focus:ring-1 focus:ring-blue-500 outline-none text-blue-900 font-bold
+                dark:bg-slate-900 dark:border-slate-600 dark:text-blue-400"
+                >
+                  <template
+                    x-for="y in availableYears"
+                    :key="y"
+                  >
+                    <option
+                      :value="y"
+                      x-text="y"
+                    ></option>
+                  </template>
+                </select>
+
+                <div class="space-y-2 max-h-[700px] overflow-y-auto custom-scrollbar pr-1">
+                  <template
+                    x-for="v in meta_VersionsList"
+                    :key="v.ts"
+                  >
+                    <div
+                      class="border rounded bg-white dark:bg-slate-800 dark:border-slate-700 overflow-hidden flex flex-col"
+                    >
+
+                      <div class="p-2 flex flex-col gap-1 border-b border-gray-50 dark:border-slate-700
+                      bg-gray-50/50 dark:bg-slate-800">
+                        <div class="flex justify-between items-start">
+                          <span
+                            class="text-[10px] font-mono text-gray-500 dark:text-gray-400"
+                            x-text="v.ts"
+                          ></span>
+                          <span
+                            class="text-[9px] px-1 rounded bg-gray-200 text-gray-600 dark:bg-slate-700 dark:text-gray-300"
+                            x-text="v.label.split(' - ')[1] || 'Commit'"
+                          ></span>
+                        </div>
+
+                        <div class="flex gap-2 mt-1">
+                          <button
+                            @click="ui_LoadVersion(v.ts)"
+                            class="flex-1 py-1 text-[10px] font-bold rounded border transition-colors"
+                            :class="filter_SelectedVersion === v.ts ?
+                          'bg-blue-600 text-white border-blue-600' 
+                          : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50
+                          dark:bg-slate-700 dark:text-gray-300 dark:border-slate-600'"
+                          >
+                            View Data
+                          </button>
+
+                          <button
+                            @click="ui_ToggleHistoryDetails(v.ts)"
+                            class="px-2 py-1 text-[10px]
+                          font-bold rounded border border-gray-300 text-gray-500 hover:bg-gray-100 dark:border-slate-600 dark:text-slate-400
+                          dark:hover:bg-slate-700"
+                            x-text="history_OpenDetailsId === v.ts ?
+                          'Hide' 
+                          : 'Details'"
+                          >
+                          </button>
+                        </div>
+                      </div>
+
+                      <div
+                        x-show="history_OpenDetailsId === v.ts"
+                        x-collapse
+                        class="bg-slate-50 border-t border-gray-200 p-2 dark:bg-slate-900 dark:border-slate-700"
+                      >
+
+                        <div
+                          x-show="!history_DiffCache[v.ts]"
+                          class="text-center py-2 text-gray-400 text-[10px] animate-pulse"
+                        >
+                          Loading diff...
+                        </div>
+
+                        <div
+                          x-show="history_DiffCache[v.ts]"
+                          class="grid grid-cols-3 gap-2 text-center"
+                        >
+
+                          <div class="flex flex-col border border-green-200 bg-green-50 rounded p-1
+                          dark:bg-green-900/20 dark:border-green-800">
+                            <span class="text-[9px] font-bold text-green-700 dark:text-green-400">
+                              ADD
+                            </span>
+                            <span
+                              class="text-xs font-mono font-bold text-slate-700 dark:text-slate-200"
+                              x-text="(history_DiffCache[v.ts] || []).filter(x => x.type === 'ADD').length"
+                            >0</span>
+                          </div>
+
+                          <div
+                            class="flex flex-col border border-blue-200 bg-blue-50 rounded p-1 dark:bg-blue-900/20 dark:border-blue-800"
+                          >
+                            <span class="text-[9px] font-bold text-blue-700 dark:text-blue-400">
+                              MOD
+                            </span>
+                            <span
+                              class="text-xs font-mono font-bold text-slate-700 dark:text-slate-200"
+                              x-text="(history_DiffCache[v.ts] || []).filter(x => x.type === 'MOD').length"
+                            >0</span>
+                          </div>
+
+                          <div
+                            class="flex flex-col border border-red-200 bg-red-50 rounded p-1 dark:bg-red-900/20 dark:border-red-800"
+                          >
+                            <span class="text-[9px] font-bold text-red-700 dark:text-red-400">
+                              DEL
+                            </span>
+                            <span
+                              class="text-xs font-mono font-bold text-slate-700 dark:text-slate-200"
+                              x-text="(history_DiffCache[v.ts] || []).filter(x => x.type === 'DEL').length"
+                            >0</span>
+                          </div>
+                        </div>
+
+                        <ul class="space-y-2 text-[10px] font-mono">
+                          <template
+                            x-for="change in (history_DiffCache[v.ts] || [])"
+                            :key="change.id + change.type"
+                          >
+                            <li class="border-b border-gray-100 pb-1 last:border-0 dark:border-slate-700">
+                              <div class="flex items-center gap-1 mb-0.5">
+                                <span
+                                  x-show="change.type === 'ADD'"
+                                  class="text-green-600 font-bold"
+                                >[+] ADD</span>
+                                <span
+                                  x-show="change.type === 'DEL'"
+                                  class="text-red-600 font-bold"
+                                >[-] DEL</span>
+                                <span
+                                  x-show="change.type === 'MOD'"
+                                  class="text-blue-600 font-bold"
+                                >[~] MOD</span>
+                                <span
+                                  x-text="change.id"
+                                  class="text-slate-700 dark:text-slate-300 font-bold"
+                                ></span>
+                              </div>
+                              <div
+                                class="whitespace-pre-wrap pl-8 text-gray-500 dark:text-gray-400 leading-tight"
+                                x-text="change.desc"
+                              ></div>
+                            </li>
+                          </template>
+                          <template x-if="history_DiffCache[v.ts] && history_DiffCache[v.ts].length === 0">
+                            <li class="text-gray-400 italic text-center">No structural changes found.</li>
+                          </template>
+                        </ul>
+
+                      </div>
+                    </div>
+                  </template>
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="sidebar_section_location mb-5 border-b border-gray-100 pb-4 space-y-0 dark:border-slate-700"
+              x-data="{ open: true }"
+            >
+              <div
+                @click="open = !open"
+                class="flex justify-between items-center cursor-pointer mb-3 group select-none"
+              >
+                <h3 class="sidebar_section_title text-xs font-bold text-gray-400 uppercase tracking-wider
+                group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors">
+                  📍 Location
+                </h3>
+                <span
+                  class="text-gray-400 text-[14px] font-bold transition-transform duration-200"
+                  :class="open ? 'rotate-90' : 'rotate-0'"
+                >›</span>
+              </div>
+
+              <div
+                x-show="open"
+                x-collapse
+                class="space-y-3"
+              >
+                <div class="sidebar_location_filter_prov_group">
+                  <label class="block text-[12px] font-bold text-gray-500 mb-1 dark:text-gray-400">
+                    PROVINSI
+                  </label>
+                  <select
+                    x-model="filter_SelProv"
+                    @change="filter_SelKab=''; filter_SelKec=''; fetch_MainGridData_FromAPI()"
+                    class="sidebar_select_prov
+                  w-full border p-1.5 rounded text-xs bg-white focus:border-blue-500
+                  outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
+                  >
+                    <option value="">- All -</option>
+                    <template
+                      x-for="p in Object.keys(meta_HierarchyTree).sort()"
+                      :key="p"
+                    >
+                      <option
+                        :value="p"
+                        x-text="p"
+                      ></option>
+                    </template>
+                  </select>
+                </div>
+
+                <div class="sidebar_location_filter_kab_group">
+                  <label class="block text-[12px] font-bold text-gray-500 mb-1 dark:text-gray-400">
+                    KABUPATEN/KOTA
+                  </label>
+                  <select
+                    x-model="filter_SelKab"
+                    @change="filter_SelKec=''; fetch_MainGridData_FromAPI()"
+                    class="sidebar_select_kab
+                  w-full border p-1.5 rounded text-xs bg-white
+                  focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
+                    :disabled="!filter_SelProv"
+                    :class="{'bg-gray-100 dark:bg-slate-800': !filter_SelProv}"
+                  >
+                    <option value="">- All -</option>
+                    <template
+                      x-for="k in util_GetKabOptions()"
+                      :key="k"
+                    >
+                      <option
+                        :value="k"
+                        x-text="k"
+                      ></option>
+                    </template>
+                  </select>
+                </div>
+
+                <div class="sidebar_location_filter_kec_group">
+                  <label class="block text-[12px] font-bold text-gray-500 mb-1 dark:text-gray-400">
+                    KECAMATAN
+                  </label>
+                  <select
+                    x-model="filter_SelKec"
+                    @change="fetch_MainGridData_FromAPI"
+                    class="sidebar_select_kec
+                  w-full border p-1.5 rounded text-xs bg-white
+                  focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
+                    :disabled="!filter_SelKab"
+                    :class="{'bg-gray-100 dark:bg-slate-800': !filter_SelKab}"
+                  >
+                    <option value="">- All -</option>
+                    <template
+                      x-for="c in util_GetKecOptions()"
+                      :key="c"
+                    >
+                      <option
+                        :value="c"
+                        x-text="c"
+                      ></option>
+                    </template>
+                  </select>
+                </div>
+
+                <div class="sidebar_location_filter_search_group mb-3">
+                  <input
+                    type="text"
+                    x-model="filter_NameSearch"
+                    class="sidebar_input_search_name
+                  w-full border p-2 rounded text-xs focus:border-blue-500
+                  outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
+                    placeholder="Search Desa Name..."
+                  >
+                </div>
+                <div class="sidebar_search_ids mb-3">
+                  <textarea
+                    x-model="filter_IdListInput"
+                    class="sidebar_input_search_ids
+                  w-full mb-2 border p-2 rounded text-xs h-20 font-mono
+                  focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
+                    placeholder="Paste IDs here (comma or newline separated) to search by ID Desa..."
+                  ></textarea>
+                </div>
+                <button
+                  @click="fetch_MainGridData_FromAPI"
+                  class="sidebar_btn_apply_filter
+                w-full bg-slate-400 text-white py-2 rounded text-xs
+                font-bold hover:bg-slate-800 transition shadow-sm dark:bg-slate-600 dark:hover:bg-slate-500"
+                >
+                  Apply Filters
                 </button>
               </div>
             </div>
           </div>
-
-          <div class="sidebar_section_delete mb-5 border-b border-gray-100 pb-4 dark:border-slate-700"
-            x-data="{ open: false }">
-            <div @click="open = !open" class="flex justify-between items-center cursor-pointer mb-2 group select-none">
-              <h3 class="sidebar_section_title text-xs font-bold text-gray-400 uppercase tracking-wider
-                group-hover:text-red-500 transition-colors">
-                🗑️ Soft Delete
-              </h3>
-              <span class="text-gray-400 text-[14px] font-bold transition-transform duration-200"
-                :class="open ? 'rotate-90' : 'rotate-0'">›</span>
-            </div>
-
-            <div x-show="open" x-collapse>
-              <div class="mb-2">
-                <textarea x-model="filter_DeleteListInput" class="sidebar_input_delete_ids w-full
-                  border border-red-200 p-2 rounded text-xs
-                  h-16 font-mono focus:border-red-500 focus:ring-1 focus:ring-red-200 outline-none
-                  text-gray-700 dark:bg-slate-900 dark:border-red-900/50 dark:text-red-100 dark:placeholder-red-100/50"
-                  placeholder="Paste IDs here to drop from Live view..."></textarea>
-              </div>
-              <button @click="action_SoftDeleteIDs_FromDB" class="sidebar_btn_confirm_delete w-full
-                bg-red-50 text-red-600 border border-red-200
-                py-1.5 rounded text-xs font-bold hover:bg-red-100 hover:text-red-700 transition
-                dark:bg-red-900/20 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/40">
-                Confirm Delete
-              </button>
-            </div>
-          </div>
-
-          <div class="sidebar_section_history mb-5 border-b border-gray-100 pb-4 dark:border-slate-700"
-            x-data="{ open: false }">
-            <div @click="open = !open" class="flex justify-between items-center cursor-pointer mb-2 group select-none">
-              <h3 class="sidebar_section_title text-xs font-bold text-gray-400 uppercase tracking-wider
-                group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors">
-                ⏳ History & Changes
-              </h3>
-              <span class="text-gray-400 text-[14px] font-bold transition-transform duration-200"
-                :class="open ? 'rotate-90' : 'rotate-0'">›</span>
-            </div>
-
-            <div x-show="open" x-collapse>
-              <div @click="ui_LoadVersion('')"
-                class="cursor-pointer mb-2 p-2 rounded border transition-colors flex justify-between items-center"
-                :class="!filter_SelectedVersion ?
-                'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800' 
-                : 'bg-white border-gray-200 hover:bg-gray-50 dark:bg-slate-800 dark:border-slate-600'">
-                <span class="text-xs font-bold" :class="!filter_SelectedVersion ?
-                  'text-green-700 dark:text-green-400' 
-                  : 'text-gray-600 dark:text-gray-300'">
-                  🟢 Live (Current)
-                </span>
-                <span x-show="!filter_SelectedVersion" class="text-[10px] text-green-600 font-bold">
-                  ACTIVE
-                </span>
-              </div>
-
-              <select x-model="targetYear" @change="action_YearChanged" class="sidebar_select_year
-                w-full border border-blue-300 mb-2 p-2 rounded text-xs
-                bg-blue-50 focus:ring-1 focus:ring-blue-500 outline-none text-blue-900 font-bold
-                dark:bg-slate-900 dark:border-slate-600 dark:text-blue-400">
-                <template x-for="y in availableYears" :key="y">
-                  <option :value="y" x-text="y"></option>
-                </template>
-              </select>
-
-              <div class="space-y-2 max-h-[700px] overflow-y-auto custom-scrollbar pr-1">
-                <template x-for="v in meta_VersionsList" :key="v.ts">
-                  <div
-                    class="border rounded bg-white dark:bg-slate-800 dark:border-slate-700 overflow-hidden flex flex-col">
-
-                    <div class="p-2 flex flex-col gap-1 border-b border-gray-50 dark:border-slate-700
-                      bg-gray-50/50 dark:bg-slate-800">
-                      <div class="flex justify-between items-start">
-                        <span class="text-[10px] font-mono text-gray-500 dark:text-gray-400" x-text="v.ts"></span>
-                        <span
-                          class="text-[9px] px-1 rounded bg-gray-200 text-gray-600 dark:bg-slate-700 dark:text-gray-300"
-                          x-text="v.label.split(' - ')[1] || 'Commit'"></span>
-                      </div>
-
-                      <div class="flex gap-2 mt-1">
-                        <button @click="ui_LoadVersion(v.ts)"
-                          class="flex-1 py-1 text-[10px] font-bold rounded border transition-colors" :class="filter_SelectedVersion === v.ts ?
-                          'bg-blue-600 text-white border-blue-600' 
-                          : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50
-                          dark:bg-slate-700 dark:text-gray-300 dark:border-slate-600'">
-                          View Data
-                        </button>
-
-                        <button @click="ui_ToggleHistoryDetails(v.ts)" class="px-2 py-1 text-[10px]
-                          font-bold rounded border border-gray-300 text-gray-500 hover:bg-gray-100 dark:border-slate-600 dark:text-slate-400
-                          dark:hover:bg-slate-700" x-text="history_OpenDetailsId === v.ts ?
-                          'Hide' 
-                          : 'Details'">
-                        </button>
-                      </div>
-                    </div>
-
-                    <div x-show="history_OpenDetailsId === v.ts" x-collapse
-                      class="bg-slate-50 border-t border-gray-200 p-2 dark:bg-slate-900 dark:border-slate-700">
-
-                      <div x-show="!history_DiffCache[v.ts]"
-                        class="text-center py-2 text-gray-400 text-[10px] animate-pulse">
-                        Loading diff...
-                      </div>
-
-                      <div x-show="history_DiffCache[v.ts]" class="grid grid-cols-3 gap-2 text-center">
-
-                        <div class="flex flex-col border border-green-200 bg-green-50 rounded p-1
-                          dark:bg-green-900/20 dark:border-green-800">
-                          <span class="text-[9px] font-bold text-green-700 dark:text-green-400">
-                            ADD
-                          </span>
-                          <span class="text-xs font-mono font-bold text-slate-700 dark:text-slate-200"
-                            x-text="(history_DiffCache[v.ts] || []).filter(x => x.type === 'ADD').length">0</span>
-                        </div>
-
-                        <div
-                          class="flex flex-col border border-blue-200 bg-blue-50 rounded p-1 dark:bg-blue-900/20 dark:border-blue-800">
-                          <span class="text-[9px] font-bold text-blue-700 dark:text-blue-400">
-                            MOD
-                          </span>
-                          <span class="text-xs font-mono font-bold text-slate-700 dark:text-slate-200"
-                            x-text="(history_DiffCache[v.ts] || []).filter(x => x.type === 'MOD').length">0</span>
-                        </div>
-
-                        <div
-                          class="flex flex-col border border-red-200 bg-red-50 rounded p-1 dark:bg-red-900/20 dark:border-red-800">
-                          <span class="text-[9px] font-bold text-red-700 dark:text-red-400">
-                            DEL
-                          </span>
-                          <span class="text-xs font-mono font-bold text-slate-700 dark:text-slate-200"
-                            x-text="(history_DiffCache[v.ts] || []).filter(x => x.type === 'DEL').length">0</span>
-                        </div>
-                      </div>
-
-                      <ul class="space-y-2 text-[10px] font-mono">
-                        <template x-for="change in (history_DiffCache[v.ts] || [])" :key="change.id + change.type">
-                          <li class="border-b border-gray-100 pb-1 last:border-0 dark:border-slate-700">
-                            <div class="flex items-center gap-1 mb-0.5">
-                              <span x-show="change.type === 'ADD'" class="text-green-600 font-bold">[+] ADD</span>
-                              <span x-show="change.type === 'DEL'" class="text-red-600 font-bold">[-] DEL</span>
-                              <span x-show="change.type === 'MOD'" class="text-blue-600 font-bold">[~] MOD</span>
-                              <span x-text="change.id" class="text-slate-700 dark:text-slate-300 font-bold"></span>
-                            </div>
-                            <div class="whitespace-pre-wrap pl-8 text-gray-500 dark:text-gray-400 leading-tight"
-                              x-text="change.desc"></div>
-                          </li>
-                        </template>
-                        <template x-if="history_DiffCache[v.ts] && history_DiffCache[v.ts].length === 0">
-                          <li class="text-gray-400 italic text-center">No structural changes found.</li>
-                        </template>
-                      </ul>
-
-                    </div>
-                  </div>
-                </template>
-              </div>
-            </div>
-          </div>
-
-          <div class="sidebar_section_location mb-5 border-b border-gray-100 pb-4 space-y-0 dark:border-slate-700"
-            x-data="{ open: true }">
-            <div @click="open = !open" class="flex justify-between items-center cursor-pointer mb-3 group select-none">
-              <h3 class="sidebar_section_title text-xs font-bold text-gray-400 uppercase tracking-wider
-                group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors">
-                📍 Location
-              </h3>
-              <span class="text-gray-400 text-[14px] font-bold transition-transform duration-200"
-                :class="open ? 'rotate-90' : 'rotate-0'">›</span>
-            </div>
-
-            <div x-show="open" x-collapse class="space-y-3">
-              <div class="sidebar_location_filter_prov_group">
-                <label class="block text-[12px] font-bold text-gray-500 mb-1 dark:text-gray-400">
-                  PROVINSI
-                </label>
-                <select x-model="filter_SelProv"
-                  @change="filter_SelKab=''; filter_SelKec=''; fetch_MainGridData_FromAPI()" class="sidebar_select_prov
-                  w-full border p-1.5 rounded text-xs bg-white focus:border-blue-500
-                  outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300">
-                  <option value="">- All -</option>
-                  <template x-for="p in Object.keys(meta_HierarchyTree).sort()" :key="p">
-                    <option :value="p" x-text="p"></option>
-                  </template>
-                </select>
-              </div>
-
-              <div class="sidebar_location_filter_kab_group">
-                <label class="block text-[12px] font-bold text-gray-500 mb-1 dark:text-gray-400">
-                  KABUPATEN/KOTA
-                </label>
-                <select x-model="filter_SelKab" @change="filter_SelKec=''; fetch_MainGridData_FromAPI()" class="sidebar_select_kab
-                  w-full border p-1.5 rounded text-xs bg-white
-                  focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
-                  :disabled="!filter_SelProv" :class="{'bg-gray-100 dark:bg-slate-800': !filter_SelProv}">
-                  <option value="">- All -</option>
-                  <template x-for="k in util_GetKabOptions()" :key="k">
-                    <option :value="k" x-text="k"></option>
-                  </template>
-                </select>
-              </div>
-
-              <div class="sidebar_location_filter_kec_group">
-                <label class="block text-[12px] font-bold text-gray-500 mb-1 dark:text-gray-400">
-                  KECAMATAN
-                </label>
-                <select x-model="filter_SelKec" @change="fetch_MainGridData_FromAPI" class="sidebar_select_kec
-                  w-full border p-1.5 rounded text-xs bg-white
-                  focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
-                  :disabled="!filter_SelKab" :class="{'bg-gray-100 dark:bg-slate-800': !filter_SelKab}">
-                  <option value="">- All -</option>
-                  <template x-for="c in util_GetKecOptions()" :key="c">
-                    <option :value="c" x-text="c"></option>
-                  </template>
-                </select>
-              </div>
-
-              <div class="sidebar_location_filter_search_group mb-3">
-                <input type="text" x-model="filter_NameSearch" class="sidebar_input_search_name
-                  w-full border p-2 rounded text-xs focus:border-blue-500
-                  outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
-                  placeholder="Search Desa Name...">
-              </div>
-              <div class="sidebar_search_ids mb-3">
-                <textarea x-model="filter_IdListInput" class="sidebar_input_search_ids
-                  w-full mb-2 border p-2 rounded text-xs h-20 font-mono
-                  focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
-                  placeholder="Paste IDs here (comma or newline separated) to search by ID Desa..."></textarea>
-              </div>
-              <button @click="fetch_MainGridData_FromAPI" class="sidebar_btn_apply_filter
-                w-full bg-slate-400 text-white py-2 rounded text-xs
-                font-bold hover:bg-slate-800 transition shadow-sm dark:bg-slate-600 dark:hover:bg-slate-500">
-                Apply Filters
-              </button>
-            </div>
-          </div>
         </div>
       </div>
-    </div>
-    <div class="main_content_area flex-1 relative bg-gray-50 overflow-hidden flex flex-col dark:bg-slate-900">
+      <div class="main_content_area flex-1 relative bg-gray-50 overflow-hidden flex flex-col dark:bg-slate-900">
 
-      <div x-show="viewModeState === 'grid'" class="view_container_grid flex-1 p-0 relative">
-        <div id="ag_grid_element" class="ag-theme-alpine w-full h-full border-none"></div>
-      </div>
-
-      <div x-show="viewModeState === 'dashboard'" class="view_container_dashboard flex-1 p-4 overflow-hidden relative"
-        style="display: none;">
-        <div class="dashboard_table_wrapper dashboard-container shadow-md rounded">
-          <table id="dashboard_table_element" class="dash-table">
-            <thead>
-            </thead>
-            <tbody>
-            </tbody>
-          </table>
+        <div
+          x-show="viewModeState === 'grid'"
+          class="view_container_grid flex-1 p-0 relative"
+        >
+          <div
+            id="ag_grid_element"
+            class="ag-theme-alpine w-full h-full border-none"
+          ></div>
         </div>
+
+        <div
+          x-show="viewModeState === 'dashboard'"
+          class="view_container_dashboard flex-1 p-4 overflow-hidden relative"
+          style="display: none;"
+        >
+          <div class="dashboard_table_wrapper dashboard-container shadow-md rounded">
+            <table
+              id="dashboard_table_element"
+              class="dash-table"
+            >
+              <thead>
+              </thead>
+              <tbody>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
       </div>
-
     </div>
-  </div>
 
-  <script>
-    function AdminDashboardApp() {
-      return {
-        // --- CONFIGURATION ---
-        apiBaseUrl: "{{ api_url }}",
-        targetYear: "2025",
-        // Add years if the data actually exists
-        availableYears: [2025, 2024,],
+    <script>
+      function AdminDashboardApp() {
+        return {
+          // --- CONFIGURATION ---
+          apiBaseUrl: "{{ api_url }}",
+          targetYear: "2025",
+          // Add years if the data actually exists
+          availableYears: [2025, 2024,],
 
-        // --- GLOBAL STATE ---
-        isSidebarOpen: true,
-        viewModeState: 'grid', // 'grid' | 'dashboard'
-        isDarkModeEnabled: localStorage.getItem('theme') === 'dark',
-        isTableStructureLoaded: false,
-        ui_FreezeColCount: 0,
+          // --- GLOBAL STATE ---
+          isSidebarOpen: true,
+          viewModeState: 'grid', // 'grid' | 'dashboard'
+          isDarkModeEnabled: localStorage.getItem('theme') === 'dark',
+          isTableStructureLoaded: false,
+          ui_FreezeColCount: 0,
 
-        // --- DATA STORAGE ---
-        meta_VersionsList: [], // From /history/versions
-        meta_HierarchyTree: {}, // From /history/versions (used for dropdowns)
-        stagingData_Object: null, // Stores uploaded file analysis
-        agGridApiInstance: null, // AG Grid Object
-        meta_ColumnList: [],
+          // --- DATA STORAGE ---
+          meta_VersionsList: [], // From /history/versions
+          meta_HierarchyTree: {}, // From /history/versions (used for dropdowns)
+          stagingData_Object: null, // Stores uploaded file analysis
+          agGridApiInstance: null, // AG Grid Object
+          meta_ColumnList: [],
 
-        history_OpenDetailsId: null, // Tracks which card is expanded
-        history_DiffCache: {},       // Caches diffs so we don't re-fetch on every toggle
+          history_OpenDetailsId: null, // Tracks which card is expanded
+          history_DiffCache: {},       // Caches diffs so we don't re-fetch on every toggle
 
-        // --- FILTERS & INPUTS ---
-        isTranslationActive: false, // Toggle 1-5 vs Text
-        filter_SelectedVersion: "", // Timestamp string
-        filter_SelProv: "",
-        filter_SelKab: "",
-        filter_SelKec: "",
-        filter_NameSearch: "",
-        filter_IdListInput: "", // For search
-        filter_DeleteListInput: "", // For soft delete
+          // --- FILTERS & INPUTS ---
+          isTranslationActive: false, // Toggle 1-5 vs Text
+          filter_SelectedVersion: "", // Timestamp string
+          filter_SelProv: "",
+          filter_SelKab: "",
+          filter_SelKec: "",
+          filter_NameSearch: "",
+          filter_IdListInput: "", // For search
+          filter_DeleteListInput: "", // For soft delete
 
-        // --- UI DISPLAY STATS ---
-        stats_TotalRows: "0",
-        stats_LastUpdateLabel: "N/A",
-        setUiStatusMessage: "",
+          // --- UI DISPLAY STATS ---
+          stats_TotalRows: "0",
+          stats_LastUpdateLabel: "N/A",
+          setUiStatusMessage: "",
 
-        // ============================================
-        // INITIALIZATION
-        // ============================================
-        init() {
-          this.initializeAgGridConfig();
-          this.fetchVersionHistoryAndHierarchy();
-          this.fetch_MainGridData_FromAPI();
-        },
+          // ============================================
+          // INITIALIZATION
+          // ============================================
+          init() {
+            this.initializeAgGridConfig();
+            this.fetchVersionHistoryAndHierarchy();
+            this.fetch_MainGridData_FromAPI();
+          },
 
-        ui_ToggleDarkMode() {
-          this.isDarkModeEnabled = !this.isDarkModeEnabled;
-          localStorage.setItem('theme', this.isDarkModeEnabled ? 'dark' : 'light');
-        },
+          ui_ToggleDarkMode() {
+            this.isDarkModeEnabled = !this.isDarkModeEnabled;
+            localStorage.setItem('theme', this.isDarkModeEnabled ? 'dark' : 'light');
+          },
 
-        // ============================================
-        // FREEZE HANDLER
-        // ============================================
-        ui_ApplyFreeze() {
-          const count = this.ui_FreezeColCount;
+          // ============================================
+          // FREEZE HANDLER
+          // ============================================
+          ui_ApplyFreeze() {
+            const count = this.ui_FreezeColCount;
 
-          // APPLY TO AG GRID
-          if (this.agGridApiInstance) {
-            const cols = this.agGridApiInstance.getColumns();
-            if (cols) {
-              // Pin the first N columns to the left
-              const state = cols.map((c, i) => ({
-                colId: c.getColId(),
-                pinned: i < count ? 'left' : null
-              }));
-              this.agGridApiInstance.applyColumnState({ state: state, defaultState: { pinned: null } });
-            }
-          }
-
-          // APPLY TO DASHBOARD HTML TABLE
-          const table = document.getElementById('dashboard_table_element');
-          if (table) {
-            // A. Reset all sticky styles first
-            table.querySelectorAll('.sticky-col').forEach(el => {
-              el.style.position = '';
-              el.style.left = '';
-              el.style.zIndex = '';
-              el.style.backgroundColor = '';
-              el.classList.remove('sticky-col');
-            });
-
-            if (count > 0) {
-              // Get widths of the first N header columns
-              // assume headers are in the first row of THEAD
-              const headers = table.querySelectorAll('thead tr:first-child th[data-col-idx]');
-              let currentLeft = 0;
-
-              for (let i = 0; i < count; i++) {
-                if (!headers[i]) continue;
-                
-                const width = headers[i].getBoundingClientRect().width;
-                
-                // Select all cells (TH and TD) with this column index
-                const cells = table.querySelectorAll(`[data-col-idx="${i}"]`);
-                
-                cells.forEach(cell => {
-                  cell.style.position = 'sticky';
-                  cell.style.left = `${currentLeft}px`;
-                  // Headers need higher z-index to sit on top of scrolling rows
-                  // Merged body cells also need z-index to sit above standard scrolling cells
-                  cell.style.zIndex = cell.tagName === 'TH' ? '30' : '20';
-                  
-                  // CRITICAL: Sticky cells need a background or text behind them shows through
-                  // Check for dark mode class on HTML body to decide color
-                  const isDark = document.documentElement.classList.contains('dark');
-                  
-                  // Dark Mode: Header = Slate-800 (#1e293b), Body = Slate-900 (#0f172a)
-                  // Light Mode: Header = Gray-100 (#f2f2f2), Body = White (#ffffff)
-                  if (isDark) {
-                     cell.style.backgroundColor = (cell.tagName === 'TH') ? '#1e293b' : '#0f172a';
-                  } else {
-                     cell.style.backgroundColor = (cell.tagName === 'TH') ? '#f2f2f2' : '#ffffff';
-                  }
-                  
-                  cell.classList.add('sticky-col');
-                });
-
-                currentLeft += width;
+            // APPLY TO AG GRID
+            if (this.agGridApiInstance) {
+              const cols = this.agGridApiInstance.getColumns();
+              if (cols) {
+                // Pin the first N columns to the left
+                const state = cols.map((c, i) => ({
+                  colId: c.getColId(),
+                  pinned: i < count ? 'left' : null
+                }));
+                this.agGridApiInstance.applyColumnState({state: state, defaultState: {pinned: null}});
               }
             }
-          }
-        },
 
-        // ============================================
-        // Logout Handler
-        // ============================================
-        async action_Logout() {
-          try {
-            // Call Backend to kill the HttpOnly cookie
-            await fetch(`${this.apiBaseUrl}/api/logout`, {
-              method: "POST",
-              credentials: 'include'
-            });
-          } catch (e) {
-            console.error("Logout error:", e);
-          } finally {
-            // Force redirect to login page
-            window.location.href = "/login";
-          }
-        },
-
-        // ============================================
-        // ACTIONS: Version Diff sidebar 
-        // ============================================
-        ui_LoadVersion(ts) {
-          this.filter_SelectedVersion = ts;
-          this.fetch_MainGridData_FromAPI();
-        },
-
-        // Header search
-        action_JumpToColumn(colName) {
-          // Force switch to Grid View if not already there
-          if (this.viewModeState !== 'grid') {
-            this.ui_SwitchViewMode('grid');
-          }
-
-          // Scroll and Highlight
-          setTimeout(() => {
-            if (this.agGridApiInstance) {
-              // Scroll horizontally to the column
-              this.agGridApiInstance.ensureColumnVisible(colName);
-
-              // Flash the column to catch the eye
-              this.agGridApiInstance.flashCells({columns: [colName], flashDelay: 1000, fadeDelay: 500});
-            }
-          }, 100); // Short delay to allow View Switch to render
-        },
-
-        // Fetch & Toggle Details
-        async ui_ToggleHistoryDetails(ts) {
-          // If clicking same one, close it
-          if (this.history_OpenDetailsId === ts) {
-            this.history_OpenDetailsId = null;
-            return;
-          }
-
-          this.history_OpenDetailsId = ts;
-
-          // If already cached, don't fetch
-          if (this.history_DiffCache[ts]) return;
-
-          try {
-            // Use targetYear
-            // Added credentials to all fetch calls
-            let res = await fetch(`${this.apiBaseUrl}/history/details/${this.targetYear}?version=${ts}`, {credentials: 'include'});
-            let data = await res.json();
-
-            // Save to cache
-            this.history_DiffCache[ts] = data.changes || [];
-          } catch (e) {
-            console.error(e);
-            alert("Failed to load details");
-          }
-        },
-
-        // ============================================
-        // VIEW SWITCHING
-        // ============================================
-        ui_SwitchViewMode(mode) {
-          this.viewModeState = mode;
-          if (mode === 'dashboard') {
-            this.fetchDashboardConfigAndRenderTable();
-          } else {
-            // Refresh grid layout if switching back
-            setTimeout(() => {
-              if (this.agGridApiInstance) this.agGridApiInstance.sizeColumnsToFit();
-            }, 50);
-          }
-        },
-
-        ui_ToggleTranslate(val) {
-          this.isTranslationActive = val;
-          this.fetch_MainGridData_FromAPI();
-        },
-
-        // ============================================
-        // ACTIONS: YEAR & FILTER
-        // ============================================
-        action_YearChanged() {
-          // Reset filters when changing year to avoid confusing states
-          this.filter_SelectedVersion = "";
-          this.filter_SelProv = "";
-          this.filter_SelKab = "";
-          this.filter_SelKec = "";
-          this.stagingData_Object = null;
-          this.stats_TotalRows = "0";
-          this.stats_LastUpdateLabel = "N/A";
-          this.history_DiffCache = {}; // <--- CLEAR CACHE for sidebar diff
-          this.history_OpenDetailsId = null; // <--- RESET UI for sidebar diff
-
-
-          // Reload Data
-          this.fetchVersionHistoryAndHierarchy();
-          this.fetch_MainGridData_FromAPI();
-        },
-
-        // ============================================
-        // AG-GRID LOGIC
-        // ============================================
-        initializeAgGridConfig() {
-          const gridOptions = {
-            rowModelType: 'infinite',
-            cacheBlockSize: 10000,
-            infiniteInitialRowCount: 10000,
-            columnDefs: [],
-            defaultColDef: {
-              sortable: true,
-              filter: true,
-              resizable: true,
-              minWidth: 120,
-              flex: 1,
-              wrapText: false,
-              autoHeight: false
-            },
-            pagination: false,
-            rowBuffer: 20,
-            rowSelection: 'multiple',
-            animateRows: false,
-            suppressRowClickSelection: true,
-            debounceVerticalScrollbar: true,
-            enableCellTextSelection: true,
-            ensureDomOrder: true
-          };
-          // Capture API instance correctly for v31+
-          this.agGridApiInstance = agGrid.createGrid(document.getElementById('ag_grid_element'), gridOptions);
-        },
-
-        // ============================================
-        // DATA FETCHING
-        // ============================================
-        util_GetKabOptions() {
-          return (this.filter_SelProv && this.meta_HierarchyTree[this.filter_SelProv])
-            ? Object.keys(this.meta_HierarchyTree[this.filter_SelProv]).sort()
-            : [];
-        },
-        util_GetKecOptions() {
-          return (this.filter_SelProv && this.filter_SelKab && this.meta_HierarchyTree[this.filter_SelProv][this.filter_SelKab])
-            ? this.meta_HierarchyTree[this.filter_SelProv][this.filter_SelKab].sort()
-            : [];
-        },
-
-        async fetch_MainGridData_FromAPI() {
-          if (!this.agGridApiInstance) {
-            console.error("❌ AG Grid API not ready yet.");
-            return;
-          }
-
-          const dataSource = {
-            rowCount: null,
-            getRows: async (params) => {
-              const offset = params.startRow;
-              const limit = params.endRow - params.startRow;
-
-              let urlParams = new URLSearchParams({
-                limit: limit,
-                offset: offset,
-                translate: this.isTranslationActive
+            // APPLY TO DASHBOARD HTML TABLE
+            const table = document.getElementById('dashboard_table_element');
+            if (table) {
+              // A. Reset all sticky styles first
+              table.querySelectorAll('.sticky-col').forEach(el => {
+                el.style.position = '';
+                el.style.left = '';
+                el.style.zIndex = '';
+                el.style.backgroundColor = '';
+                el.classList.remove('sticky-col');
               });
 
-              if (this.filter_SelectedVersion) urlParams.append("version", this.filter_SelectedVersion);
-              if (this.filter_SelProv) urlParams.append("Provinsi", this.filter_SelProv);
-              if (this.filter_SelKab) urlParams.append("Kabupaten/ Kota", this.filter_SelKab);
-              if (this.filter_SelKec) urlParams.append("Kecamatan", this.filter_SelKec);
-              if (this.filter_NameSearch) urlParams.append("Desa", this.filter_NameSearch);
-              // Ensure Newlines are replaced with semicolons for ID list
-              if (this.filter_IdListInput.trim()) urlParams.append("ids", this.filter_IdListInput.replace(/\n/g, ";"));
+              if (count > 0) {
+                // Get widths of the first N header columns
+                // assume headers are in the first row of THEAD
+                const headers = table.querySelectorAll('thead tr:first-child th[data-col-idx]');
+                let currentLeft = 0;
 
-              try {
-                this.agGridApiInstance.showLoadingOverlay();
-                const reqUrl = `${this.apiBaseUrl}/query/${this.targetYear}?${urlParams}`;
-                let res = await fetch(reqUrl, {credentials: 'include'});
+                for (let i = 0; i < count; i++) {
+                  if (!headers[i]) continue;
 
-                if (res.status === 401) {
-                  window.location.href = "/login";
-                  return;
-                }
+                  const width = headers[i].getBoundingClientRect().width;
 
-                if (!res.ok) {
-                  throw new Error(`Server returned status ${res.status}`);
-                }
+                  // Select all cells (TH and TD) with this column index
+                  const cells = table.querySelectorAll(`[data-col-idx="${i}"]`);
 
-                let data = await res.json();
+                  cells.forEach(cell => {
+                    cell.style.position = 'sticky';
+                    cell.style.left = `${currentLeft}px`;
+                    // Headers need higher z-index to sit on top of scrolling rows
+                    // Merged body cells also need z-index to sit above standard scrolling cells
+                    cell.style.zIndex = cell.tagName === 'TH' ? '30' : '20';
 
-                let totalCount = parseInt(res.headers.get("X-Total-Count") || "0");
+                    // CRITICAL: Sticky cells need a background or text behind them shows through
+                    // Check for dark mode class on HTML body to decide color
+                    const isDark = document.documentElement.classList.contains('dark');
 
-                this.stats_TotalRows = totalCount.toLocaleString();
-
-                if (Array.isArray(data)) {
-                  // DYNAMIC COLUMNS: Only set if we have data and columns aren't set yet
-                  if (data.length > 0) {
-                    const firstRowKeys = Object.keys(data[0]);
-
-                    // Check if we need to update columns (only on first load or structure change)
-                    const currentCols = this.agGridApiInstance.getColumnDefs();
-                    if (!currentCols || currentCols.length === 0) {
-                      this.meta_ColumnList = firstRowKeys;
-                      let cols = firstRowKeys.map(k => ({
-                        field: k,
-                        headerName: k,
-                        tooltipField: k,
-                        filter: true,
-                        sortable: true,
-                        // Safety: Handle missing data fields
-                        valueGetter: p => (p.data && p.data[k] !== undefined) ? p.data[k] : ""
-                      }));
-                      this.agGridApiInstance.setGridOption('columnDefs', cols);
+                    // Dark Mode: Header = Slate-800 (#1e293b), Body = Slate-900 (#0f172a)
+                    // Light Mode: Header = Gray-100 (#f2f2f2), Body = White (#ffffff)
+                    if (isDark) {
+                      cell.style.backgroundColor = (cell.tagName === 'TH') ? '#1e293b' : '#0f172a';
+                    } else {
+                      cell.style.backgroundColor = (cell.tagName === 'TH') ? '#f2f2f2' : '#ffffff';
                     }
-                  }
 
-                  params.successCallback(data, totalCount);
+                    cell.classList.add('sticky-col');
+                  });
 
-                  if (totalCount === 0) {
-                    this.agGridApiInstance.showNoRowsOverlay();
-                  } else {
-                    this.agGridApiInstance.hideOverlay();
-                  }
-                } else {
-                  console.error("❌ [AG-Grid] Data is not an array:", data);
-                  params.failCallback();
+                  currentLeft += width;
                 }
-              } catch (e) {
-                console.error("❌ [AG-Grid] Error in getRows:", e);
-                this.agGridApiInstance.showNoRowsOverlay(); // Or show error
-                params.failCallback();
               }
             }
-          };
+          },
 
-          this.agGridApiInstance.setGridOption('datasource', dataSource);
-        },
+          // ============================================
+          // Logout Handler
+          // ============================================
+          async action_Logout() {
+            try {
+              // Call Backend to kill the HttpOnly cookie
+              await fetch(`${this.apiBaseUrl}/api/logout`, {
+                method: "POST",
+                credentials: 'include'
+              });
+            } catch (e) {
+              console.error("Logout error:", e);
+            } finally {
+              // Force redirect to login page
+              window.location.href = "/login";
+            }
+          },
 
-        async fetchVersionHistoryAndHierarchy() {
-          try {
-            // Reusing the /history/versions endpoint but it now returns { versions: [], hierarchy: {} }
-            // Added credentials
-            let res = await fetch(`${this.apiBaseUrl}/history/versions/${this.targetYear}`, {credentials: 'include'});
-            if (res.ok) {
+          // ============================================
+          // ACTIONS: Version Diff sidebar 
+          // ============================================
+          ui_LoadVersion(ts) {
+            this.filter_SelectedVersion = ts;
+            this.fetch_MainGridData_FromAPI();
+          },
+
+          // Header search
+          action_JumpToColumn(colName) {
+            // Force switch to Grid View if not already there
+            if (this.viewModeState !== 'grid') {
+              this.ui_SwitchViewMode('grid');
+            }
+
+            // Scroll and Highlight
+            setTimeout(() => {
+              if (this.agGridApiInstance) {
+                // Scroll horizontally to the column
+                this.agGridApiInstance.ensureColumnVisible(colName);
+
+                // Flash the column to catch the eye
+                this.agGridApiInstance.flashCells({columns: [colName], flashDelay: 1000, fadeDelay: 500});
+              }
+            }, 100); // Short delay to allow View Switch to render
+          },
+
+          // Fetch & Toggle Details
+          async ui_ToggleHistoryDetails(ts) {
+            // If clicking same one, close it
+            if (this.history_OpenDetailsId === ts) {
+              this.history_OpenDetailsId = null;
+              return;
+            }
+
+            this.history_OpenDetailsId = ts;
+
+            // If already cached, don't fetch
+            if (this.history_DiffCache[ts]) return;
+
+            try {
+              // Use targetYear
+              // Added credentials to all fetch calls
+              let res = await fetch(`${this.apiBaseUrl}/history/details/${this.targetYear}?version=${ts}`, {credentials: 'include'});
               let data = await res.json();
 
-              // Assign Versions
-              this.meta_VersionsList = data.versions || [];
-              if (this.meta_VersionsList.length > 0 && !this.filter_SelectedVersion) {
-                this.stats_LastUpdateLabel = this.meta_VersionsList[0].ts;
-              }
-
-              // Assign Hierarchy
-              this.meta_HierarchyTree = data.hierarchy || {};
+              // Save to cache
+              this.history_DiffCache[ts] = data.changes || [];
+            } catch (e) {
+              console.error(e);
+              alert("Failed to load details");
             }
-          } catch (e) {console.error("Meta Fetch Error", e);}
-        },
+          },
 
-        // ============================================
-        // DASHBOARD TABLE LOGIC
-        // ============================================
-        async fetchDashboardConfigAndRenderTable() {
-          if (this.isTableStructureLoaded) return;
-          try {
-            // Added credentials
-            let res = await fetch(`${this.apiBaseUrl}/config/table_structure`, {credentials: 'include'});
-            if (!res.ok) throw new Error("Config not found");
-            let data = await res.json();
-            this.constructDashboardTableDOM(data);
-            this.isTableStructureLoaded = true;
-            this.calculate_DashboardStats_FromAPI();
-          } catch (e) {alert(e.message);}
-        },
+          // ============================================
+          // VIEW SWITCHING
+          // ============================================
+          ui_SwitchViewMode(mode) {
+            this.viewModeState = mode;
+            if (mode === 'dashboard') {
+              this.fetchDashboardConfigAndRenderTable();
+            } else {
+              // Refresh grid layout if switching back
+              setTimeout(() => {
+                if (this.agGridApiInstance) this.agGridApiInstance.sizeColumnsToFit();
+              }, 50);
+            }
+          },
 
-        constructDashboardTableDOM(dataRows) {
-          const table = document.getElementById('dashboard_table_element');
-          const thead = table.querySelector('thead');
-          const tbody = table.querySelector('tbody');
-          thead.innerHTML = ''; tbody.innerHTML = '';
+          ui_ToggleTranslate(val) {
+            this.isTranslationActive = val;
+            this.fetch_MainGridData_FromAPI();
+          },
 
-          // HEADERS
-          const tr1 = document.createElement('tr');
-          const tr2 = document.createElement('tr');
+          // ============================================
+          // ACTIONS: YEAR & FILTER
+          // ============================================
+          action_YearChanged() {
+            // Reset filters when changing year to avoid confusing states
+            this.filter_SelectedVersion = "";
+            this.filter_SelProv = "";
+            this.filter_SelKab = "";
+            this.filter_SelKec = "";
+            this.stagingData_Object = null;
+            this.stats_TotalRows = "0";
+            this.stats_LastUpdateLabel = "N/A";
+            this.history_DiffCache = {}; // <--- CLEAR CACHE for sidebar diff
+            this.history_OpenDetailsId = null; // <--- RESET UI for sidebar diff
 
-          const headers = ["NO", "DIMENSI", "SUB DIMENSI", "INDIKATOR", "ITEM"];
-          headers.forEach((h, index) => {
-            const th = document.createElement('th');
-            th.innerHTML = `<span>${h}</span>`;
-            th.dataset.colIdx = index;
-            th.rowSpan = 2;
-            if (h === "NO") th.className = "col-no";
-            if (h === "DIMENSI") th.className = "col-dimensi";
-            if (h === "SUB DIMENSI") th.className = "col-sub_dimensi";
-            if (h === "INDIKATOR") th.className = "col-indikator";
-            if (h === "ITEM") {th.className = "col-item"; this.util_AddColumnResizer(th);}
-            tr1.appendChild(th);
-          });
+            // Reload Data
+            this.fetchVersionHistoryAndHierarchy();
+            this.fetch_MainGridData_FromAPI();
+          },
 
-          // Score Headers
-          const thScore = document.createElement('th');
-          thScore.textContent = "SKOR";
-          thScore.colSpan = 6;
-          tr1.appendChild(thScore);
+          // ============================================
+          // AG-GRID LOGIC
+          // ============================================
+          initializeAgGridConfig() {
+            const gridOptions = {
+              rowModelType: 'infinite',
+              cacheBlockSize: 10000,
+              infiniteInitialRowCount: 10000,
+              columnDefs: [],
+              defaultColDef: {
+                sortable: true,
+                filter: true,
+                resizable: true,
+                minWidth: 120,
+                flex: 1,
+                wrapText: false,
+                autoHeight: false
+              },
+              pagination: false,
+              rowBuffer: 20,
+              rowSelection: 'multiple',
+              animateRows: false,
+              suppressRowClickSelection: true,
+              debounceVerticalScrollbar: true,
+              enableCellTextSelection: true,
+              ensureDomOrder: true
+            };
+            // Capture API instance correctly for v31+
+            this.agGridApiInstance = agGrid.createGrid(document.getElementById('ag_grid_element'), gridOptions);
+          },
 
-          ["Rata-Rata", "1", "2", "3", "4", "5"].forEach(txt => {
-            const th = document.createElement('th');
-            th.textContent = txt;
-            th.className = "col-score";
-            tr2.appendChild(th);
-          });
+          // ============================================
+          // DATA FETCHING
+          // ============================================
+          util_GetKabOptions() {
+            return (this.filter_SelProv && this.meta_HierarchyTree[this.filter_SelProv])
+              ? Object.keys(this.meta_HierarchyTree[this.filter_SelProv]).sort()
+              : [];
+          },
+          util_GetKecOptions() {
+            return (this.filter_SelProv && this.filter_SelKab && this.meta_HierarchyTree[this.filter_SelProv][this.filter_SelKab])
+              ? this.meta_HierarchyTree[this.filter_SelProv][this.filter_SelKab].sort()
+              : [];
+          },
 
-          // Intervensi Header
-          const thIntervensi = document.createElement('th');
-          thIntervensi.textContent = "INTERVENSI";
-          thIntervensi.className = "col-intervensi";
-          thIntervensi.rowSpan = 2;
-          this.util_AddColumnResizer(thIntervensi);
-          tr1.appendChild(thIntervensi);
+          async fetch_MainGridData_FromAPI() {
+            if (!this.agGridApiInstance) {
+              console.error("❌ AG Grid API not ready yet.");
+              return;
+            }
 
-          // Pelaksana Header
-          const thPelaksana = document.createElement('th');
-          thPelaksana.textContent = "PELAKSANA";
-          thPelaksana.colSpan = 5;
-          tr1.appendChild(thPelaksana);
+            const dataSource = {
+              rowCount: null,
+              getRows: async (params) => {
+                const offset = params.startRow;
+                const limit = params.endRow - params.startRow;
 
-          // Pelaksana Sub-Headers
-          const pelaksanaConfig = [
-            {label: "INTERVENSI", key: "INTERVENSI KEGIATAN", css: "col-intervensi"},
-            {label: "PUSAT", key: "PELAKSANA KEGIATAN PUSAT", css: "col-pusat"},
-            {label: "PROV", key: "PELAKSANA KEGIATAN PROVINSI", css: "col-prov"},
-            {label: "KAB", key: "PELAKSANA KEGIATAN KABUPATEN", css: "col-kab"},
-            {label: "DESA", key: "PELAKSANA KEGIATAN DESA", css: "col-desa"},
-            {label: "LAIN", key: "PELAKSANA KEGIATAN Lainnya", css: "col-lain"}
-          ];
+                let urlParams = new URLSearchParams({
+                  limit: limit,
+                  offset: offset,
+                  translate: this.isTranslationActive
+                });
 
-          pelaksanaConfig.slice(1).forEach(c => {
-            const th = document.createElement('th');
-            th.textContent = c.label;
-            th.className = c.css;
-            this.util_AddColumnResizer(th);
-            tr2.appendChild(th);
-          });
+                if (this.filter_SelectedVersion) urlParams.append("version", this.filter_SelectedVersion);
+                if (this.filter_SelProv) urlParams.append("Provinsi", this.filter_SelProv);
+                if (this.filter_SelKab) urlParams.append("Kabupaten/ Kota", this.filter_SelKab);
+                if (this.filter_SelKec) urlParams.append("Kecamatan", this.filter_SelKec);
+                if (this.filter_NameSearch) urlParams.append("Desa", this.filter_NameSearch);
+                // Ensure Newlines are replaced with semicolons for ID list
+                if (this.filter_IdListInput.trim()) urlParams.append("ids", this.filter_IdListInput.replace(/\n/g, ";"));
 
-          thead.appendChild(tr1);
-          thead.appendChild(tr2);
+                try {
+                  this.agGridApiInstance.showLoadingOverlay();
+                  const reqUrl = `${this.apiBaseUrl}/query/${this.targetYear}?${urlParams}`;
+                  let res = await fetch(reqUrl, {credentials: 'include'});
 
-          // BODY MERGE LOGIC
-          const rowSpans = new Array(dataRows.length).fill(0).map(() => ({}));
-          const mergeKeys = ["NO", "DIMENSI", "SUB DIMENSI", "INDIKATOR"];
-
-          for (let k of mergeKeys) {
-            for (let i = 0; i < dataRows.length; i++) {
-              if (rowSpans[i][k] === -1) continue;
-              let span = 1;
-              for (let j = i + 1; j < dataRows.length; j++) {
-                if (dataRows[i][k] === dataRows[j][k]) {
-                  let parentsMatch = true;
-                  let idx = mergeKeys.indexOf(k);
-                  for (let p = 0; p < idx; p++) {
-                    if (dataRows[i][mergeKeys[p]] !== dataRows[j][mergeKeys[p]]) parentsMatch = false;
+                  if (res.status === 401) {
+                    window.location.href = "/login";
+                    return;
                   }
-                  if (parentsMatch) {span++; rowSpans[j][k] = -1;} else break;
-                } else break;
+
+                  if (!res.ok) {
+                    throw new Error(`Server returned status ${res.status}`);
+                  }
+
+                  let data = await res.json();
+
+                  let totalCount = parseInt(res.headers.get("X-Total-Count") || "0");
+
+                  this.stats_TotalRows = totalCount.toLocaleString();
+
+                  if (Array.isArray(data)) {
+                    // DYNAMIC COLUMNS: Only set if we have data and columns aren't set yet
+                    if (data.length > 0) {
+                      const firstRowKeys = Object.keys(data[0]);
+
+                      // Check if we need to update columns (only on first load or structure change)
+                      const currentCols = this.agGridApiInstance.getColumnDefs();
+                      if (!currentCols || currentCols.length === 0) {
+                        this.meta_ColumnList = firstRowKeys;
+                        let cols = firstRowKeys.map(k => ({
+                          field: k,
+                          headerName: k,
+                          tooltipField: k,
+                          filter: true,
+                          sortable: true,
+                          // Safety: Handle missing data fields
+                          valueGetter: p => (p.data && p.data[k] !== undefined) ? p.data[k] : ""
+                        }));
+                        this.agGridApiInstance.setGridOption('columnDefs', cols);
+                      }
+                    }
+
+                    params.successCallback(data, totalCount);
+
+                    if (totalCount === 0) {
+                      this.agGridApiInstance.showNoRowsOverlay();
+                    } else {
+                      this.agGridApiInstance.hideOverlay();
+                    }
+                  } else {
+                    console.error("❌ [AG-Grid] Data is not an array:", data);
+                    params.failCallback();
+                  }
+                } catch (e) {
+                  console.error("❌ [AG-Grid] Error in getRows:", e);
+                  this.agGridApiInstance.showNoRowsOverlay(); // Or show error
+                  params.failCallback();
+                }
               }
-              rowSpans[i][k] = span;
-            }
-          }
+            };
 
-          dataRows.forEach((row, i) => {
-            const tr = document.createElement('tr');
+            this.agGridApiInstance.setGridOption('datasource', dataSource);
+          },
 
-            // Metadata Columns
-            headers.forEach((k, index) => {
-              if (rowSpans[i][k] === -1) return;
-              const td = document.createElement('td');
-              td.textContent = row[k] || "";
-              td.dataset.colIdx = index;
-              if (rowSpans[i][k] > 1) {
-                td.rowSpan = rowSpans[i][k];
-                td.className = "merged-cell";
+          async fetchVersionHistoryAndHierarchy() {
+            try {
+              // Reusing the /history/versions endpoint but it now returns { versions: [], hierarchy: {} }
+              // Added credentials
+              let res = await fetch(`${this.apiBaseUrl}/history/versions/${this.targetYear}`, {credentials: 'include'});
+              if (res.ok) {
+                let data = await res.json();
+
+                // Assign Versions
+                this.meta_VersionsList = data.versions || [];
+                if (this.meta_VersionsList.length > 0 && !this.filter_SelectedVersion) {
+                  this.stats_LastUpdateLabel = this.meta_VersionsList[0].ts;
+                }
+
+                // Assign Hierarchy
+                this.meta_HierarchyTree = data.hierarchy || {};
               }
-              tr.appendChild(td);
+            } catch (e) {console.error("Meta Fetch Error", e);}
+          },
+
+          // ============================================
+          // DASHBOARD TABLE LOGIC
+          // ============================================
+          async fetchDashboardConfigAndRenderTable() {
+            if (this.isTableStructureLoaded) return;
+            try {
+              // Added credentials
+              let res = await fetch(`${this.apiBaseUrl}/config/table_structure`, {credentials: 'include'});
+              if (!res.ok) throw new Error("Config not found");
+              let data = await res.json();
+              this.constructDashboardTableDOM(data);
+              this.isTableStructureLoaded = true;
+              this.calculate_DashboardStats_FromAPI();
+            } catch (e) {alert(e.message);}
+          },
+
+          constructDashboardTableDOM(dataRows) {
+            const table = document.getElementById('dashboard_table_element');
+            const thead = table.querySelector('thead');
+            const tbody = table.querySelector('tbody');
+            thead.innerHTML = ''; tbody.innerHTML = '';
+
+            // HEADERS
+            const tr1 = document.createElement('tr');
+            const tr2 = document.createElement('tr');
+
+            const headers = ["NO", "DIMENSI", "SUB DIMENSI", "INDIKATOR", "ITEM"];
+            headers.forEach((h, index) => {
+              const th = document.createElement('th');
+              th.innerHTML = `<span>${h}</span>`;
+              th.dataset.colIdx = index;
+              th.rowSpan = 2;
+              if (h === "NO") th.className = "col-no";
+              if (h === "DIMENSI") th.className = "col-dimensi";
+              if (h === "SUB DIMENSI") th.className = "col-sub_dimensi";
+              if (h === "INDIKATOR") th.className = "col-indikator";
+              if (h === "ITEM") {th.className = "col-item"; this.util_AddColumnResizer(th);}
+              tr1.appendChild(th);
             });
 
-            // Score Columns
-            ["SKOR Rata-Rata", "SKOR 1", "SKOR 2", "SKOR 3", "SKOR 4", "SKOR 5"].forEach(k => {
-              const td = document.createElement('td');
-              // Set text directly
-              td.textContent = row[k] || "";
-              td.style.textAlign = "center";
-              tr.appendChild(td);
+            // Score Headers
+            const thScore = document.createElement('th');
+            thScore.textContent = "SKOR";
+            thScore.colSpan = 6;
+            tr1.appendChild(thScore);
+
+            ["Rata-Rata", "1", "2", "3", "4", "5"].forEach(txt => {
+              const th = document.createElement('th');
+              th.textContent = txt;
+              th.className = "col-score";
+              tr2.appendChild(th);
             });
 
-            // Text Area Columns
-            pelaksanaConfig.forEach(c => {
-              const td = document.createElement('td');
+            // Intervensi Header
+            const thIntervensi = document.createElement('th');
+            thIntervensi.textContent = "INTERVENSI";
+            thIntervensi.className = "col-intervensi";
+            thIntervensi.rowSpan = 2;
+            this.util_AddColumnResizer(thIntervensi);
+            tr1.appendChild(thIntervensi);
 
-              // Set text directly
-              const textContent = row[c.key] || "";
-              td.textContent = textContent;
+            // Pelaksana Header
+            const thPelaksana = document.createElement('th');
+            thPelaksana.textContent = "PELAKSANA";
+            thPelaksana.colSpan = 5;
+            tr1.appendChild(thPelaksana);
 
-              // Style to match previous look (wrapping text, padding)
-              td.style.whiteSpace = "pre-wrap";
-              td.style.padding = "6px";
-              td.style.verticalAlign = "top";
-              tr.appendChild(td);
+            // Pelaksana Sub-Headers
+            const pelaksanaConfig = [
+              {label: "INTERVENSI", key: "INTERVENSI KEGIATAN", css: "col-intervensi"},
+              {label: "PUSAT", key: "PELAKSANA KEGIATAN PUSAT", css: "col-pusat"},
+              {label: "PROV", key: "PELAKSANA KEGIATAN PROVINSI", css: "col-prov"},
+              {label: "KAB", key: "PELAKSANA KEGIATAN KABUPATEN", css: "col-kab"},
+              {label: "DESA", key: "PELAKSANA KEGIATAN DESA", css: "col-desa"},
+              {label: "LAIN", key: "PELAKSANA KEGIATAN Lainnya", css: "col-lain"}
+            ];
+
+            pelaksanaConfig.slice(1).forEach(c => {
+              const th = document.createElement('th');
+              th.textContent = c.label;
+              th.className = c.css;
+              this.util_AddColumnResizer(th);
+              tr2.appendChild(th);
             });
 
-            tbody.appendChild(tr);
-          });
-        this.$nextTick(() => this.ui_ApplyFreeze());
-        },
+            thead.appendChild(tr1);
+            thead.appendChild(tr2);
 
-        util_AddColumnResizer(th) {
-          const resizer = document.createElement('div');
-          resizer.className = 'resizer';
-          th.appendChild(resizer);
-          let x = 0, w = 0;
+            // BODY MERGE LOGIC
+            const rowSpans = new Array(dataRows.length).fill(0).map(() => ({}));
+            const mergeKeys = ["NO", "DIMENSI", "SUB DIMENSI", "INDIKATOR"];
 
-          const mm = (e) => {
-            const dx = e.clientX - x;
-            th.style.width = `${Math.max(30, w + dx)}px`;
-            th.style.minWidth = th.style.width;
-          };
-          const mu = () => {
-            document.removeEventListener('mousemove', mm);
-            document.removeEventListener('mouseup', mu);
-            resizer.classList.remove('resizing');
-          };
-          resizer.addEventListener('mousedown', (e) => {
-            x = e.clientX;
-            w = parseInt(window.getComputedStyle(th).width, 10);
-            document.addEventListener('mousemove', mm);
-            document.addEventListener('mouseup', mu);
-            resizer.classList.add('resizing');
-            e.stopPropagation();
-          });
-        },
-
-        // ============================================
-        // ACTIONS: STAGING & UPLOAD (RESUMABLE CHUNKED)
-        // ============================================
-        async action_UploadFile(e) {
-          let file = e.target.files[0];
-          if (!file) return;
-
-          // Reset UI
-          this.setUiStatusMessage = "Preparing...";
-          this.stagingData_Object = null;
-
-          try {
-            // --- ROBUST HASH CACHING ---
-            // If user refreshes, we don't want to re-calculate MD5 for 10 seconds.
-            // We cache the hash in LocalStorage keyed by the file's unique signature.
-            const cacheKey = `upload_hash_${file.name}_${file.size}_${file.lastModified}`;
-            let fileHash = localStorage.getItem(cacheKey);
-
-            if (!fileHash) {
-              this.setUiStatusMessage = "Hashing file (Integrity Check)...";
-              fileHash = await this.helpers_compute_md5(file);
-              try {localStorage.setItem(cacheKey, fileHash);} catch (e) { } // Save for next refresh
+            for (let k of mergeKeys) {
+              for (let i = 0; i < dataRows.length; i++) {
+                if (rowSpans[i][k] === -1) continue;
+                let span = 1;
+                for (let j = i + 1; j < dataRows.length; j++) {
+                  if (dataRows[i][k] === dataRows[j][k]) {
+                    let parentsMatch = true;
+                    let idx = mergeKeys.indexOf(k);
+                    for (let p = 0; p < idx; p++) {
+                      if (dataRows[i][mergeKeys[p]] !== dataRows[j][mergeKeys[p]]) parentsMatch = false;
+                    }
+                    if (parentsMatch) {span++; rowSpans[j][k] = -1;} else break;
+                  } else break;
+                }
+                rowSpans[i][k] = span;
+              }
             }
 
-            // Generate the Unique ID for the server
-            // If you refresh and pick this file again, this ID stays the same, so server finds the .tmp file.
-            const fileUid = `${fileHash}_${file.size}_${file.lastModified}`;
+            dataRows.forEach((row, i) => {
+              const tr = document.createElement('tr');
 
-            this.setUiStatusMessage = "Checking server resume status...";
+              // Metadata Columns
+              headers.forEach((k, index) => {
+                if (rowSpans[i][k] === -1) return;
+                const td = document.createElement('td');
+                td.textContent = row[k] || "";
+                td.dataset.colIdx = index;
+                if (rowSpans[i][k] > 1) {
+                  td.rowSpan = rowSpans[i][k];
+                  td.className = "merged-cell";
+                }
+                tr.appendChild(td);
+              });
 
-            // Query server: "Do you have this file?"
+              // Score Columns
+              ["SKOR Rata-Rata", "SKOR 1", "SKOR 2", "SKOR 3", "SKOR 4", "SKOR 5"].forEach(k => {
+                const td = document.createElement('td');
+                // Set text directly
+                td.textContent = row[k] || "";
+                td.style.textAlign = "center";
+                tr.appendChild(td);
+              });
+
+              // Text Area Columns
+              pelaksanaConfig.forEach(c => {
+                const td = document.createElement('td');
+
+                // Set text directly
+                const textContent = row[c.key] || "";
+                td.textContent = textContent;
+
+                // Style to match previous look (wrapping text, padding)
+                td.style.whiteSpace = "pre-wrap";
+                td.style.padding = "6px";
+                td.style.verticalAlign = "top";
+                tr.appendChild(td);
+              });
+
+              tbody.appendChild(tr);
+            });
+            this.$nextTick(() => this.ui_ApplyFreeze());
+          },
+
+          util_AddColumnResizer(th) {
+            const resizer = document.createElement('div');
+            resizer.className = 'resizer';
+            th.appendChild(resizer);
+            let x = 0, w = 0;
+
+            const mm = (e) => {
+              const dx = e.clientX - x;
+              th.style.width = `${Math.max(30, w + dx)}px`;
+              th.style.minWidth = th.style.width;
+            };
+            const mu = () => {
+              document.removeEventListener('mousemove', mm);
+              document.removeEventListener('mouseup', mu);
+              resizer.classList.remove('resizing');
+            };
+            resizer.addEventListener('mousedown', (e) => {
+              x = e.clientX;
+              w = parseInt(window.getComputedStyle(th).width, 10);
+              document.addEventListener('mousemove', mm);
+              document.addEventListener('mouseup', mu);
+              resizer.classList.add('resizing');
+              e.stopPropagation();
+            });
+          },
+
+          // ============================================
+          // ACTIONS: STAGING & UPLOAD (RESUMABLE CHUNKED)
+          // ============================================
+          async action_UploadFile(e) {
+            let file = e.target.files[0];
+            if (!file) return;
+
+            // Reset UI
+            this.setUiStatusMessage = "Preparing...";
+            this.stagingData_Object = null;
+
+            try {
+              // --- ROBUST HASH CACHING ---
+              // If user refreshes, we don't want to re-calculate MD5 for 10 seconds.
+              // We cache the hash in LocalStorage keyed by the file's unique signature.
+              const cacheKey = `upload_hash_${file.name}_${file.size}_${file.lastModified}`;
+              let fileHash = localStorage.getItem(cacheKey);
+
+              if (!fileHash) {
+                this.setUiStatusMessage = "Hashing file (Integrity Check)...";
+                fileHash = await this.helpers_compute_md5(file);
+                try {localStorage.setItem(cacheKey, fileHash);} catch (e) { } // Save for next refresh
+              }
+
+              // Generate the Unique ID for the server
+              // If you refresh and pick this file again, this ID stays the same, so server finds the .tmp file.
+              const fileUid = `${fileHash}_${file.size}_${file.lastModified}`;
+
+              this.setUiStatusMessage = "Checking server resume status...";
+
+              // Query server: "Do you have this file?"
+              // Added credentials
+              let initRes = await fetch(`${this.apiBaseUrl}/upload/init/${this.targetYear}`, {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                credentials: 'include',
+                body: JSON.stringify({
+                  filename: file.name,
+                  file_uid: fileUid,
+                  total_size: file.size,
+                  total_hash: fileHash
+                })
+              });
+              let initData = await initRes.json();
+
+              if (initData.status === "exists") {
+                // File already fully uploaded on server, jump to processing
+                this.setUiStatusMessage = "File exists. Processing...";
+                await this.helpers_finalize_upload(initData.upload_id, file.name, fileHash);
+                e.target.value = null;
+                return;
+              }
+
+              // Start Chunking Loop
+              let offset = initData.received_bytes || 0;
+              const CHUNK_SIZE = 1024 * 1024 * 2; // 2MB Chunks (safe for slow connections)
+              const totalSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+
+              while (offset < file.size) {
+                const chunkBlob = file.slice(offset, offset + CHUNK_SIZE);
+
+                // UI Progress
+                // Example: "Uploading: 12.50 / 50.00 MB (25%)"
+                const currentMB = (offset / (1024 * 1024)).toFixed(2);
+                const percent = Math.round((offset / file.size) * 100);
+                this.setUiStatusMessage = `Uploading: ${currentMB} / ${totalSizeMB} MB (${percent}%)`;
+
+                // Retry Loop for current chunk
+                let retries = 5;
+                let chunkSuccess = false;
+
+                while (retries > 0 && !chunkSuccess) {
+                  try {
+                    let fd = new FormData();
+                    fd.append("chunk", chunkBlob);
+                    fd.append("upload_id", initData.upload_id);
+                    fd.append("offset", offset);
+                    fd.append("chunk_hash", await this.helpers_compute_md5(chunkBlob)); // Hash Check per chunk
+
+                    // Added credentials
+                    let chunkRes = await fetch(`${this.apiBaseUrl}/upload/chunk/${this.targetYear}`, {
+                      method: "POST",
+                      credentials: 'include',
+                      body: fd
+                    });
+
+                    if (!chunkRes.ok) throw new Error("Server rejected chunk");
+
+                    chunkSuccess = true;
+                    offset += CHUNK_SIZE; // Move to next chunk
+                  } catch (err) {
+                    retries--;
+                    console.warn(`Chunk failed, retrying... (${retries} left)`);
+                    // Exponential backoff: Wait 1s, then 2s, etc.
+                    await new Promise(r => setTimeout(r, 1000 * (5 - retries)));
+                  }
+                }
+
+                if (!chunkSuccess) throw new Error("Connection unstable. Upload failed after retries.");
+              }
+
+              // Finalize & Process
+              this.setUiStatusMessage = "Verifying & Analyzing...";
+              await this.helpers_finalize_upload(initData.upload_id, file.name, fileHash);
+
+              // Success
+              e.target.value = null;
+
+            } catch (err) {
+              console.error(err);
+              this.setUiStatusMessage = "❌ " + (err.message || "Upload Failed");
+            }
+          },
+
+          // Helper: Call Finalize Endpoint
+          async helpers_finalize_upload(uploadId, filename, fileHash) {
             // Added credentials
-            let initRes = await fetch(`${this.apiBaseUrl}/upload/init/${this.targetYear}`, {
+            let res = await fetch(`${this.apiBaseUrl}/upload/finalize/${this.targetYear}`, {
               method: "POST",
               headers: {"Content-Type": "application/json"},
               credentials: 'include',
               body: JSON.stringify({
-                filename: file.name,
-                file_uid: fileUid,
-                total_size: file.size,
+                upload_id: uploadId,
+                filename: filename,
                 total_hash: fileHash
               })
             });
-            let initData = await initRes.json();
+            let d = await res.json();
 
-            if (initData.status === "exists") {
-              // File already fully uploaded on server, jump to processing
-              this.setUiStatusMessage = "File exists. Processing...";
-              await this.helpers_finalize_upload(initData.upload_id, file.name, fileHash);
-              e.target.value = null;
-              return;
+            if (d.status === "staged") {
+              this.stagingData_Object = d;
+              this.setUiStatusMessage = "";
+            } else {
+              throw new Error(d.error || "Processing failed");
             }
+          },
 
-            // Start Chunking Loop
-            let offset = initData.received_bytes || 0;
-            const CHUNK_SIZE = 1024 * 1024 * 2; // 2MB Chunks (safe for slow connections)
-            const totalSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+          // Helper: Compute MD5 using SparkMD5 (Memory efficient)
+          helpers_compute_md5(blob) {
+            return new Promise((resolve, reject) => {
+              const reader = new FileReader();
+              reader.readAsArrayBuffer(blob);
+              reader.onload = (e) => {
+                // Note: For massive files (2GB+), you'd want incremental hashing, 
+                // but for standard admin uploads (10-100MB) ArrayBuffer is fine.
+                resolve(SparkMD5.ArrayBuffer.hash(e.target.result));
+              };
+              reader.onerror = reject;
+            });
+          },
 
-            while (offset < file.size) {
-              const chunkBlob = file.slice(offset, offset + CHUNK_SIZE);
+          async action_CommitStagedData_ToDB() {
+            if (!this.stagingData_Object) return;
+            this.setUiStatusMessage = "Saving...";
+            let p = new URLSearchParams({
+              staging_id: this.stagingData_Object.staging_id,
+              filename: this.stagingData_Object.filename
+            });
+            try {
+              // Use targetYear
+              // Added credentials
+              let res = await fetch(`${this.apiBaseUrl}/commit/${this.targetYear}?${p}`, {
+                method: "POST",
+                credentials: 'include'
+              });
+              let d = await res.json();
+              if (d.status === "success") {
+                alert("✅ Saved Successfully!");
+                this.stagingData_Object = null;
+                this.fetchVersionHistoryAndHierarchy();
+                this.fetch_MainGridData_FromAPI();
+              } else alert("❌ Fail: " + d.error);
+            } catch (err) {alert("❌ Commit Error");}
+          },
 
-              // UI Progress
-              // Example: "Uploading: 12.50 / 50.00 MB (25%)"
-              const currentMB = (offset / (1024 * 1024)).toFixed(2);
-              const percent = Math.round((offset / file.size) * 100);
-              this.setUiStatusMessage = `Uploading: ${currentMB} / ${totalSizeMB} MB (${percent}%)`;
+          // ============================================
+          // ACTIONS: CALCULATION
+          // ============================================
+          async calculate_DashboardStats_FromAPI() {
+            // Do not force switch logic here. 
+            // Only calculate. If view is grid, just calculate in background
+            // to keep data ready still calculate. 
 
-              // Retry Loop for current chunk
-              let retries = 5;
-              let chunkSuccess = false;
+            this.setUiStatusMessage = "Calculating...";
+            // Only clear/show loading if the table actually exists
+            const tbody = document.querySelector('#dashboard_table_element tbody');
+            if (tbody) tbody.innerHTML = '<tr><td colspan="100" class="text-center p-4">Calculating...</td></tr>';
 
-              while (retries > 0 && !chunkSuccess) {
-                try {
-                  let fd = new FormData();
-                  fd.append("chunk", chunkBlob);
-                  fd.append("upload_id", initData.upload_id);
-                  fd.append("offset", offset);
-                  fd.append("chunk_hash", await this.helpers_compute_md5(chunkBlob)); // Hash Check per chunk
+            // Add all current filters to params (Same logic as fetchData)
+            let params = new URLSearchParams();
+            if (this.filter_SelectedVersion) params.append("version", this.filter_SelectedVersion);
+            if (this.filter_SelProv) params.append("Provinsi", this.filter_SelProv);
+            if (this.filter_SelKab) params.append("Kabupaten/ Kota", this.filter_SelKab);
+            if (this.filter_SelKec) params.append("Kecamatan", this.filter_SelKec);
+            if (this.filter_NameSearch) params.append("Kode Wilayah Administrasi Desa", this.filter_NameSearch);
+            if (this.filter_IdListInput.trim()) params.append("ids", this.filter_IdListInput.replace(/\n/g, ";"));
 
-                  // Added credentials
-                  let chunkRes = await fetch(`${this.apiBaseUrl}/upload/chunk/${this.targetYear}`, {
-                    method: "POST",
-                    credentials: 'include',
-                    body: fd
-                  });
+            try {
+              // Use targetYear
+              // Added credentials
+              let res = await fetch(`${this.apiBaseUrl}/dashboard/calculate/${this.targetYear}?${params.toString()}`, {
+                method: "POST",
+                credentials: 'include'
+              });
+              if (!res.ok) throw new Error("Calculation failed");
 
-                  if (!chunkRes.ok) throw new Error("Server rejected chunk");
+              let data = await res.json();
+              this.constructDashboardTableDOM(data);
+              this.setUiStatusMessage = "✅ Done";
+              this.isTableStructureLoaded = true;
+            } catch (e) {
+              // Only alert if we are actually looking at the dashboard
+              if (this.viewModeState === 'dashboard') alert("Error: " + e.message);
+              console.error(e);
+              this.setUiStatusMessage = "❌ Error";
+            }
+          },
 
-                  chunkSuccess = true;
-                  offset += CHUNK_SIZE; // Move to next chunk
-                } catch (err) {
-                  retries--;
-                  console.warn(`Chunk failed, retrying... (${retries} left)`);
-                  // Exponential backoff: Wait 1s, then 2s, etc.
-                  await new Promise(r => setTimeout(r, 1000 * (5 - retries)));
-                }
+          // Explicit Action for Button Click (Force Switch)
+          action_CalculateDashboardStats() {
+            this.ui_SwitchViewMode('dashboard');
+            this.calculate_DashboardStats_FromAPI();
+          },
+
+          // ============================================
+          // ACTIONS: EXPORT & DELETE
+          // ============================================
+          // Still failed to save filters, need a way to better way to do it
+          async action_DownloadToExcel() {
+            this.setUiStatusMessage = "Preparing download...";
+
+            try {
+              const wb = XLSX.utils.book_new();
+
+              // SHEET 1: GRID
+              let gridData = [];
+              if (this.agGridApiInstance) {
+                // Use 'forEachNodeAfterFilterAndSort' to respect BOTH Filter AND Sort order
+                this.agGridApiInstance.forEachNodeAfterFilter(node => {
+                  gridData.push(node.data);
+                });
               }
 
-              if (!chunkSuccess) throw new Error("Connection unstable. Upload failed after retries.");
+              if (gridData.length === 0) {
+                throw new Error("No data found in current filter view.");
+              }
+
+              const ws_grid = XLSX.utils.json_to_sheet(gridData);
+              XLSX.utils.book_append_sheet(wb, ws_grid, "Grid (Filtered)");
+
+              // SHEET 2: DASHBOARD
+              const dashTable = document.getElementById('dashboard_table_element');
+              if (dashTable && dashTable.querySelector('tbody tr')) {
+                // Clone table to avoid modifying the original
+                const tableClone = dashTable.cloneNode(true);
+
+                // Replace all inputs/textareas with their values
+                tableClone.querySelectorAll('input, textarea').forEach(input => {
+                  const span = document.createElement('span');
+                  span.textContent = input.value;
+                  input.parentNode.replaceChild(span, input);
+                });
+
+                const ws_dash = XLSX.utils.table_to_sheet(tableClone, {raw: true});
+                XLSX.utils.book_append_sheet(wb, ws_dash, "Dashboard");
+              }
+
+              // Download
+              XLSX.writeFile(wb, `export_${this.targetYear}_${new Date().toISOString().split('T')[0]}.xlsx`);
+
+              this.setUiStatusMessage = "✅ Downloaded";
+              setTimeout(() => this.setUiStatusMessage = "", 2000);
+
+            } catch (error) {
+              console.error('Download error:', error);
+              this.setUiStatusMessage = "❌ Download failed";
+              alert('Download failed: ' + error.message);
             }
+          },
 
-            // Finalize & Process
-            this.setUiStatusMessage = "Verifying & Analyzing...";
-            await this.helpers_finalize_upload(initData.upload_id, file.name, fileHash);
+          async action_SoftDeleteIDs_FromDB() {
+            if (!this.filter_DeleteListInput.trim()) return alert("Please enter IDs to delete.");
 
-            // Success
-            e.target.value = null;
+            if (!confirm("⚠️ Are you sure?")) return;
 
-          } catch (err) {
-            console.error(err);
-            this.setUiStatusMessage = "❌ " + (err.message || "Upload Failed");
-          }
-        },
+            this.setUiStatusMessage = "Deleting...";
 
-        // Helper: Call Finalize Endpoint
-        async helpers_finalize_upload(uploadId, filename, fileHash) {
-          // Added credentials
-          let res = await fetch(`${this.apiBaseUrl}/upload/finalize/${this.targetYear}`, {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            credentials: 'include',
-            body: JSON.stringify({
-              upload_id: uploadId,
-              filename: filename,
-              total_hash: fileHash
-            })
-          });
-          let d = await res.json();
+            let params = new URLSearchParams();
+            params.append("ids", this.filter_DeleteListInput);
+            params.append("summary", "User deleted from dashboard");
 
-          if (d.status === "staged") {
-            this.stagingData_Object = d;
-            this.setUiStatusMessage = "";
-          } else {
-            throw new Error(d.error || "Processing failed");
-          }
-        },
-
-        // Helper: Compute MD5 using SparkMD5 (Memory efficient)
-        helpers_compute_md5(blob) {
-          return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsArrayBuffer(blob);
-            reader.onload = (e) => {
-              // Note: For massive files (2GB+), you'd want incremental hashing, 
-              // but for standard admin uploads (10-100MB) ArrayBuffer is fine.
-              resolve(SparkMD5.ArrayBuffer.hash(e.target.result));
-            };
-            reader.onerror = reject;
-          });
-        },
-
-        async action_CommitStagedData_ToDB() {
-          if (!this.stagingData_Object) return;
-          this.setUiStatusMessage = "Saving...";
-          let p = new URLSearchParams({
-            staging_id: this.stagingData_Object.staging_id,
-            filename: this.stagingData_Object.filename
-          });
-          try {
-            // Use targetYear
-            // Added credentials
-            let res = await fetch(`${this.apiBaseUrl}/commit/${this.targetYear}?${p}`, {
-              method: "POST",
-              credentials: 'include'
-            });
-            let d = await res.json();
-            if (d.status === "success") {
-              alert("✅ Saved Successfully!");
-              this.stagingData_Object = null;
-              this.fetchVersionHistoryAndHierarchy();
-              this.fetch_MainGridData_FromAPI();
-            } else alert("❌ Fail: " + d.error);
-          } catch (err) {alert("❌ Commit Error");}
-        },
-
-        // ============================================
-        // ACTIONS: CALCULATION
-        // ============================================
-        async calculate_DashboardStats_FromAPI() {
-          // Do not force switch logic here. 
-          // Only calculate. If view is grid, just calculate in background
-          // to keep data ready still calculate. 
-
-          this.setUiStatusMessage = "Calculating...";
-          // Only clear/show loading if the table actually exists
-          const tbody = document.querySelector('#dashboard_table_element tbody');
-          if (tbody) tbody.innerHTML = '<tr><td colspan="100" class="text-center p-4">Calculating...</td></tr>';
-
-          // Add all current filters to params (Same logic as fetchData)
-          let params = new URLSearchParams();
-          if (this.filter_SelectedVersion) params.append("version", this.filter_SelectedVersion);
-          if (this.filter_SelProv) params.append("Provinsi", this.filter_SelProv);
-          if (this.filter_SelKab) params.append("Kabupaten/ Kota", this.filter_SelKab);
-          if (this.filter_SelKec) params.append("Kecamatan", this.filter_SelKec);
-          if (this.filter_NameSearch) params.append("Kode Wilayah Administrasi Desa", this.filter_NameSearch);
-          if (this.filter_IdListInput.trim()) params.append("ids", this.filter_IdListInput.replace(/\n/g, ";"));
-
-          try {
-            // Use targetYear
-            // Added credentials
-            let res = await fetch(`${this.apiBaseUrl}/dashboard/calculate/${this.targetYear}?${params.toString()}`, {
-              method: "POST",
-              credentials: 'include'
-            });
-            if (!res.ok) throw new Error("Calculation failed");
-
-            let data = await res.json();
-            this.constructDashboardTableDOM(data);
-            this.setUiStatusMessage = "✅ Done";
-            this.isTableStructureLoaded = true;
-          } catch (e) {
-            // Only alert if we are actually looking at the dashboard
-            if (this.viewModeState === 'dashboard') alert("Error: " + e.message);
-            console.error(e);
-            this.setUiStatusMessage = "❌ Error";
-          }
-        },
-
-        // Explicit Action for Button Click (Force Switch)
-        action_CalculateDashboardStats() {
-          this.ui_SwitchViewMode('dashboard');
-          this.calculate_DashboardStats_FromAPI();
-        },
-
-        // ============================================
-        // ACTIONS: EXPORT & DELETE
-        // ============================================
-        // Still failed to save filters, need a way to better way to do it
-        async action_DownloadToExcel() {
-          this.setUiStatusMessage = "Preparing download...";
-
-          try {
-            const wb = XLSX.utils.book_new();
-
-            // SHEET 1: GRID
-            let gridData = [];
-            if (this.agGridApiInstance) {
-              // Use 'forEachNodeAfterFilterAndSort' to respect BOTH Filter AND Sort order
-              this.agGridApiInstance.forEachNodeAfterFilter(node => {
-                gridData.push(node.data);
+            try {
+              // Use targetYear
+              // Added credentials
+              let res = await fetch(`${this.apiBaseUrl}/delete/${this.targetYear}?${params}`, {
+                method: "POST",
+                credentials: 'include'
               });
+              let data = await res.json();
+
+              if (data.status === "success") {
+                alert(`✅ Deleted ${data.deleted_count} records.\nIDs: ${data.deleted_ids.join(", ")}`);
+                this.filter_DeleteListInput = "";
+                this.fetchVersionHistoryAndHierarchy();
+                this.fetch_MainGridData_FromAPI();
+                this.setUiStatusMessage = "";
+              } else if (data.status === "warning") {
+                // This is likely what is happening now
+                alert("��️ Server Warning: " + data.message);
+                this.setUiStatusMessage = "⚠️ ID Not Found";
+              } else {
+                alert("❌ Error: " + (data.error || "Unknown error"));
+              }
+            } catch (e) {
+              console.error(e);
+              alert("❌ Connection Error");
             }
-
-            if (gridData.length === 0) {
-              throw new Error("No data found in current filter view.");
-            }
-
-            const ws_grid = XLSX.utils.json_to_sheet(gridData);
-            XLSX.utils.book_append_sheet(wb, ws_grid, "Grid (Filtered)");
-
-            // SHEET 2: DASHBOARD
-            const dashTable = document.getElementById('dashboard_table_element');
-            if (dashTable && dashTable.querySelector('tbody tr')) {
-              // Clone table to avoid modifying the original
-              const tableClone = dashTable.cloneNode(true);
-
-              // Replace all inputs/textareas with their values
-              tableClone.querySelectorAll('input, textarea').forEach(input => {
-                const span = document.createElement('span');
-                span.textContent = input.value;
-                input.parentNode.replaceChild(span, input);
-              });
-
-              const ws_dash = XLSX.utils.table_to_sheet(tableClone, {raw: true});
-              XLSX.utils.book_append_sheet(wb, ws_dash, "Dashboard");
-            }
-
-            // Download
-            XLSX.writeFile(wb, `export_${this.targetYear}_${new Date().toISOString().split('T')[0]}.xlsx`);
-
-            this.setUiStatusMessage = "✅ Downloaded";
-            setTimeout(() => this.setUiStatusMessage = "", 2000);
-
-          } catch (error) {
-            console.error('Download error:', error);
-            this.setUiStatusMessage = "❌ Download failed";
-            alert('Download failed: ' + error.message);
-          }
-        },
-
-        async action_SoftDeleteIDs_FromDB() {
-          if (!this.filter_DeleteListInput.trim()) return alert("Please enter IDs to delete.");
-
-          if (!confirm("⚠️ Are you sure?")) return;
-
-          this.setUiStatusMessage = "Deleting...";
-
-          let params = new URLSearchParams();
-          params.append("ids", this.filter_DeleteListInput);
-          params.append("summary", "User deleted from dashboard");
-
-          try {
-            // Use targetYear
-            // Added credentials
-            let res = await fetch(`${this.apiBaseUrl}/delete/${this.targetYear}?${params}`, {
-              method: "POST",
-              credentials: 'include'
-            });
-            let data = await res.json();
-
-            if (data.status === "success") {
-              alert(`✅ Deleted ${data.deleted_count} records.\nIDs: ${data.deleted_ids.join(", ")}`);
-              this.filter_DeleteListInput = "";
-              this.fetchVersionHistoryAndHierarchy();
-              this.fetch_MainGridData_FromAPI();
-              this.setUiStatusMessage = "";
-            } else if (data.status === "warning") {
-              // This is likely what is happening now
-              alert("��️ Server Warning: " + data.message);
-              this.setUiStatusMessage = "⚠️ ID Not Found";
-            } else {
-              alert("❌ Error: " + (data.error || "Unknown error"));
-            }
-          } catch (e) {
-            console.error(e);
-            alert("❌ Connection Error");
-          }
-        },
+          },
+        }
       }
-    }
-  </script>
-</body>
+    </script>
+  </body>
 
 </html>
