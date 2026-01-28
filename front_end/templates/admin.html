@@ -309,27 +309,32 @@
   <body class="global_body_container font-mono bg-gray-100 h-screen flex flex-col transition-colors
   duration-300 dark:bg-slate-900 dark:text-slate-100">
 
-    <div class="header_main_container bg-slate-800 text-white p-3 flex justify-between items-center shadow-md z-20
-      shrink-0 border-b border-slate-700 h-14">
+    <div class="header_main_container bg-white text-slate-800 border-b border-gray-200 
+    dark:bg-slate-800 dark:text-white dark:border-slate-700 p-3 flex justify-between items-center shadow-md z-20 shrink-0
+    h-14 transition-colors duration-300">
 
       <div class="header_left_group flex items-center gap-1">
 
         <div
           class="transition-all duration-300 ease-in-out shrink-0 h-full flex items-center"
-          :class="isSidebarOpen ? 'w-80 opacity-100' : 'w-0 opacity-0 overflow-hidden'"
+          :class="isSidebarOpen ?
+          'w-80 opacity-100' 
+          : 'w-0 opacity-0 overflow-hidden'"
         >
-          <h1 class="header_title_label text-sm font-bold flex items-center gap-2 truncate text-slate-100 border-r
-            border-slate-600/50 h-8 w-full">
-            <span class="text-blue-400">Admin</span> | Data skor rekomendasi desa
+          <h1 class="header_title_label text-sm font-bold flex items-center gap-2 truncate h-8 w-full
+            text-slate-700 border-r border-gray-300
+            dark:text-slate-100 dark:border-slate-600/50">
+            <span class="text-blue-600 dark:text-blue-400">Admin</span> | Data skor rekomendasi desa
           </h1>
         </div>
 
-        <div class="header_toolbar_container bg-slate-900/50 border border-slate-600 rounded-md p-1 flex items-center
-          gap-2 shadow-sm">
+        <div class="header_toolbar_container rounded-md p-1 flex items-center gap-2 shadow-sm
+          bg-gray-100 border border-gray-300
+          dark:bg-slate-900/50 dark:border-slate-600 transition-colors">
 
           <div
             x-show="viewModeState === 'grid'"
-            class="flex items-center gap-2 mr-1 pr-2 border-r border-slate-600"
+            class="flex items-center gap-2 mr-1 pr-2 border-r border-gray-300 dark:border-slate-600"
             x-transition:enter="transition ease-out duration-300"
             x-transition:enter-start="opacity-0 -translate-x-4 scale-95"
             x-transition:enter-end="opacity-100 translate-x-0 scale-100"
@@ -349,17 +354,17 @@
                 @focus="open = true"
                 @input="open = true"
                 placeholder="Search headers..."
-                class="bg-slate-800 border border-slate-600 rounded px-2 py-1 text-[11px] text-white 
-              placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:bg-slate-700 
-              w-32 focus:w-64 transition-all duration-300 shadow-inner"
+                class="rounded px-2 py-1 text-[11px] w-32 focus:w-64 transition-all duration-300 shadow-inner
+                bg-white border border-gray-300 text-slate-800 placeholder-gray-400 focus:outline-none focus:border-blue-500
+                dark:bg-slate-800 dark:border-slate-600 dark:text-white dark:placeholder-slate-500 dark:focus:bg-slate-700"
               >
 
               <div
                 x-show="open && term"
                 x-transition
-                class="absolute top-full left-0 mt-2 w-max max-w-[600px] bg-white dark:bg-slate-800 border
-                border-slate-200 dark:border-slate-700 
-                rounded shadow-xl max-h-[80vh] overflow-y-auto z-50 custom-scrollbar"
+                class="absolute top-full left-0 mt-2 w-max max-w-[600px] border rounded shadow-xl max-h-[80vh]
+                overflow-y-auto z-50 custom-scrollbar
+                bg-white border-gray-200 dark:bg-slate-800 dark:border-slate-700"
               >
                 <template
                   x-for="col in meta_ColumnList.filter(c => c.toLowerCase().includes(term.toLowerCase()))"
@@ -367,8 +372,9 @@
                 >
                   <button
                     @click="action_JumpToColumn(col); open = false; term = ''"
-                    class="w-full text-left px-3 py-2 text-xs border-b border-gray-100 dark:border-slate-700 
-                 hover:bg-blue-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 block truncate"
+                    class="w-full text-left px-3 py-2 text-xs border-b block truncate
+                    border-gray-100 hover:bg-blue-50 text-slate-700 
+                    dark:border-slate-700 dark:hover:bg-slate-700 dark:text-slate-200"
                     :title="col"
                   > <span x-text="col"></span>
                   </button>
@@ -382,21 +388,25 @@
               </div>
             </div>
 
-            <div class="flex bg-slate-800 rounded p-0.5 border border-slate-700">
+            <div class="flex rounded p-0.5 border
+              bg-white border-gray-200 
+              dark:bg-slate-800 dark:border-slate-700">
               <button
                 @click="ui_ToggleTranslate(false)"
-                :class="!isTranslationActive ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-400 hover:text-white
-                hover:bg-slate-700'"
-                class="px-2 py-0.5 rounded text-[10px] font-bold transition-all flex items-center gap-1"
+                :class="!isTranslationActive ?
+                'bg-slate-500 text-white shadow-sm' 
+                : 'text-slate-500 hover:text-slate-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-slate-700'"
+                class="px-2 py-1 rounded text-[10px] font-bold transition-all flex items-center gap-1"
                 title="Raw Numbers"
               >
                 Raw
               </button>
               <button
                 @click="ui_ToggleTranslate(true)"
-                :class="isTranslationActive ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-400 hover:text-white
-                hover:bg-slate-700'"
-                class="px-2 py-0.5 rounded text-[10px] font-bold transition-all flex items-center gap-1"
+                :class="isTranslationActive ?
+                'bg-slate-500 text-white shadow-sm' 
+                : 'text-slate-500 hover:text-slate-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-slate-700'"
+                class="px-2 py-1 rounded text-[10px] font-bold transition-all flex items-center gap-1"
                 title="Text Recommendations"
               >
                 Text
@@ -404,144 +414,210 @@
             </div>
           </div>
 
-          <div class="flex bg-slate-800 rounded p-0.5 border border-slate-700">
+          <div class="flex rounded p-0.5 border
+            bg-white border-gray-200 
+            dark:bg-slate-800 dark:border-slate-700">
             <button
               @click="ui_SwitchViewMode('grid')"
-              :class="viewModeState === 'grid' ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-400 hover:text-white
-              hover:bg-slate-700'"
+              :class="viewModeState === 'grid' ?
+              'bg-slate-500 text-white shadow-sm' 
+              : 'text-slate-500 hover:text-slate-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-slate-700'"
               class="px-3 py-1 rounded text-[11px] font-bold transition-all flex items-center gap-1.5"
             >
               <span>▦</span> Grid
             </button>
             <button
               @click="ui_SwitchViewMode('dashboard')"
-              :class="viewModeState === 'dashboard' ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-400 hover:text-white
-              hover:bg-slate-700'"
+              :class="viewModeState === 'dashboard' ?
+              'bg-slate-500 text-white shadow-sm' 
+              : 'text-slate-500 hover:text-slate-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-slate-700'"
               class="px-3 py-1 rounded text-[11px] font-bold transition-all flex items-center gap-1.5"
             >
               <span>📊</span> Dashboard
             </button>
           </div>
 
-          <div class="h-6 w-px bg-slate-600"></div>
+          <div class="h-6 w-px bg-gray-300 dark:bg-slate-600"></div>
 
           <div
-            class="flex bg-slate-800 rounded p-0.5 border border-slate-700 ml-1"
-            title="Freeze Columns"
+            class="flex items-center rounded border ml-1 select-none h-7
+            bg-white border-gray-200 
+            dark:bg-slate-800 dark:border-slate-700"
+            title="Freeze Columns (Scroll or Click Arrows)"
+            @wheel.prevent="ui_Freeze_Scroll($event)"
           >
-            <select
-              x-model.number="ui_FreezeColCount"
-              @change="ui_ApplyFreeze()"
-              class="bg-slate-800 text-[11px] font-bold text-gray-400 border-none outline-none cursor-pointer
-              hover:text-white appearance-none text-center w-9"
+
+            <div class="pl-2 pr-1.5 text-blue-500 dark:text-blue-400 flex items-center justify-center">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="w-4 h-4 opacity-80"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect
+                  x="3"
+                  y="3"
+                  width="18"
+                  height="18"
+                  rx="2"
+                  ry="2"
+                ></rect>
+                <path d="M9 3v18" />
+                <path d="M3 9h18" />
+              </svg>
+            </div>
+
+            <div
+              class="w-4 text-center text-[13px] font-bold font-mono leading-none
+              text-slate-700 dark:text-white"
+              x-text="ui_FreezeColCount"
             >
-              <option value="0">❄️ 0</option>
-              <option value="1">❄️ 1</option>
-              <option value="2">❄️ 2</option>
-              <option value="3">❄️ 3</option>
-              <option value="4">❄️ 4</option>
-              <option value="5">❄️ 5</option>
-              <option value="6">❄️ 6</option>
-            </select>
+              0
+            </div>
+
+            <div class="flex flex-col px-1 h-full justify-center gap-[2px]">
+              <button
+                @click="ui_Freeze_Inc()"
+                class="leading-none flex items-center h-2
+                text-slate-400 hover:text-slate-800 
+                dark:text-slate-500 dark:hover:text-white"
+              >
+                <svg
+                  class="w-2.5 h-2.5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="4"
+                    d="M5 15l7-7 7 7"
+                  />
+                </svg>
+              </button>
+              <button
+                @click="ui_Freeze_Dec()"
+                class="leading-none flex items-center h-2
+                text-slate-400 hover:text-slate-800 
+                dark:text-slate-500 dark:hover:text-white"
+              >
+                <svg
+                  class="w-2.5 h-2.5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="4"
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </button>
+            </div>
           </div>
 
-          <div class="h-6 w-px bg-slate-600"></div>
+          <div class="h-6 w-px bg-gray-300 dark:bg-slate-600"></div>
 
           <button
             @click="action_CalculateDashboardStats"
-            class=" bg-slate-800 hover:bg-emerald-600 text-emerald-500 hover:text-white border border-slate-700
-            hover:border-emerald-500
-           px-3 py-1 rounded text-[11px] font-bold transition-all shadow-sm flex items-center gap-1 group"
+            class="px-3 py-1 rounded text-[11px] font-bold transition-all shadow-sm flex items-center gap-1 group border
+            bg-white hover:bg-emerald-50 text-emerald-600 border-gray-200 hover:border-emerald-300
+            dark:bg-slate-800 dark:hover:bg-emerald-600 dark:text-emerald-500 dark:hover:text-white dark:border-slate-700 dark:hover:border-emerald-500"
           >
             <span class="group-hover:animate-spin">↻</span> Calc
           </button>
-
         </div>
       </div>
 
       <div class="header_right_group flex items-center gap-4">
 
         <div class="flex items-center gap-2">
-
           <div
             x-show="filter_SelProv"
             x-transition
             class="flex items-center gap-1 bg-slate-500/10 border border-amber-500/30 px-2 py-1 rounded max-w-[150px]"
           >
             <span
-              class="text-xs font-bold text-amber-400 truncate"
+              class="text-xs font-bold text-amber-600 dark:text-amber-400 truncate"
               x-text="filter_SelProv"
             ></span>
           </div>
-
           <div
             x-show="filter_SelKab"
             x-transition
             class="flex items-center gap-1 bg-slate-500/10 border border-amber-500/30 px-2 py-1 rounded max-w-[150px]"
           >
             <span
-              class="text-xs font-bold text-amber-400 truncate"
+              class="text-xs font-bold text-amber-600 dark:text-amber-400 truncate"
               x-text="filter_SelKab"
             ></span>
           </div>
-
           <div
             x-show="filter_SelKec"
             x-transition
             class="flex items-center gap-1 bg-slate-500/10 border border-amber-500/30 px-2 py-1 rounded max-w-[150px]"
           >
             <span
-              class="text-xs font-bold text-amber-400 truncate"
+              class="text-xs font-bold text-amber-600 dark:text-amber-400 truncate"
               x-text="filter_SelKec"
             ></span>
           </div>
-
           <div
             x-show="filter_NameSearch"
             x-transition
             class="flex items-center gap-1 bg-slate-500/10 border border-blue-500/30 px-2 py-1 rounded max-w-[150px]"
           >
             <span
-              class="text-xs font-bold text-blue-400 truncate"
+              class="text-xs font-bold text-blue-600 dark:text-blue-400 truncate"
               x-text="filter_NameSearch"
             ></span>
           </div>
-
           <div
             x-show="filter_IdListInput && filter_IdListInput.trim()"
             x-transition
             class="flex items-center gap-1 bg-slate-500/10 border border-purple-500/30 px-2 py-1 rounded"
           >
-            <span class="text-xs font-bold text-purple-400">Pasted IDs</span>
+            <span class="text-xs font-bold text-purple-600 dark:text-purple-400">Pasted IDs</span>
           </div>
-
         </div>
 
         <div class="flex items-center gap-4">
-
           <div class="flex flex-col items-end leading-none">
-            <span class="text-slate-500 text-[9px] uppercase tracking-wider font-bold">Total Rows</span>
+            <span class="text-slate-400 dark:text-slate-500 text-[9px] uppercase tracking-wider font-bold">Total
+              Rows</span>
             <span
-              class="font-mono font-bold text-slate-200 text-sm"
+              class="font-mono font-bold text-sm
+              text-slate-700 dark:text-slate-200"
               x-text="stats_TotalRows"
             >0</span>
           </div>
 
-          <div class="flex flex-col items-end leading-none border-l border-slate-700 pl-4">
-            <span class="text-slate-500 text-[9px] uppercase tracking-wider font-bold">Last Update</span>
+          <div class="flex flex-col items-end leading-none border-l pl-4
+            border-gray-200 dark:border-slate-700">
+            <span class="text-slate-400 dark:text-slate-500 text-[9px] uppercase tracking-wider font-bold">Last
+              Update</span>
             <span
-              class="font-mono font-bold text-emerald-400 text-sm"
+              class="font-mono font-bold text-sm
+              text-emerald-600 dark:text-emerald-400"
               x-text="stats_LastUpdateLabel"
             >N/A</span>
           </div>
         </div>
 
-        <div class="h-6 w-px bg-slate-700"></div>
+        <div class="h-6 w-px bg-gray-300 dark:bg-slate-700"></div>
 
         <button
           @click="ui_ToggleDarkMode"
-          class="header_btn_theme_toggle w-8 h-8 rounded hover:bg-slate-700 text-yellow-400 
-                         transition border border-transparent hover:border-slate-600 flex items-center justify-center"
+          class="header_btn_theme_toggle w-8 h-8 rounded transition border border-transparent flex items-center justify-center
+          hover:bg-gray-100 hover:border-gray-300 text-black
+          dark:hover:bg-slate-700 dark:text-yellow-400 dark:hover:border-slate-600"
           title="Toggle Theme"
         >
           <svg
@@ -556,8 +632,7 @@
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
-              d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343
-              17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+              d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
             />
           </svg>
           <svg
@@ -577,12 +652,13 @@
           </svg>
         </button>
 
-        <div class="h-6 w-px bg-slate-700"></div>
+        <div class="h-6 w-px bg-gray-300 dark:bg-slate-700"></div>
 
         <button
           @click="action_Logout"
-          class="flex items-center gap-2 text-xs font-bold text-gray-400 hover:text-red-300 transition 
-                         bg-slate-800 border border-red-900/50 px-3 py-1.5 rounded hover:bg-red-900/50"
+          class="flex items-center gap-2 text-xs font-bold transition px-3 py-1.5 rounded
+          bg-white border border-red-200 text-slate-500 hover:text-red-600 hover:bg-red-50
+          dark:bg-slate-800 dark:border-red-900/50 dark:text-gray-400 dark:hover:text-red-300 dark:hover:bg-red-900/50"
         >
           <span>⏻</span> Logout
         </button>
@@ -593,27 +669,31 @@
     <div class="main_layout_wrapper flex flex-1 overflow-hidden">
 
       <div
-        :class="isSidebarOpen ? 'w-80' : 'w-0'"
+        :class="isSidebarOpen ?
+        'w-80' 
+        : 'w-0'"
         class="sidebar_animation_wrapper
-      relative z-20 shrink-0 transition-all
-      duration-300 ease-in-out bg-white dark:bg-slate-800"
+        relative z-20 shrink-0 transition-all
+        duration-300 ease-in-out bg-white dark:bg-slate-800"
       >
 
         <button
           @click="isSidebarOpen = !isSidebarOpen"
           class="sidebar_toggle_btn
-        absolute -right-3 top-20 w-6 h-6 bg-slate-500 border border-slate-200
-        dark:border-slate-600 dark:bg-slate-500 rounded-full shadow-md z-50 flex items-center
-        justify-center cursor-pointer text-slate-100 dark:text-slate-900
-        transform transition-transform duration-300 focus:outline-none"
-          :class="isSidebarOpen ? 'rotate-0' : 'rotate-180'"
+          absolute -right-3 top-20 w-6 h-6 bg-slate-500 border border-slate-200
+          dark:border-slate-600 dark:bg-slate-500 rounded-full shadow-md z-50 flex items-center
+          justify-center cursor-pointer text-slate-100 dark:text-slate-900
+          transform transition-transform duration-300 focus:outline-none"
+          :class="isSidebarOpen ?
+          'rotate-0' 
+          : 'rotate-180'"
           title="Toggle Sidebar"
         >
           <span class="text-[14px] leading-none font-bold">↔</span>
         </button>
 
         <div class="sidebar_content_clipper h-full w-full overflow-hidden flex flex-col
-        border-r border-slate-200 dark:border-slate-700">
+              border-r border-slate-200 dark:border-slate-700">
 
           <div class="sidebar_inner_content w-80 h-full overflow-y-auto custom-scrollbar flex flex-col p-4">
 
@@ -626,12 +706,14 @@
                 class="flex justify-between items-center cursor-pointer mb-3 group select-none"
               >
                 <h3 class="sidebar_section_title text-xs font-bold text-gray-400 uppercase
-                tracking-wider group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors">
+                    tracking-wider group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors">
                   🚀 Actions
                 </h3>
                 <span
                   class="text-gray-400 text-[14px] font-bold transition-transform duration-200"
-                  :class="open ? 'rotate-90' : 'rotate-0'"
+                  :class="open ?
+                  'rotate-90' 
+                  : 'rotate-0'"
                 >›</span>
               </div>
 
@@ -652,15 +734,17 @@
                     class="sidebar_upload_dropzone_container"
                   >
                     <label class="sidebar_upload_dropzone flex flex-col items-center justify-center w-full h-12
-                    border-2 border-dashed border-blue-300 rounded-lg cursor-pointer bg-blue-50/50
-                    hover:bg-blue-100 hover:border-blue-400 transition-all dark:bg-slate-800
-                    dark:border-slate-600 dark:hover:border-blue-500 dark:hover:bg-slate-700 group">
-
-                      <div class="flex flex-col items-center justify-center pt-2 pb-3">
+                      border-2 border-dashed border-blue-300 rounded-lg cursor-pointer bg-blue-50/50
+                      hover:bg-blue-100 hover:border-blue-400 transition-all dark:bg-slate-800
+                      dark:border-slate-600 dark:hover:border-blue-500 dark:hover:bg-slate-700 group relative">
+                      <div
+                        x-show="!ui_UploadStatusMessage"
+                        class="flex flex-col items-center justify-center pt-1 pb-1"
+                      >
                         <div class="mb-1 text-blue-400 group-hover:text-blue-600 group-hover:scale-110
-                        transition-transform dark:text-slate-400 dark:group-hover:text-blue-400">
+                        transition-transform dark:text-slate-400 dark:group-hover:text-white">
                           <svg
-                            class="w-4 h-4"
+                            class="w-4 h-3"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -675,8 +759,19 @@
                             </path>
                           </svg>
                         </div>
-                        <p class="text-[10px] font-bold text-slate-600 group-hover:text-blue-700 dark:text-slate-300">
-                          Upload Data</p>
+                        <p class="text-[12px] font-bold text-slate-600 group-hover:text-white dark:text-slate-300">
+                          Upload Data
+                        </p>
+                      </div>
+                      <div
+                        x-show="ui_UploadStatusMessage"
+                        class="absolute inset-0 flex items-center justify-center p-1"
+                      >
+                        <p
+                          x-text="ui_UploadStatusMessage"
+                          class="text-[12px] font-bold text-blue-600 dark:text-blue-400 animate-pulse text-center leading-tight"
+                        >
+                        </p>
                       </div>
                       <input
                         type="file"
@@ -685,24 +780,17 @@
                         accept=".xlsb, .xlsx"
                       />
                     </label>
-                    <div class="sidebar_status_msg_container min-h-[16px] mt-1 text-center">
-                      <p
-                        x-text="setUiStatusMessage"
-                        class="sidebar_status_msg text-[12px] text-blue-600 font-bold animate-pulse"
-                        x-show="setUiStatusMessage"
-                      ></p>
-                    </div>
                   </div>
 
                   <div
                     x-show="stagingData_Object"
                     class="sidebar_staging_review_panel
-                  bg-white border border-slate-200 rounded-lg shadow-sm
-                  overflow-hidden dark:bg-slate-800 dark:border-slate-600"
+                    bg-white border border-slate-200 rounded-lg shadow-sm
+                    overflow-hidden dark:bg-slate-800 dark:border-slate-600"
                     style="display: none;"
                   >
                     <div class="sidebar_staging_header bg-amber-50 px-3 py-2 border-b border-amber-100
-                    dark:bg-amber-900/20 dark:border-amber-800/50 flex items-center justify-between">
+                          dark:bg-amber-900/20 dark:border-amber-800/50 flex items-center justify-between">
                       <span class="text-[12px] font-bold text-amber-700 dark:text-amber-500">
                         ⚠️ Review Changes
                       </span>
@@ -711,7 +799,7 @@
                     <div class="p-3">
                       <p
                         class="sidebar_staging_filename text-[12px] text-slate-500 mb-3 truncate font-mono
-                    bg-slate-100 p-1 rounded dark:bg-slate-900 dark:text-slate-400"
+                        bg-slate-100 p-1 rounded dark:bg-slate-900 dark:text-slate-400"
                         x-text="stagingData_Object?.filename"
                       ></p>
                       <div class="sidebar_staging_stats_grid grid grid-cols-3 gap-2 mb-3 text-center">
@@ -726,7 +814,7 @@
                           >0</span>
                         </div>
                         <div class="stat_box_mod flex flex-col border border-blue-200 bg-blue-50 rounded
-                        p-1 dark:bg-blue-900/20 dark:border-blue-800">
+                              p-1 dark:bg-blue-900/20 dark:border-blue-800">
                           <span class="text-[9px] text-blue-700 font-bold dark:text-blue-400">
                             MOD
                           </span>
@@ -736,7 +824,7 @@
                           >0</span>
                         </div>
                         <div class="stat_box_del flex flex-col border border-red-200 bg-red-50 rounded
-                        p-1 dark:bg-red-900/20 dark:border-red-800">
+                              p-1 dark:bg-red-900/20 dark:border-red-800">
                           <span class="text-[9px] text-red-700 font-bold dark:text-red-400">
                             DEL
                           </span>
@@ -750,17 +838,17 @@
                         <button
                           @click="action_CommitStagedData_ToDB"
                           class="sidebar_btn_commit flex-1
-                        bg-slate-800 text-white py-1.5 rounded text-[12px]
-                        font-bold hover:bg-slate-900 shadow-sm transition dark:bg-blue-600 dark:hover:bg-blue-500"
+                          bg-slate-800 text-white py-1.5 rounded text-[12px]
+                          font-bold hover:bg-slate-900 shadow-sm transition dark:bg-blue-600 dark:hover:bg-blue-500"
                         >
                           Commit to DB
                         </button>
                         <button
                           @click="stagingData_Object = null; setUiStatusMessage=''"
                           class="sidebar_btn_cancel
-                        px-3 border border-slate-300 text-slate-600 rounded
-                        text-[12px] font-bold hover:bg-slate-50 transition dark:border-slate-600
-                        dark:text-slate-300 dark:hover:bg-slate-700"
+                          px-3 border border-slate-300 text-slate-600 rounded
+                          text-[12px] font-bold hover:bg-slate-50 transition dark:border-slate-600
+                          dark:text-slate-300 dark:hover:bg-slate-700"
                         >
                           Cancel
                         </button>
@@ -771,12 +859,27 @@
                   <button
                     @click="action_DownloadToExcel"
                     class="sidebar_btn_download_excel w-full border
-                  border-green-600 text-green-700 bg-green-50
-                  py-2 rounded text-xs font-bold hover:bg-green-100 transition flex justify-center
-                  items-center gap-2 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800
-                  dark:hover:bg-green-900/40"
+                    border-green-600 bg-green-50
+                    py-3 rounded text-xs font-bold hover:bg-green-100 transition flex justify-center
+                    items-center gap-2 dark:bg-green-900/20 dark:border-green-800
+                    dark:hover:bg-green-900/40 min-h-[42px]"
+                    :class="ui_DownloadStatusMessage ?
+                    'text-green-600 dark:text-green-400 cursor-wait' 
+                    : 'text-green-700 dark:text-green-400'"
+                    :disabled="!!ui_DownloadStatusMessage"
                   >
-                    <span>📥</span> Download Excel
+                    <template x-if="!ui_DownloadStatusMessage">
+                      <div class="flex items-center gap-2">
+                        <span>📥</span> Download Excel
+                      </div>
+                    </template>
+
+                    <template x-if="ui_DownloadStatusMessage">
+                      <span
+                        x-text="ui_DownloadStatusMessage"
+                        class="animate-pulse truncate px-1"
+                      ></span>
+                    </template>
                   </button>
                 </div>
               </div>
@@ -796,7 +899,9 @@
                 </h3>
                 <span
                   class="text-gray-400 text-[14px] font-bold transition-transform duration-200"
-                  :class="open ? 'rotate-90' : 'rotate-0'"
+                  :class="open ?
+                  'rotate-90' 
+                  : 'rotate-0'"
                 >›</span>
               </div>
 
@@ -808,18 +913,18 @@
                   <textarea
                     x-model="filter_DeleteListInput"
                     class="sidebar_input_delete_ids w-full
-                  border border-red-200 p-2 rounded text-xs
-                  h-16 font-mono focus:border-red-500 focus:ring-1 focus:ring-red-200 outline-none
-                  text-gray-700 dark:bg-slate-900 dark:border-red-900/50 dark:text-red-100 dark:placeholder-red-100/50"
+                    border border-red-200 p-2 rounded text-xs
+                    h-16 font-mono focus:border-red-500 focus:ring-1 focus:ring-red-200 outline-none
+                    text-gray-700 dark:bg-slate-900 dark:border-red-900/50 dark:text-red-100 dark:placeholder-red-100/50"
                     placeholder="Paste IDs here to drop from Live view..."
                   ></textarea>
                 </div>
                 <button
                   @click="action_SoftDeleteIDs_FromDB"
                   class="sidebar_btn_confirm_delete w-full
-                bg-red-50 text-red-600 border border-red-200
-                py-1.5 rounded text-xs font-bold hover:bg-red-100 hover:text-red-700 transition
-                dark:bg-red-900/20 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/40"
+                  bg-red-50 text-red-600 border border-red-200
+                  py-1.5 rounded text-xs font-bold hover:bg-red-100 hover:text-red-700 transition
+                  dark:bg-red-900/20 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/40"
                 >
                   Confirm Delete
                 </button>
@@ -840,7 +945,9 @@
                 </h3>
                 <span
                   class="text-gray-400 text-[14px] font-bold transition-transform duration-200"
-                  :class="open ? 'rotate-90' : 'rotate-0'"
+                  :class="open ?
+                  'rotate-90' 
+                  : 'rotate-0'"
                 >›</span>
               </div>
 
@@ -852,8 +959,8 @@
                   @click="ui_LoadVersion('')"
                   class="cursor-pointer mb-2 p-2 rounded border transition-colors flex justify-between items-center"
                   :class="!filter_SelectedVersion ?
-                'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800' 
-                : 'bg-white border-gray-200 hover:bg-gray-50 dark:bg-slate-800 dark:border-slate-600'"
+                  'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800' 
+                  : 'bg-white border-gray-200 hover:bg-gray-50 dark:bg-slate-800 dark:border-slate-600'"
                 >
                   <span
                     class="text-xs font-bold"
@@ -875,9 +982,9 @@
                   x-model="targetYear"
                   @change="action_YearChanged"
                   class="sidebar_select_year
-                w-full border border-blue-300 mb-2 p-2 rounded text-xs
-                bg-blue-50 focus:ring-1 focus:ring-blue-500 outline-none text-blue-900 font-bold
-                dark:bg-slate-900 dark:border-slate-600 dark:text-blue-400"
+                  w-full border border-blue-300 mb-2 p-2 rounded text-xs
+                  bg-blue-50 focus:ring-1 focus:ring-blue-500 outline-none text-blue-900 font-bold
+                  dark:bg-slate-900 dark:border-slate-600 dark:text-blue-400"
                 >
                   <template
                     x-for="y in availableYears"
@@ -927,8 +1034,8 @@
                           <button
                             @click="ui_ToggleHistoryDetails(v.ts)"
                             class="px-2 py-1 text-[10px]
-                          font-bold rounded border border-gray-300 text-gray-500 hover:bg-gray-100 dark:border-slate-600 dark:text-slate-400
-                          dark:hover:bg-slate-700"
+                            font-bold rounded border border-gray-300 text-gray-500 hover:bg-gray-100 dark:border-slate-600 dark:text-slate-400
+                            dark:hover:bg-slate-700"
                             x-text="history_OpenDetailsId === v.ts ?
                           'Hide' 
                           : 'Details'"
@@ -956,13 +1063,13 @@
                         >
 
                           <div class="flex flex-col border border-green-200 bg-green-50 rounded p-1
-                          dark:bg-green-900/20 dark:border-green-800">
+                                dark:bg-green-900/20 dark:border-green-800">
                             <span class="text-[9px] font-bold text-green-700 dark:text-green-400">
                               ADD
                             </span>
                             <span
                               class="text-xs font-mono font-bold text-slate-700 dark:text-slate-200"
-                              x-text="(history_DiffCache[v.ts] || []).filter(x => x.type === 'ADD').length"
+                              x-text="history_DiffCache[v.ts]?.ui_stats?.ADD || 0"
                             >0</span>
                           </div>
 
@@ -974,7 +1081,7 @@
                             </span>
                             <span
                               class="text-xs font-mono font-bold text-slate-700 dark:text-slate-200"
-                              x-text="(history_DiffCache[v.ts] || []).filter(x => x.type === 'MOD').length"
+                              x-text="history_DiffCache[v.ts]?.ui_stats?.MOD || 0"
                             >0</span>
                           </div>
 
@@ -986,7 +1093,7 @@
                             </span>
                             <span
                               class="text-xs font-mono font-bold text-slate-700 dark:text-slate-200"
-                              x-text="(history_DiffCache[v.ts] || []).filter(x => x.type === 'DEL').length"
+                              x-text="history_DiffCache[v.ts]?.ui_stats?.DEL || 0"
                             >0</span>
                           </div>
                         </div>
@@ -1042,12 +1149,14 @@
                 class="flex justify-between items-center cursor-pointer mb-3 group select-none"
               >
                 <h3 class="sidebar_section_title text-xs font-bold text-gray-400 uppercase tracking-wider
-                group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors">
+                    group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors">
                   📍 Location
                 </h3>
                 <span
                   class="text-gray-400 text-[14px] font-bold transition-transform duration-200"
-                  :class="open ? 'rotate-90' : 'rotate-0'"
+                  :class="open ?
+                  'rotate-90' 
+                  : 'rotate-0'"
                 >›</span>
               </div>
 
@@ -1088,8 +1197,8 @@
                     x-model="filter_SelKab"
                     @change="filter_SelKec=''; fetch_MainGridData_FromAPI()"
                     class="sidebar_select_kab
-                  w-full border p-1.5 rounded text-xs bg-white
-                  focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
+                    w-full border p-1.5 rounded text-xs bg-white
+                    focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
                     :disabled="!filter_SelProv"
                     :class="{'bg-gray-100 dark:bg-slate-800': !filter_SelProv}"
                   >
@@ -1114,8 +1223,8 @@
                     x-model="filter_SelKec"
                     @change="fetch_MainGridData_FromAPI"
                     class="sidebar_select_kec
-                  w-full border p-1.5 rounded text-xs bg-white
-                  focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
+                    w-full border p-1.5 rounded text-xs bg-white
+                    focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
                     :disabled="!filter_SelKab"
                     :class="{'bg-gray-100 dark:bg-slate-800': !filter_SelKab}"
                   >
@@ -1137,8 +1246,8 @@
                     type="text"
                     x-model="filter_NameSearch"
                     class="sidebar_input_search_name
-                  w-full border p-2 rounded text-xs focus:border-blue-500
-                  outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
+                    w-full border p-2 rounded text-xs focus:border-blue-500
+                    outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
                     placeholder="Search Desa Name..."
                   >
                 </div>
@@ -1146,16 +1255,16 @@
                   <textarea
                     x-model="filter_IdListInput"
                     class="sidebar_input_search_ids
-                  w-full mb-2 border p-2 rounded text-xs h-20 font-mono
-                  focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
+                    w-full mb-2 border p-2 rounded text-xs h-20 font-mono
+                    focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
                     placeholder="Paste IDs here (comma or newline separated) to search by ID Desa..."
                   ></textarea>
                 </div>
                 <button
                   @click="fetch_MainGridData_FromAPI"
                   class="sidebar_btn_apply_filter
-                w-full bg-slate-400 text-white py-2 rounded text-xs
-                font-bold hover:bg-slate-800 transition shadow-sm dark:bg-slate-600 dark:hover:bg-slate-500"
+                  w-full bg-slate-500 text-white py-2 rounded text-xs
+                  font-bold hover:bg-slate-800 transition shadow-sm dark:bg-slate-600 dark:hover:bg-slate-500"
                 >
                   Apply Filters
                 </button>
@@ -1213,13 +1322,18 @@
           isTableStructureLoaded: false,
           ui_FreezeColCount: 0,
 
+          // --- MODALS & MESSAGES ---
+          ui_ShowDownloadModal: false,
+          ui_DownloadStatusMessage: "",
+          setUiStatusMessage: "",
+          ui_UploadStatusMessage: "",
+
           // --- DATA STORAGE ---
           meta_VersionsList: [], // From /history/versions
           meta_HierarchyTree: {}, // From /history/versions (used for dropdowns)
           stagingData_Object: null, // Stores uploaded file analysis
           agGridApiInstance: null, // AG Grid Object
           meta_ColumnList: [],
-
           history_OpenDetailsId: null, // Tracks which card is expanded
           history_DiffCache: {},       // Caches diffs so we don't re-fetch on every toggle
 
@@ -1236,7 +1350,41 @@
           // --- UI DISPLAY STATS ---
           stats_TotalRows: "0",
           stats_LastUpdateLabel: "N/A",
-          setUiStatusMessage: "",
+
+          // --- CUSTOM ALERT STATE ---
+          ui_AlertState: {
+            isOpen: false,
+            type: 'info', // 'info', 'success', 'error', 'confirm'
+            title: '',
+            message: '',
+            confirmCallback: null // Function to run if user clicks "Yes"
+          },
+
+          // --- REUSABLE HELPERS ---
+          util_Alert(title, message, type = 'info') {
+            this.ui_AlertState = {
+              isOpen: true,
+              type: type,
+              title: title,
+              message: message,
+              confirmCallback: null
+            };
+          },
+          util_Confirm(title, message, callback) {
+            this.ui_AlertState = {
+              isOpen: true,
+              type: 'confirm',
+              title: title,
+              message: message,
+              confirmCallback: callback
+            };
+          },
+          action_ConfirmModal() {
+            if (this.ui_AlertState.confirmCallback) {
+              this.ui_AlertState.confirmCallback();
+            }
+            this.ui_AlertState.isOpen = false;
+          },
 
           // ============================================
           // INITIALIZATION
@@ -1250,6 +1398,28 @@
           ui_ToggleDarkMode() {
             this.isDarkModeEnabled = !this.isDarkModeEnabled;
             localStorage.setItem('theme', this.isDarkModeEnabled ? 'dark' : 'light');
+          },
+
+          // ============================================
+          // FREEZE CONTROLS (Scroll/Btn)
+          // ============================================
+          ui_Freeze_Inc() {
+            if (this.ui_FreezeColCount < 6) {
+              this.ui_FreezeColCount++;
+              this.ui_ApplyFreeze();
+            }
+          },
+          ui_Freeze_Dec() {
+            if (this.ui_FreezeColCount > 0) {
+              this.ui_FreezeColCount--;
+              this.ui_ApplyFreeze();
+            }
+          },
+          ui_Freeze_Scroll(e) {
+            // DeltaY > 0 means scrolling down (Decrement)
+            // DeltaY < 0 means scrolling up (Increment)
+            if (e.deltaY < 0) this.ui_Freeze_Inc();
+            else this.ui_Freeze_Dec();
           },
 
           // ============================================
@@ -1274,7 +1444,7 @@
             // APPLY TO DASHBOARD HTML TABLE
             const table = document.getElementById('dashboard_table_element');
             if (table) {
-              // A. Reset all sticky styles first
+              // Reset all sticky styles first
               table.querySelectorAll('.sticky-col').forEach(el => {
                 el.style.position = '';
                 el.style.left = '';
@@ -1372,28 +1542,38 @@
 
           // Fetch & Toggle Details
           async ui_ToggleHistoryDetails(ts) {
-            // If clicking same one, close it
             if (this.history_OpenDetailsId === ts) {
               this.history_OpenDetailsId = null;
               return;
             }
-
             this.history_OpenDetailsId = ts;
 
-            // If already cached, don't fetch
             if (this.history_DiffCache[ts]) return;
 
             try {
-              // Use targetYear
-              // Added credentials to all fetch calls
               let res = await fetch(`${this.apiBaseUrl}/history/details/${this.targetYear}?version=${ts}`, {credentials: 'include'});
               let data = await res.json();
 
-              // Save to cache
-              this.history_DiffCache[ts] = data.changes || [];
+              let changes = data.changes || [];
+
+              // Helper to format count: returns ">9999" if limit hit
+              const getCount = (type) => {
+                const count = changes.filter(x => x.type === type).length;
+                return count >= 9999 ? '>9999' : count;
+              };
+
+              // Attach stats to the array property (safe, won't affect x-for loops)
+              changes.ui_stats = {
+                ADD: getCount('ADD'),
+                MOD: getCount('MOD'),
+                DEL: getCount('DEL')
+              };
+
+              this.history_DiffCache[ts] = changes;
+
             } catch (e) {
               console.error(e);
-              alert("Failed to load details");
+              this.util_Alert("Error", "Failed to load history details.", "error");
             }
           },
 
@@ -1605,7 +1785,9 @@
               this.constructDashboardTableDOM(data);
               this.isTableStructureLoaded = true;
               this.calculate_DashboardStats_FromAPI();
-            } catch (e) {alert(e.message);}
+            } catch (e) {
+              this.util_Alert("Config Error", e.message, "error");
+            }
           },
 
           constructDashboardTableDOM(dataRows) {
@@ -1781,7 +1963,7 @@
             if (!file) return;
 
             // Reset UI
-            this.setUiStatusMessage = "Preparing...";
+            this.ui_UploadStatusMessage = "Preparing...";
             this.stagingData_Object = null;
 
             try {
@@ -1792,7 +1974,7 @@
               let fileHash = localStorage.getItem(cacheKey);
 
               if (!fileHash) {
-                this.setUiStatusMessage = "Hashing file (Integrity Check)...";
+                this.ui_UploadStatusMessage = "Hashing file...";
                 fileHash = await this.helpers_compute_md5(file);
                 try {localStorage.setItem(cacheKey, fileHash);} catch (e) { } // Save for next refresh
               }
@@ -1800,8 +1982,7 @@
               // Generate the Unique ID for the server
               // If you refresh and pick this file again, this ID stays the same, so server finds the .tmp file.
               const fileUid = `${fileHash}_${file.size}_${file.lastModified}`;
-
-              this.setUiStatusMessage = "Checking server resume status...";
+              this.ui_UploadStatusMessage = "Checking server...";
 
               // Query server: "Do you have this file?"
               // Added credentials
@@ -1820,7 +2001,7 @@
 
               if (initData.status === "exists") {
                 // File already fully uploaded on server, jump to processing
-                this.setUiStatusMessage = "File exists. Processing...";
+                this.ui_UploadStatusMessage = "File exists. Processing...";
                 await this.helpers_finalize_upload(initData.upload_id, file.name, fileHash);
                 e.target.value = null;
                 return;
@@ -1838,7 +2019,7 @@
                 // Example: "Uploading: 12.50 / 50.00 MB (25%)"
                 const currentMB = (offset / (1024 * 1024)).toFixed(2);
                 const percent = Math.round((offset / file.size) * 100);
-                this.setUiStatusMessage = `Uploading: ${currentMB} / ${totalSizeMB} MB (${percent}%)`;
+                this.ui_UploadStatusMessage = `Uploading: ${currentMB} / ${totalSizeMB} MB (${percent}%)`;
 
                 // Retry Loop for current chunk
                 let retries = 5;
@@ -1871,11 +2052,11 @@
                   }
                 }
 
-                if (!chunkSuccess) throw new Error("Connection unstable. Upload failed after retries.");
+                if (!chunkSuccess) throw new Error("Upload failed");
               }
 
               // Finalize & Process
-              this.setUiStatusMessage = "Verifying & Analyzing...";
+              this.ui_UploadStatusMessage = "Verifying...";
               await this.helpers_finalize_upload(initData.upload_id, file.name, fileHash);
 
               // Success
@@ -1883,7 +2064,7 @@
 
             } catch (err) {
               console.error(err);
-              this.setUiStatusMessage = "❌ " + (err.message || "Upload Failed");
+              this.ui_UploadStatusMessage = "❌ " + (err.message || "Failed");
             }
           },
 
@@ -1904,7 +2085,7 @@
 
             if (d.status === "staged") {
               this.stagingData_Object = d;
-              this.setUiStatusMessage = "";
+              this.ui_UploadStatusMessage = "";
             } else {
               throw new Error(d.error || "Processing failed");
             }
@@ -1926,7 +2107,7 @@
 
           async action_CommitStagedData_ToDB() {
             if (!this.stagingData_Object) return;
-            this.setUiStatusMessage = "Saving...";
+            this.ui_UploadStatusMessage = "Saving...";
             let p = new URLSearchParams({
               staging_id: this.stagingData_Object.staging_id,
               filename: this.stagingData_Object.filename
@@ -1940,12 +2121,17 @@
               });
               let d = await res.json();
               if (d.status === "success") {
-                alert("✅ Saved Successfully!");
+                this.util_Alert("Success", "✅ Data committed to database successfully!", "success");
                 this.stagingData_Object = null;
+                this.ui_UploadStatusMessage = "";
                 this.fetchVersionHistoryAndHierarchy();
                 this.fetch_MainGridData_FromAPI();
-              } else alert("❌ Fail: " + d.error);
-            } catch (err) {alert("❌ Commit Error");}
+              } else {
+                this.util_Alert("Commit Failed", "❌ " + d.error, "error");
+              }
+            } catch (err) {
+              this.util_Alert("System Error", "❌ Could not connect to commit endpoint.", "error");
+            }
           },
 
           // ============================================
@@ -1956,7 +2142,6 @@
             // Only calculate. If view is grid, just calculate in background
             // to keep data ready still calculate. 
 
-            this.setUiStatusMessage = "Calculating...";
             // Only clear/show loading if the table actually exists
             const tbody = document.querySelector('#dashboard_table_element tbody');
             if (tbody) tbody.innerHTML = '<tr><td colspan="100" class="text-center p-4">Calculating...</td></tr>';
@@ -1981,11 +2166,12 @@
 
               let data = await res.json();
               this.constructDashboardTableDOM(data);
-              this.setUiStatusMessage = "✅ Done";
               this.isTableStructureLoaded = true;
             } catch (e) {
               // Only alert if we are actually looking at the dashboard
-              if (this.viewModeState === 'dashboard') alert("Error: " + e.message);
+              if (this.viewModeState === 'dashboard') {
+                this.util_Alert("Calculation Error", "❌ " + e.message, "error");
+              }
               console.error(e);
               this.setUiStatusMessage = "❌ Error";
             }
@@ -1998,102 +2184,506 @@
           },
 
           // ============================================
-          // ACTIONS: EXPORT & DELETE
+          // ACTIONS: EXPORT/DOWNLOADS
           // ============================================
-          // Still failed to save filters, need a way to better way to do it
           async action_DownloadToExcel() {
-            this.setUiStatusMessage = "Preparing download...";
-
-            try {
-              const wb = XLSX.utils.book_new();
-
-              // SHEET 1: GRID
-              let gridData = [];
-              if (this.agGridApiInstance) {
-                // Use 'forEachNodeAfterFilterAndSort' to respect BOTH Filter AND Sort order
-                this.agGridApiInstance.forEachNodeAfterFilter(node => {
-                  gridData.push(node.data);
-                });
-              }
-
-              if (gridData.length === 0) {
-                throw new Error("No data found in current filter view.");
-              }
-
-              const ws_grid = XLSX.utils.json_to_sheet(gridData);
-              XLSX.utils.book_append_sheet(wb, ws_grid, "Grid (Filtered)");
-
-              // SHEET 2: DASHBOARD
-              const dashTable = document.getElementById('dashboard_table_element');
-              if (dashTable && dashTable.querySelector('tbody tr')) {
-                // Clone table to avoid modifying the original
-                const tableClone = dashTable.cloneNode(true);
-
-                // Replace all inputs/textareas with their values
-                tableClone.querySelectorAll('input, textarea').forEach(input => {
-                  const span = document.createElement('span');
-                  span.textContent = input.value;
-                  input.parentNode.replaceChild(span, input);
-                });
-
-                const ws_dash = XLSX.utils.table_to_sheet(tableClone, {raw: true});
-                XLSX.utils.book_append_sheet(wb, ws_dash, "Dashboard");
-              }
-
-              // Download
-              XLSX.writeFile(wb, `export_${this.targetYear}_${new Date().toISOString().split('T')[0]}.xlsx`);
-
-              this.setUiStatusMessage = "✅ Downloaded";
-              setTimeout(() => this.setUiStatusMessage = "", 2000);
-
-            } catch (error) {
-              console.error('Download error:', error);
-              this.setUiStatusMessage = "❌ Download failed";
-              alert('Download failed: ' + error.message);
+            // SCENARIO 1: User has already filtered a specific province
+            // Just download that one file normally.
+            if (this.filter_SelProv) {
+              this.ui_DownloadStatusMessage = "Downloading current view...";
+              await this.util_GenerateAndDownloadExcel(this.filter_SelProv, `Export_${this.filter_SelProv}`);
+              this.ui_DownloadStatusMessage = "";
+              return;
             }
+
+            // SCENARIO 2: Dataset huge -> Show Custom Modal
+            this.ui_ShowDownloadModal = true;
           },
 
-          async action_SoftDeleteIDs_FromDB() {
-            if (!this.filter_DeleteListInput.trim()) return alert("Please enter IDs to delete.");
+          // --- Modal Handlers ---
+          ui_DownloadModal_AllProvinces() {
+            this.ui_ShowDownloadModal = false;
+            this.util_DownloadAllProvinces();
+          },
 
-            if (!confirm("⚠️ Are you sure?")) return;
+          ui_DownloadModal_DashboardOnly() {
+            this.ui_ShowDownloadModal = false;
+            this.util_DownloadDashboardOnly();
+          },
 
-            this.setUiStatusMessage = "Deleting...";
+          // OPTION A: Batch Download Loop
+          async util_DownloadAllProvinces() {
+            // Get list of all provinces from hierarchy
+            const provinces = Object.keys(this.meta_HierarchyTree).sort();
+            if (provinces.length === 0) {
+              this.util_Alert("Not Ready", "Province data not loaded. Please wait or refresh.", "info");
+              return;
+            }
 
-            let params = new URLSearchParams();
-            params.append("ids", this.filter_DeleteListInput);
-            params.append("summary", "User deleted from dashboard");
+            let dirHandle = null;
 
+            // Try to open "Spawn Explorer" (Folder Picker)
             try {
-              // Use targetYear
-              // Added credentials
-              let res = await fetch(`${this.apiBaseUrl}/delete/${this.targetYear}?${params}`, {
-                method: "POST",
-                credentials: 'include'
-              });
-              let data = await res.json();
-
-              if (data.status === "success") {
-                alert(`✅ Deleted ${data.deleted_count} records.\nIDs: ${data.deleted_ids.join(", ")}`);
-                this.filter_DeleteListInput = "";
-                this.fetchVersionHistoryAndHierarchy();
-                this.fetch_MainGridData_FromAPI();
-                this.setUiStatusMessage = "";
-              } else if (data.status === "warning") {
-                // This is likely what is happening now
-                alert("��️ Server Warning: " + data.message);
-                this.setUiStatusMessage = "⚠️ ID Not Found";
-              } else {
-                alert("❌ Error: " + (data.error || "Unknown error"));
+              // This command opens the system directory chooser (Dolphin/Finder/Explorer)
+              if (window.showDirectoryPicker) {
+                dirHandle = await window.showDirectoryPicker();
               }
             } catch (e) {
-              console.error(e);
-              alert("❌ Connection Error");
+              // User clicked cancel or browser blocked it
+              if (e.name === 'AbortError') return; // User cancelled
+              console.warn("Folder picker not supported, falling back to standard download.");
             }
+
+            // Loop and Save
+            for (let i = 0; i < provinces.length; i++) {
+              const prov = provinces[i];
+              const filename = `Export_${prov}.xlsx`;
+
+              this.ui_DownloadStatusMessage = `Saving ${i + 1}/${provinces.length}: ${prov}...`;
+
+              try {
+                // Step A: Generate the Workbook Data
+                const wb = await this.util_GenerateWorkbookObject(prov);
+
+                if (dirHandle) {
+                  // MODERN WAY: Write directly to selected folder
+                  const fileHandle = await dirHandle.getFileHandle(filename, {create: true});
+                  const writable = await fileHandle.createWritable();
+                  // Write binary array
+                  const buffer = XLSX.write(wb, {bookType: 'xlsx', type: 'array'});
+                  await writable.write(buffer);
+                  await writable.close();
+                } else {
+                  // OLD WAY: Fallback to individual downloads
+                  XLSX.writeFile(wb, filename);
+                  await new Promise(r => setTimeout(r, 1000)); // Pause to prevent crash
+                }
+
+              } catch (e) {
+                console.error(`Failed to download ${prov}`, e);
+              }
+            }
+
+            this.ui_DownloadStatusMessage = "✅ All Downloads Complete";
+            setTimeout(() => this.ui_DownloadStatusMessage = "", 4000);
+          },
+
+          // Helper 1: Just GENERATE the workbook (Don't save yet)
+          async util_GenerateWorkbookObject(provinceName) {
+            // Setup Filters (Force the province scope)
+            let params = new URLSearchParams({
+              limit: 1000000,
+              translate: this.isTranslationActive,
+              Provinsi: provinceName
+            });
+            // Include Sidebar Filters in Download
+            if (this.filter_SelKab) params.append("Kabupaten/ Kota", this.filter_SelKab);
+            if (this.filter_SelKec) params.append("Kecamatan", this.filter_SelKec);
+            if (this.filter_NameSearch) params.append("Desa", this.filter_NameSearch);
+
+            // Keep version if selected
+            if (this.filter_SelectedVersion) params.append("version", this.filter_SelectedVersion);
+            // Keep IDs if pasted
+            if (this.filter_IdListInput.trim()) params.append("ids", this.filter_IdListInput.replace(/\n/g, ";"));
+
+            const wb = XLSX.utils.book_new();
+
+            // Sheet 1: Grid
+            let resGrid = await fetch(`${this.apiBaseUrl}/query/${this.targetYear}?${params}`, {credentials: 'include'});
+            if (!resGrid.ok) throw new Error("Grid fetch failed");
+            let gridData = await resGrid.json();
+
+            if (!gridData || gridData.length === 0) gridData = [{"Status": "No Data"}];
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(gridData), "Grid Data");
+
+            // Sheet 2: Dashboard
+            let resDash = await fetch(`${this.apiBaseUrl}/dashboard/calculate/${this.targetYear}?${params}`, {
+              method: "POST",
+              credentials: 'include'
+            });
+            if (resDash.ok) {
+              let dashData = await resDash.json();
+              XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dashData), "Dashboard");
+            }
+
+            return wb;
+          },
+
+          // OPTION B: Dashboard Only (Visual Dump)
+          util_DownloadDashboardOnly() {
+            this.ui_DownloadStatusMessage = "Exporting Dashboard...";
+            const dashTable = document.getElementById('dashboard_table_element');
+
+            if (!dashTable || !dashTable.querySelector('tbody tr')) {
+              this.util_Alert("Empty Dashboard", "Dashboard is empty. Please switch to Dashboard view and render it first.", "info");
+              this.ui_DownloadStatusMessage = "";
+              return;
+            }
+
+            const wb = XLSX.utils.book_new();
+
+            // Clone table to capture inputs correctly
+            const tableClone = dashTable.cloneNode(true);
+            tableClone.querySelectorAll('input, textarea').forEach(input => {
+              const span = document.createElement('span');
+              span.textContent = input.value;
+              if (input.parentNode) input.parentNode.replaceChild(span, input);
+            });
+
+            const ws = XLSX.utils.table_to_sheet(tableClone, {raw: true});
+            XLSX.utils.book_append_sheet(wb, ws, "Dashboard");
+
+            XLSX.writeFile(wb, `export_all_provinsi_dashboard_${this.targetYear}.xlsx`);
+            this.ui_DownloadStatusMessage = "✅ Done";
+            setTimeout(() => this.ui_DownloadStatusMessage = "", 2000);
+          },
+
+          // HELPER: Generates 1 Excel File with 2 Sheets (Grid + Stats)
+          async util_GenerateWorkbookObject(provinceName) {
+            let params = new URLSearchParams({
+              limit: 1000000,
+              translate: this.isTranslationActive,
+              Provinsi: provinceName
+            });
+            if (this.filter_SelectedVersion) params.append("version", this.filter_SelectedVersion);
+            if (this.filter_IdListInput.trim()) params.append("ids", this.filter_IdListInput.replace(/\n/g, ";"));
+
+            const wb = XLSX.utils.book_new();
+
+            // Sheet 1: Grid
+            let resGrid = await fetch(`${this.apiBaseUrl}/query/${this.targetYear}?${params}`, {credentials: 'include'});
+            if (!resGrid.ok) throw new Error("Grid fetch failed");
+            let gridData = await resGrid.json();
+
+            if (!gridData || gridData.length === 0) gridData = [{"Status": "No Data"}];
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(gridData), "Grid Data");
+
+            // Sheet 2: Dashboard
+            let resDash = await fetch(`${this.apiBaseUrl}/dashboard/calculate/${this.targetYear}?${params}`, {
+              method: "POST",
+              credentials: 'include'
+            });
+            if (resDash.ok) {
+              let dashData = await resDash.json();
+              XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dashData), "Dashboard");
+            }
+
+            return wb;
+          },
+
+          // ============================================
+          // ACTIONS: DELETE
+          // ============================================
+          async action_SoftDeleteIDs_FromDB() {
+            if (!this.filter_DeleteListInput.trim()) {
+              this.util_Alert("Input Required", "Please enter IDs to delete.", "info");
+              return;
+            }
+
+            // Using Callback pattern
+            this.util_Confirm(
+              "Confirm Deletion",
+              "⚠️ Are you sure you want to soft-delete these records from the live view?",
+              async () => {
+                // --- LOGIC MOVED INSIDE CALLBACK ---
+                this.setUiStatusMessage = "Deleting...";
+                let params = new URLSearchParams();
+                params.append("ids", this.filter_DeleteListInput);
+                params.append("summary", "User deleted from dashboard");
+
+                try {
+                  let res = await fetch(`${this.apiBaseUrl}/delete/${this.targetYear}?${params}`, {method: "POST", credentials: 'include'});
+                  let data = await res.json();
+
+                  if (data.status === "success") {
+                    this.util_Alert("Deleted", `✅ Deleted ${data.deleted_count} records.`, "success");
+                    this.filter_DeleteListInput = "";
+                    this.fetchVersionHistoryAndHierarchy();
+                    this.fetch_MainGridData_FromAPI();
+                    this.setUiStatusMessage = "";
+                  } else if (data.status === "warning") {
+                    this.util_Alert("Warning", "⚠️ " + data.message, "info");
+                    this.setUiStatusMessage = "⚠️ ID Not Found";
+                  } else {
+                    this.util_Alert("Error", "❌ " + (data.error || "Unknown error"), "error");
+                  }
+                } catch (e) {
+                  console.error(e);
+                  this.util_Alert("Connection Error", "Failed to reach server.", "error");
+                }
+              }
+            );
           },
         }
       }
     </script>
+
+    <div
+      x-show="ui_ShowDownloadModal"
+      style="display: none;"
+      class="fixed inset-0 z-[100] flex items-center justify-center bg-black/30 backdrop-blur-sm transition-opacity"
+      x-transition:enter="ease-out duration-200"
+      x-transition:enter-start="opacity-0"
+      x-transition:enter-end="opacity-100"
+      x-transition:leave="ease-in duration-100"
+      x-transition:leave-start="opacity-100"
+      x-transition:leave-end="opacity-0"
+    >
+
+      <div
+        class="bg-white dark:bg-slate-800 rounded-lg shadow-2xl border border-slate-200 dark:border-slate-700 w-[480px]
+        max-w-[90%] p-6 transform transition-all"
+        @click.outside="ui_ShowDownloadModal = false"
+      >
+
+        <div class="flex items-start gap-4 mb-6">
+          <div class="shrink-0 p-3 bg-amber-100 dark:bg-amber-900/30 rounded-full text-amber-600 dark:text-amber-400">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="w-6 h-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464
+                0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100 mb-1">Large Dataset Warning</h3>
+            <p class="text-[13px] text-slate-600 dark:text-slate-400 leading-relaxed">
+              Because the data is too large (will crash the browser) it will download province by province (multiple
+              files).
+            </p>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-3">
+          <button
+            @click="ui_DownloadModal_AllProvinces()"
+            class="w-full flex items-center justify-between p-3 rounded-md border border-blue-200 bg-blue-50/50
+            hover:bg-blue-100 dark:border-blue-800/50 dark:bg-blue-900/10 dark:hover:bg-blue-900/30 group transition-all"
+          >
+            <div class="flex flex-col items-start text-left">
+              <span class="font-bold text-blue-700 dark:text-blue-400 text-sm">
+                Download All Data
+              </span>
+              <span class="text-[11px] text-blue-600/70 dark:text-blue-400/70">
+                Downloads multiple files (Province by Province)
+              </span>
+            </div>
+            <span class="text-blue-400 group-hover:translate-x-1 transition-transform">→</span>
+          </button>
+
+          <button
+            @click="ui_DownloadModal_DashboardOnly()"
+            class="w-full flex items-center justify-between p-3 rounded-md border border-slate-200 bg-white
+            hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 group transition-all"
+          >
+            <div class="flex flex-col items-start text-left">
+              <span class="font-bold text-slate-700 dark:text-slate-300 text-sm">
+                Download Dashboard Only
+              </span>
+              <span class="text-[11px] text-slate-500 dark:text-slate-400">
+                Current view (HTML Table Only)
+              </span>
+            </div>
+            <span class="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
+          </button>
+
+          <button
+            @click="ui_ShowDownloadModal = false"
+            class="w-full mt-2 py-2 text-xs font-bold text-slate-400 hover:text-slate-600 dark:text-slate-500
+            dark:hover:text-slate-300 transition-colors uppercase tracking-wider"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div
+      x-data="{ localMsg: '', timeout: null }"
+      x-show="localMsg"
+      x-init="$watch('setUiStatusMessage', value => {
+          // 1. If a NEW message arrives from the app
+          if (value) {
+              clearTimeout(timeout);
+              localMsg = value; // Update display immediately
+          } 
+          // 2. If the app CLEARS the message (operation finished)
+          else {
+              // Force a 1-second delay before we actually hide the popup
+              timeout = setTimeout(() => {
+                  localMsg = '';
+              }, 1000); 
+          }
+      })"
+      x-transition:enter="transition ease-out duration-300"
+      x-transition:enter-start="opacity-0 -translate-y-4"
+      x-transition:enter-end="opacity-100 translate-y-0"
+      x-transition:leave="transition ease-in duration-200"
+      x-transition:leave-start="opacity-100 translate-y-0"
+      x-transition:leave-end="opacity-0 -translate-y-4"
+      class="fixed top-6 left-1/2 transform -translate-x-1/2 z-[150] bg-slate-800 text-white dark:bg-slate-900 
+             px-6 py-3 rounded shadow-xl flex items-center gap-3 border border-slate-700 dark:border-blue-400"
+      style="display: none;"
+    >
+      <svg
+        x-show="localMsg.toLowerCase().includes('calculat') || localMsg.toLowerCase().includes('delet')"
+        class="animate-spin h-4 w-4 text-white"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <circle
+          class="opacity-25"
+          cx="12"
+          cy="12"
+          r="10"
+          stroke="currentColor"
+          stroke-width="4"
+        ></circle>
+        <path
+          class="opacity-75"
+          fill="currentColor"
+          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+        ></path>
+      </svg>
+
+      <span
+        x-show="localMsg.includes('❌') || localMsg.includes('⚠️')"
+        class="text-lg"
+      >⚠️</span>
+
+      <span
+        class="text-sm font-bold tracking-wide"
+        x-text="localMsg"
+      ></span>
+
+      <button
+        @click="localMsg = ''; setUiStatusMessage = ''"
+        class="ml-4 text-slate-400 hover:text-white font-bold"
+      >✕</button>
+    </div>
+
+    <div
+      x-show="ui_AlertState.isOpen"
+      style="display: none;"
+      class="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-none"
+      x-transition:enter="transition ease-out duration-200"
+      x-transition:enter-start="opacity-0"
+      x-transition:enter-end="opacity-100"
+      x-transition:leave="transition ease-in duration-100"
+      x-transition:leave-start="opacity-100"
+      x-transition:leave-end="opacity-0"
+    >
+      <div
+        class="bg-white dark:bg-slate-800 rounded-lg shadow-2xl border border-gray-200 dark:border-slate-600 
+               w-[400px] max-w-[90%] p-5 transform transition-all scale-100"
+        @click.outside="if(ui_AlertState.type !== 'confirm') ui_AlertState.isOpen = false"
+      >
+        <div class="flex items-center gap-3 mb-3">
+          <div
+            x-show="ui_AlertState.type === 'success'"
+            class="p-2 bg-green-100 dark:bg-green-900/30 rounded-full text-green-600 dark:text-green-400"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="w-6 h-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+          </div>
+          <div
+            x-show="ui_AlertState.type === 'error'"
+            class="p-2 bg-red-100 dark:bg-red-900/30 rounded-full text-red-600 dark:text-red-400"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="w-6 h-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
+          <div
+            x-show="ui_AlertState.type === 'confirm' || ui_AlertState.type === 'info'"
+            class="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-full text-blue-600 dark:text-blue-400"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="w-6 h-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
+
+          <h3
+            class="text-lg font-bold text-gray-800 dark:text-white"
+            x-text="ui_AlertState.title"
+          ></h3>
+        </div>
+
+        <div class="mb-6 pl-1">
+          <p
+            class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-wrap"
+            x-text="ui_AlertState.message"
+          ></p>
+        </div>
+
+        <div class="flex justify-end gap-2">
+          <button
+            x-show="ui_AlertState.type === 'confirm'"
+            @click="ui_AlertState.isOpen = false"
+            class="px-4 py-2 text-xs font-bold text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white transition-colors"
+          >
+            Cancel
+          </button>
+
+          <button
+            @click="action_ConfirmModal()"
+            class="px-5 py-2 rounded text-xs font-bold text-white shadow-md transition-transform active:scale-95"
+            :class="{
+              'bg-green-600 hover:bg-green-700': ui_AlertState.type === 'success',
+              'bg-red-600 hover:bg-red-700': ui_AlertState.type === 'error',
+              'bg-blue-600 hover:bg-blue-700': ui_AlertState.type === 'info' || ui_AlertState.type === 'confirm'
+            }"
+            x-text="ui_AlertState.type === 'confirm' ? 'Confirm' : 'OK'"
+          >
+          </button>
+        </div>
+      </div>
+    </div>
+
   </body>
 
 </html>
