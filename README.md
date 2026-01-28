@@ -1,4 +1,6 @@
-# Config
+## Project Structure – Configuration Files
+All configuration files are stored in the `.config/` directory:
+
 ```
 /root
 /.config/auth_users.json
@@ -7,27 +9,28 @@
 /.config/rekomendasi.json
 /.config/table_structure.csv
 ```
-# Requirements
-Python 3.11.9
 
-run this at start
+## System Requirements
+- Python 3.11.9
+
+## 1. Virtual Environment Setup (run once)
 ```bash
 Python311 -m venv .venv
 source .venv/Scripts/activate
 pip install -r .config/requirements.txt
 ```
 
-# Run backend+middleware
+## Run backend+middleware
 run backend
 ```bash
 python desa_db/server.py
 ```
 
-or run both front and backend
+### or run both front and backend
 ```bash
 python run_system.py
 ```
-# add user
+# Add user
 ```
 python add_user.py <user> <password>
 ```
@@ -45,7 +48,7 @@ cd js_front_end
 npm run dev
 ```
 
-# Run mock frontend
+## Run mock frontend
 ```bash
 streamlit run tests/test_serverSheets.py
 ```

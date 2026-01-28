@@ -296,133 +296,205 @@
   </style>
 </head>
 
-<body
-  class="global_body_container font-mono bg-gray-100 h-screen flex flex-col transition-colors duration-300 dark:bg-slate-900 dark:text-slate-100">
+<body class="global_body_container font-mono bg-gray-100 h-screen flex flex-col transition-colors
+  duration-300 dark:bg-slate-900 dark:text-slate-100">
 
   <div
-    class="header_main_container bg-slate-800 text-white p-3 flex justify-between items-center shadow-md z-20 shrink-0 border-b border-slate-700">
+    class="header_main_container bg-slate-800 text-white p-3 flex justify-between items-center shadow-md z-20 shrink-0 border-b border-slate-700 h-14">
 
-    <div class="header_left_group flex items-center gap-6">
-      <h1 class="header_title_label text-lg font-bold flex items-center gap-2">
-        Admin | data skor rekomendasi desa
-      </h1>
+    <div class="header_left_group flex items-center gap-1">
 
-      <div
-        class="header_stats_bar bg-slate-900/50 px-3 py-1 rounded flex items-center gap-4 text-xs border border-slate-600">
-
-        <div class="header_stat_total_rows flex flex-col leading-none">
-          <span class="text-slate-400 text-[9px] uppercase tracking-wider">Total Rows</span>
-          <span class="font-mono font-bold text-white text-sm" x-text="stats_TotalRows">0</span>
-        </div>
-
-        <div class="h-6 w-px bg-slate-600"></div>
-
-        <div class="header_stat_last_update flex flex-col leading-none">
-          <span class="text-slate-400 text-[9px] uppercase tracking-wider">Last Update</span>
-          <span class="font-mono font-bold text-green-400 text-sm" x-text="stats_LastUpdateLabel">N/A</span>
-        </div>
+      <div class="transition-all duration-300 ease-in-out shrink-0 h-full flex items-center"
+        :class="isSidebarOpen ? 'w-80 opacity-100' : 'w-0 opacity-0 overflow-hidden'">
+        <h1
+          class="header_title_label text-sm font-bold flex items-center gap-2 truncate text-slate-100 border-r border-slate-600/50 h-8 w-full">
+          <span class="text-blue-400">Admin</span> | Data skor rekomendasi desa
+        </h1>
       </div>
 
       <div
-        class="header_stats_bar bg-slate-900/50 px-1 py-1 rounded flex items-center gap-1 text-xs border border-slate-600">
+        class="header_toolbar_container bg-slate-900/50 border border-slate-600 rounded-md p-1 flex items-center gap-2 shadow-sm">
 
-        <div class="header_search_header relative" x-data="{ open: false, term: '' }" @click.outside="open = false">
-          <input type="text" x-model="term" @focus="open = true" @input="open = true" placeholder="search header"
-            class="bg-slate-800 border border-slate-600 rounded px-2 py-1 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 w-32 focus:w-56 transition-all">
+        <div x-show="viewModeState === 'grid'" class="flex items-center gap-2 mr-1 pr-2 border-r border-slate-600"
+          x-transition:enter="transition ease-out duration-300"
+          x-transition:enter-start="opacity-0 -translate-x-4 scale-95"
+          x-transition:enter-end="opacity-100 translate-x-0 scale-100"
+          x-transition:leave="transition ease-in duration-200"
+          x-transition:leave-start="opacity-100 translate-x-0 scale-100"
+          x-transition:leave-end="opacity-0 -translate-x-4 scale-95">
 
-          <div x-show="open && term" x-transition
-            class="header_search_header_transition absolute top-full left-0 mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded shadow-xl max-h-60 overflow-y-auto z-50">
-            <template x-for="col in meta_ColumnList.filter(c => c.toLowerCase().includes(term.toLowerCase()))"
-              :key="col">
-              <button @click="action_JumpToColumn(col); open = false; term = ''"
-                class="w-full text-left px-3 py-2 text-xs border-b border-gray-100 dark:border-slate-700 hover:bg-blue-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 block truncate transition-colors">
-                <span x-text="col"></span>
-              </button>
-            </template>
-            <div x-show="meta_ColumnList.filter(c => c.toLowerCase().includes(term.toLowerCase())).length === 0"
-              class="px-3 py-2 text-xs text-gray-400 italic">
-              No headers found
+          <div class="header_search_header relative" x-data="{ open: false, term: '' }" @click.outside="open = false">
+            <input type="text" x-model="term" @focus="open = true" @input="open = true" placeholder="Search headers..."
+              class="bg-slate-800 border border-slate-600 rounded px-2 py-1 text-[11px] text-white 
+              placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:bg-slate-700 
+              w-32 focus:w-64 transition-all duration-300 shadow-inner">
+
+            <div x-show="open && term" x-transition class="absolute top-full left-0 mt-2 w-max max-w-[600px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 
+                rounded shadow-xl max-h-[80vh] overflow-y-auto z-50 custom-scrollbar">
+              <template x-for="col in meta_ColumnList.filter(c => c.toLowerCase().includes(term.toLowerCase()))"
+                :key="col">
+                <button @click="action_JumpToColumn(col); open = false; term = ''" class="w-full text-left px-3 py-2 text-xs border-b border-gray-100 dark:border-slate-700 
+                 hover:bg-blue-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 block truncate"
+                  :title="col"> <span x-text="col"></span>
+                </button>
+              </template>
+              <div x-show="meta_ColumnList.filter(c => c.toLowerCase().includes(term.toLowerCase())).length === 0"
+                class="px-3 py-2 text-xs text-gray-400 italic">
+                No headers found
+              </div>
             </div>
+          </div>
+
+          <div class="flex bg-slate-800 rounded p-0.5 border border-slate-700">
+            <button @click="ui_ToggleTranslate(false)"
+              :class="!isTranslationActive ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-400 hover:text-white hover:bg-slate-700'"
+              class="px-2 py-0.5 rounded text-[10px] font-bold transition-all flex items-center gap-1"
+              title="Raw Numbers">
+              Raw
+            </button>
+            <button @click="ui_ToggleTranslate(true)"
+              :class="isTranslationActive ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-400 hover:text-white hover:bg-slate-700'"
+              class="px-2 py-0.5 rounded text-[10px] font-bold transition-all flex items-center gap-1"
+              title="Text Recommendations">
+              Text
+            </button>
           </div>
         </div>
 
-        <div class="header_view_toggles bg-slate-700 p-0.5 rounded flex gap-1">
+        <div class="flex bg-slate-800 rounded p-0.5 border border-slate-700">
           <button @click="ui_SwitchViewMode('grid')"
-            :class="viewModeState === 'grid' ? 'bg-blue-600 text-white shadow' : 'text-gray-300 hover:bg-slate-600'"
-            class="header_toggle_grid_btn px-3 py-1 rounded text-xs font-bold transition flex items-center gap-1">
+            :class="viewModeState === 'grid' ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-400 hover:text-white hover:bg-slate-700'"
+            class="px-3 py-1 rounded text-[11px] font-bold transition-all flex items-center gap-1.5">
             <span>▦</span> Grid
           </button>
           <button @click="ui_SwitchViewMode('dashboard')"
-            :class="viewModeState === 'dashboard' ? 'bg-blue-600 text-white shadow' : 'text-gray-300 hover:bg-slate-600'"
-            class="header_toggle_dashboard_btn px-3 py-1 rounded text-xs font-bold transition flex items-center gap-1">
+            :class="viewModeState === 'dashboard' ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-400 hover:text-white hover:bg-slate-700'"
+            class="px-3 py-1 rounded text-[11px] font-bold transition-all flex items-center gap-1.5">
             <span>📊</span> Dashboard
           </button>
         </div>
 
-        <div class="header_translation_controls bg-slate-700 p-0.5 rounded flex gap-1">
-          <button @click="ui_ToggleTranslate(false)"
-            :class="!isTranslationActive ? 'bg-blue-600 text-white shadow' : 'text-gray-400 hover:text-white hover:bg-slate-600'"
-            class="header_btn_raw_numbers px-2 py-1 rounded text-[12px] font-bold transition flex items-center gap-1"
-            title="Show Raw Numbers (1-5)">
-            Raw
-          </button>
-          <button @click="ui_ToggleTranslate(true)"
-            :class="isTranslationActive ? 'bg-blue-600 text-white shadow' : 'text-gray-400 hover:text-white hover:bg-slate-600'"
-            class="header_btn_translated_text px-2 py-1 rounded text-[12px] font-bold transition flex items-center gap-1"
-            title="Show Text Recommendations">
-            Text
-          </button>
+        <div class="h-6 w-px bg-slate-600"></div>
+
+        <div class="flex bg-slate-800 rounded p-0.5 border border-slate-700 ml-1" title="Freeze Columns">
+          <select x-model.number="ui_FreezeColCount" @change="ui_ApplyFreeze()"
+            class="bg-slate-800 text-[11px] font-bold text-gray-400 border-none outline-none cursor-pointer hover:text-white appearance-none text-center w-9">
+            <option value="0">❄️ 0</option>
+            <option value="1">❄️ 1</option>
+            <option value="2">❄️ 2</option>
+            <option value="3">❄️ 3</option>
+            <option value="4">❄️ 4</option>
+            <option value="5">❄️ 5</option>
+            <option value="6">❄️ 6</option>
+          </select>
         </div>
 
-        <div class="header_calc_controls bg-slate-700 p-0.5 rounded flex gap-1">
-          <button @click="action_CalculateDashboardStats" :class="'bg-blue-600 text-white shadow'"
-            class="header_btn_calculate px-2 py-1 rounded text-[12px] font-bold transition flex items-center gap-1"
-            title="Recalculate Data">
-            calculate
-          </button>
-        </div>
+        <div class="h-6 w-px bg-slate-600"></div>
+
+        <button @click="action_CalculateDashboardStats" class=" bg-slate-800 hover:bg-emerald-600 text-emerald-500 hover:text-white border border-slate-700 hover:border-emerald-500
+           px-3 py-1 rounded text-[11px] font-bold transition-all shadow-sm flex items-center gap-1 group">
+          <span class="group-hover:animate-spin">↻</span> Calc
+        </button>
 
       </div>
     </div>
 
     <div class="header_right_group flex items-center gap-4">
-      <button @click="ui_ToggleDarkMode"
-        class="header_btn_theme_toggle p-1.5 rounded hover:bg-slate-700 text-yellow-400 transition border border-transparent hover:border-slate-600"
+
+      <div class="flex items-center gap-2">
+
+        <div x-show="filter_SelProv" x-transition
+          class="flex items-center gap-1 bg-slate-500/10 border border-amber-500/30 px-2 py-1 rounded max-w-[150px]">
+          <span class="text-xs font-bold text-amber-400 truncate" x-text="filter_SelProv"></span>
+        </div>
+
+        <div x-show="filter_SelKab" x-transition
+          class="flex items-center gap-1 bg-slate-500/10 border border-amber-500/30 px-2 py-1 rounded max-w-[150px]">
+          <span class="text-xs font-bold text-amber-400 truncate" x-text="filter_SelKab"></span>
+        </div>
+
+        <div x-show="filter_SelKec" x-transition
+          class="flex items-center gap-1 bg-slate-500/10 border border-amber-500/30 px-2 py-1 rounded max-w-[150px]">
+          <span class="text-xs font-bold text-amber-400 truncate" x-text="filter_SelKec"></span>
+        </div>
+
+        <div x-show="filter_NameSearch" x-transition
+          class="flex items-center gap-1 bg-slate-500/10 border border-blue-500/30 px-2 py-1 rounded max-w-[150px]">
+          <span class="text-xs font-bold text-blue-400 truncate" x-text="filter_NameSearch"></span>
+        </div>
+
+        <div x-show="filter_IdListInput && filter_IdListInput.trim()" x-transition
+          class="flex items-center gap-1 bg-slate-500/10 border border-purple-500/30 px-2 py-1 rounded">
+          <span class="text-xs font-bold text-purple-400">Pasted IDs</span>
+        </div>
+
+      </div>
+
+      <div class="flex items-center gap-4">
+
+        <div class="flex flex-col items-end leading-none">
+          <span class="text-slate-500 text-[9px] uppercase tracking-wider font-bold">Total Rows</span>
+          <span class="font-mono font-bold text-slate-200 text-sm" x-text="stats_TotalRows">0</span>
+        </div>
+
+        <div class="flex flex-col items-end leading-none border-l border-slate-700 pl-4">
+          <span class="text-slate-500 text-[9px] uppercase tracking-wider font-bold">Last Update</span>
+          <span class="font-mono font-bold text-emerald-400 text-sm" x-text="stats_LastUpdateLabel">N/A</span>
+        </div>
+      </div>
+
+      <div class="h-6 w-px bg-slate-700"></div>
+
+      <button @click="ui_ToggleDarkMode" class="header_btn_theme_toggle w-8 h-8 rounded hover:bg-slate-700 text-yellow-400 
+                         transition border border-transparent hover:border-slate-600 flex items-center justify-center"
         title="Toggle Theme">
-        <span x-show="!isDarkModeEnabled">☼</span>
-        <span x-show="isDarkModeEnabled">☾</span>
+        <svg x-show="!isDarkModeEnabled" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none"
+          viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+        <svg x-show="isDarkModeEnabled" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none"
+          viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+        </svg>
       </button>
 
       <div class="h-6 w-px bg-slate-700"></div>
 
-      <a href="/logout"
-        class="header_btn_logout flex items-center gap-2 text-xs font-bold text-red-400 hover:text-red-300 transition bg-red-950/30 border border-red-900/50 px-3 py-1.5 rounded hover:bg-red-900/50">
-        <span>🚪</span> Logout
-      </a>
+      <button @click="action_Logout" class="flex items-center gap-2 text-xs font-bold text-gray-400 hover:text-red-300 transition 
+                         bg-slate-800 border border-red-900/50 px-3 py-1.5 rounded hover:bg-red-900/50">
+        <span>⏻</span> Logout
+      </button>
+
     </div>
   </div>
 
   <div class="main_layout_wrapper flex flex-1 overflow-hidden">
 
-    <div :class="isSidebarOpen ? 'w-80' : 'w-0'"
-      class="sidebar_animation_wrapper relative z-20 shrink-0 transition-all duration-300 ease-in-out bg-white dark:bg-slate-800">
+    <div :class="isSidebarOpen ? 'w-80' : 'w-0'" class="sidebar_animation_wrapper
+      relative z-20 shrink-0 transition-all
+      duration-300 ease-in-out bg-white dark:bg-slate-800">
 
-      <button @click="isSidebarOpen = !isSidebarOpen"
-        class="sidebar_toggle_btn absolute -right-3 top-20 w-6 h-6 bg-white border border-slate-200 dark:border-slate-600 dark:bg-slate-800 rounded-full shadow-md z-50 flex items-center justify-center hover:bg-slate-50 cursor-pointer text-slate-500 dark:text-slate-300 transform transition-transform duration-300 focus:outline-none"
+      <button @click="isSidebarOpen = !isSidebarOpen" class="sidebar_toggle_btn
+        absolute -right-3 top-20 w-6 h-6 bg-slate-500 border border-slate-200
+        dark:border-slate-600 dark:bg-slate-500 rounded-full shadow-md z-50 flex items-center
+        justify-center cursor-pointer text-slate-100 dark:text-slate-900
+        transform transition-transform duration-300 focus:outline-none"
         :class="isSidebarOpen ? 'rotate-0' : 'rotate-180'" title="Toggle Sidebar">
         <span class="text-[14px] leading-none font-bold">↔</span>
       </button>
 
-      <div
-        class="sidebar_content_clipper h-full w-full overflow-hidden flex flex-col border-r border-slate-200 dark:border-slate-700">
+      <div class="sidebar_content_clipper h-full w-full overflow-hidden flex flex-col
+        border-r border-slate-200 dark:border-slate-700">
 
         <div class="sidebar_inner_content w-80 h-full overflow-y-auto custom-scrollbar flex flex-col p-4">
 
           <div class="sidebar_section_upload mb-5 border-b border-gray-100 pb-4 dark:border-slate-700"
             x-data="{ open: false }">
             <div @click="open = !open" class="flex justify-between items-center cursor-pointer mb-3 group select-none">
-              <h3
-                class="sidebar_section_title text-xs font-bold text-gray-400 uppercase tracking-wider group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors">
+              <h3 class="sidebar_section_title text-xs font-bold text-gray-400 uppercase
+                tracking-wider group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors">
                 🚀 Actions
               </h3>
               <span class="text-gray-400 text-[14px] font-bold transition-transform duration-200"
@@ -432,18 +504,21 @@
             <div x-show="open" x-collapse>
               <div class="sidebar_upload_group space-y-3">
                 <div class="sidebar_upload_label_group flex items-center gap-2 mb-1">
-                  <span
-                    class="text-[12px] font-bold text-slate-500 uppercase tracking-wider dark:text-slate-400">Database
-                    Import</span>
+                  <span class="text-[12px] font-bold text-slate-500 uppercase tracking-wider dark:text-slate-400">
+                    Database Import
+                  </span>
                   <div class="h-px bg-slate-200 flex-1 dark:bg-slate-700"></div>
                 </div>
 
                 <div x-show="!stagingData_Object" class="sidebar_upload_dropzone_container">
-                  <label
-                    class="sidebar_upload_dropzone flex flex-col items-center justify-center w-full h-12 border-2 border-dashed border-blue-300 rounded-lg cursor-pointer bg-blue-50/50 hover:bg-blue-100 hover:border-blue-400 transition-all dark:bg-slate-800 dark:border-slate-600 dark:hover:border-blue-500 dark:hover:bg-slate-700 group">
+                  <label class="sidebar_upload_dropzone flex flex-col items-center justify-center w-full h-12
+                    border-2 border-dashed border-blue-300 rounded-lg cursor-pointer bg-blue-50/50
+                    hover:bg-blue-100 hover:border-blue-400 transition-all dark:bg-slate-800
+                    dark:border-slate-600 dark:hover:border-blue-500 dark:hover:bg-slate-700 group">
+
                     <div class="flex flex-col items-center justify-center pt-2 pb-3">
-                      <div
-                        class="mb-1 text-blue-400 group-hover:text-blue-600 group-hover:scale-110 transition-transform dark:text-slate-400 dark:group-hover:text-blue-400">
+                      <div class="mb-1 text-blue-400 group-hover:text-blue-600 group-hover:scale-110
+                        transition-transform dark:text-slate-400 dark:group-hover:text-blue-400">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                           xmlns="http://www.w3.org/2000/svg">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -464,50 +539,67 @@
                   </div>
                 </div>
 
-                <div x-show="stagingData_Object"
-                  class="sidebar_staging_review_panel bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden dark:bg-slate-800 dark:border-slate-600"
-                  style="display: none;">
-                  <div
-                    class="sidebar_staging_header bg-amber-50 px-3 py-2 border-b border-amber-100 dark:bg-amber-900/20 dark:border-amber-800/50 flex items-center justify-between">
-                    <span class="text-[12px] font-bold text-amber-700 dark:text-amber-500">⚠️ Review
-                      Changes</span>
+                <div x-show="stagingData_Object" class="sidebar_staging_review_panel
+                  bg-white border border-slate-200 rounded-lg shadow-sm
+                  overflow-hidden dark:bg-slate-800 dark:border-slate-600" style="display: none;">
+                  <div class="sidebar_staging_header bg-amber-50 px-3 py-2 border-b border-amber-100
+                    dark:bg-amber-900/20 dark:border-amber-800/50 flex items-center justify-between">
+                    <span class="text-[12px] font-bold text-amber-700 dark:text-amber-500">
+                      ⚠️ Review Changes
+                    </span>
                     <div class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></div>
                   </div>
                   <div class="p-3">
-                    <p class="sidebar_staging_filename text-[12px] text-slate-500 mb-3 truncate font-mono bg-slate-100 p-1 rounded dark:bg-slate-900 dark:text-slate-400"
+                    <p class="sidebar_staging_filename text-[12px] text-slate-500 mb-3 truncate font-mono
+                    bg-slate-100 p-1 rounded dark:bg-slate-900 dark:text-slate-400"
                       x-text="stagingData_Object?.filename"></p>
                     <div class="sidebar_staging_stats_grid grid grid-cols-3 gap-2 mb-3 text-center">
-                      <div
-                        class="stat_box_new flex flex-col border border-green-200 bg-green-50 rounded p-1 dark:bg-green-900/20 dark:border-green-800">
-                        <span class="text-[9px] text-green-700 font-bold dark:text-green-400">NEW</span>
+                      <div class="stat_box_new flex flex-col border border-green-200 bg-green-50 rounded
+                        p-1 dark:bg-green-900/20 dark:border-green-800">
+                        <span class="text-[9px] text-green-700 font-bold dark:text-green-400">
+                          NEW
+                        </span>
                         <span class="text-xs font-mono font-bold text-slate-700 dark:text-slate-200"
                           x-text="stagingData_Object?.diff.added">0</span>
                       </div>
-                      <div
-                        class="stat_box_mod flex flex-col border border-blue-200 bg-blue-50 rounded p-1 dark:bg-blue-900/20 dark:border-blue-800">
-                        <span class="text-[9px] text-blue-700 font-bold dark:text-blue-400">MOD</span>
+                      <div class="stat_box_mod flex flex-col border border-blue-200 bg-blue-50 rounded
+                        p-1 dark:bg-blue-900/20 dark:border-blue-800">
+                        <span class="text-[9px] text-blue-700 font-bold dark:text-blue-400">
+                          MOD
+                        </span>
                         <span class="text-xs font-mono font-bold text-slate-700 dark:text-slate-200"
                           x-text="stagingData_Object?.diff.changed">0</span>
                       </div>
-                      <div
-                        class="stat_box_del flex flex-col border border-red-200 bg-red-50 rounded p-1 dark:bg-red-900/20 dark:border-red-800">
-                        <span class="text-[9px] text-red-700 font-bold dark:text-red-400">DEL</span>
+                      <div class="stat_box_del flex flex-col border border-red-200 bg-red-50 rounded
+                        p-1 dark:bg-red-900/20 dark:border-red-800">
+                        <span class="text-[9px] text-red-700 font-bold dark:text-red-400">
+                          DEL
+                        </span>
                         <span class="text-xs font-mono font-bold text-slate-700 dark:text-slate-200"
                           x-text="stagingData_Object?.diff.removed">0</span>
                       </div>
                     </div>
                     <div class="sidebar_staging_actions flex gap-2">
-                      <button @click="action_CommitStagedData_ToDB"
-                        class="sidebar_btn_commit flex-1 bg-slate-800 text-white py-1.5 rounded text-[12px] font-bold hover:bg-slate-900 shadow-sm transition dark:bg-blue-600 dark:hover:bg-blue-500">Commit
-                        to DB</button>
-                      <button @click="stagingData_Object = null; setUiStatusMessage=''"
-                        class="sidebar_btn_cancel px-3 border border-slate-300 text-slate-600 rounded text-[12px] font-bold hover:bg-slate-50 transition dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700">Cancel</button>
+                      <button @click="action_CommitStagedData_ToDB" class="sidebar_btn_commit flex-1
+                        bg-slate-800 text-white py-1.5 rounded text-[12px]
+                        font-bold hover:bg-slate-900 shadow-sm transition dark:bg-blue-600 dark:hover:bg-blue-500">
+                        Commit to DB
+                      </button>
+                      <button @click="stagingData_Object = null; setUiStatusMessage=''" class="sidebar_btn_cancel
+                        px-3 border border-slate-300 text-slate-600 rounded
+                        text-[12px] font-bold hover:bg-slate-50 transition dark:border-slate-600
+                        dark:text-slate-300 dark:hover:bg-slate-700">
+                        Cancel
+                      </button>
                     </div>
                   </div>
                 </div>
 
-                <button @click="action_DownloadToExcel"
-                  class="sidebar_btn_download_excel w-full border border-green-600 text-green-700 bg-green-50 py-2 rounded text-xs font-bold hover:bg-green-100 transition flex justify-center items-center gap-2 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800 dark:hover:bg-green-900/40">
+                <button @click="action_DownloadToExcel" class="sidebar_btn_download_excel w-full border
+                  border-green-600 text-green-700 bg-green-50
+                  py-2 rounded text-xs font-bold hover:bg-green-100 transition flex justify-center
+                  items-center gap-2 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800
+                  dark:hover:bg-green-900/40">
                   <span>📥</span> Download Excel
                 </button>
               </div>
@@ -517,8 +609,8 @@
           <div class="sidebar_section_delete mb-5 border-b border-gray-100 pb-4 dark:border-slate-700"
             x-data="{ open: false }">
             <div @click="open = !open" class="flex justify-between items-center cursor-pointer mb-2 group select-none">
-              <h3
-                class="sidebar_section_title text-xs font-bold text-red-400 uppercase tracking-wider group-hover:text-red-500 transition-colors">
+              <h3 class="sidebar_section_title text-xs font-bold text-gray-400 uppercase tracking-wider
+                group-hover:text-red-500 transition-colors">
                 🗑️ Soft Delete
               </h3>
               <span class="text-gray-400 text-[14px] font-bold transition-transform duration-200"
@@ -527,12 +619,16 @@
 
             <div x-show="open" x-collapse>
               <div class="mb-2">
-                <textarea x-model="filter_DeleteListInput"
-                  class="sidebar_input_delete_ids w-full border border-red-200 p-2 rounded text-xs h-16 font-mono focus:border-red-500 focus:ring-1 focus:ring-red-200 outline-none text-gray-700 dark:bg-slate-900 dark:border-red-900/50 dark:text-red-100 dark:placeholder-red-100/50"
+                <textarea x-model="filter_DeleteListInput" class="sidebar_input_delete_ids w-full
+                  border border-red-200 p-2 rounded text-xs
+                  h-16 font-mono focus:border-red-500 focus:ring-1 focus:ring-red-200 outline-none
+                  text-gray-700 dark:bg-slate-900 dark:border-red-900/50 dark:text-red-100 dark:placeholder-red-100/50"
                   placeholder="Paste IDs here to drop from Live view..."></textarea>
               </div>
-              <button @click="action_SoftDeleteIDs_FromDB"
-                class="sidebar_btn_confirm_delete w-full bg-red-50 text-red-600 border border-red-200 py-1.5 rounded text-xs font-bold hover:bg-red-100 hover:text-red-700 transition dark:bg-red-900/20 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/40">
+              <button @click="action_SoftDeleteIDs_FromDB" class="sidebar_btn_confirm_delete w-full
+                bg-red-50 text-red-600 border border-red-200
+                py-1.5 rounded text-xs font-bold hover:bg-red-100 hover:text-red-700 transition
+                dark:bg-red-900/20 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/40">
                 Confirm Delete
               </button>
             </div>
@@ -541,8 +637,8 @@
           <div class="sidebar_section_history mb-5 border-b border-gray-100 pb-4 dark:border-slate-700"
             x-data="{ open: false }">
             <div @click="open = !open" class="flex justify-between items-center cursor-pointer mb-2 group select-none">
-              <h3
-                class="sidebar_section_title text-xs font-bold text-gray-400 uppercase tracking-wider group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors">
+              <h3 class="sidebar_section_title text-xs font-bold text-gray-400 uppercase tracking-wider
+                group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors">
                 ⏳ History & Changes
               </h3>
               <span class="text-gray-400 text-[14px] font-bold transition-transform duration-200"
@@ -552,16 +648,23 @@
             <div x-show="open" x-collapse>
               <div @click="ui_LoadVersion('')"
                 class="cursor-pointer mb-2 p-2 rounded border transition-colors flex justify-between items-center"
-                :class="!filter_SelectedVersion ? 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800' : 'bg-white border-gray-200 hover:bg-gray-50 dark:bg-slate-800 dark:border-slate-600'">
-                <span class="text-xs font-bold"
-                  :class="!filter_SelectedVersion ? 'text-green-700 dark:text-green-400' : 'text-gray-600 dark:text-gray-300'">
+                :class="!filter_SelectedVersion ?
+                'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800' 
+                : 'bg-white border-gray-200 hover:bg-gray-50 dark:bg-slate-800 dark:border-slate-600'">
+                <span class="text-xs font-bold" :class="!filter_SelectedVersion ?
+                  'text-green-700 dark:text-green-400' 
+                  : 'text-gray-600 dark:text-gray-300'">
                   🟢 Live (Current)
                 </span>
-                <span x-show="!filter_SelectedVersion" class="text-[10px] text-green-600 font-bold">ACTIVE</span>
+                <span x-show="!filter_SelectedVersion" class="text-[10px] text-green-600 font-bold">
+                  ACTIVE
+                </span>
               </div>
 
-              <select x-model="targetYear" @change="action_YearChanged"
-                class="sidebar_select_year w-full border border-blue-300 mb-2 p-2 rounded text-xs bg-blue-50 focus:ring-1 focus:ring-blue-500 outline-none text-blue-900 font-bold dark:bg-slate-900 dark:border-slate-600 dark:text-blue-400">
+              <select x-model="targetYear" @change="action_YearChanged" class="sidebar_select_year
+                w-full border border-blue-300 mb-2 p-2 rounded text-xs
+                bg-blue-50 focus:ring-1 focus:ring-blue-500 outline-none text-blue-900 font-bold
+                dark:bg-slate-900 dark:border-slate-600 dark:text-blue-400">
                 <template x-for="y in availableYears" :key="y">
                   <option :value="y" x-text="y"></option>
                 </template>
@@ -572,8 +675,8 @@
                   <div
                     class="border rounded bg-white dark:bg-slate-800 dark:border-slate-700 overflow-hidden flex flex-col">
 
-                    <div
-                      class="p-2 flex flex-col gap-1 border-b border-gray-50 dark:border-slate-700 bg-gray-50/50 dark:bg-slate-800">
+                    <div class="p-2 flex flex-col gap-1 border-b border-gray-50 dark:border-slate-700
+                      bg-gray-50/50 dark:bg-slate-800">
                       <div class="flex justify-between items-start">
                         <span class="text-[10px] font-mono text-gray-500 dark:text-gray-400" x-text="v.ts"></span>
                         <span
@@ -583,14 +686,18 @@
 
                       <div class="flex gap-2 mt-1">
                         <button @click="ui_LoadVersion(v.ts)"
-                          class="flex-1 py-1 text-[10px] font-bold rounded border transition-colors"
-                          :class="filter_SelectedVersion === v.ts ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50 dark:bg-slate-700 dark:text-gray-300 dark:border-slate-600'">
+                          class="flex-1 py-1 text-[10px] font-bold rounded border transition-colors" :class="filter_SelectedVersion === v.ts ?
+                          'bg-blue-600 text-white border-blue-600' 
+                          : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50
+                          dark:bg-slate-700 dark:text-gray-300 dark:border-slate-600'">
                           View Data
                         </button>
 
-                        <button @click="ui_ToggleHistoryDetails(v.ts)"
-                          class="px-2 py-1 text-[10px] font-bold rounded border border-gray-300 text-gray-500 hover:bg-gray-100 dark:border-slate-600 dark:text-slate-400 dark:hover:bg-slate-700"
-                          x-text="history_OpenDetailsId === v.ts ? 'Hide' : 'Details'">
+                        <button @click="ui_ToggleHistoryDetails(v.ts)" class="px-2 py-1 text-[10px]
+                          font-bold rounded border border-gray-300 text-gray-500 hover:bg-gray-100 dark:border-slate-600 dark:text-slate-400
+                          dark:hover:bg-slate-700" x-text="history_OpenDetailsId === v.ts ?
+                          'Hide' 
+                          : 'Details'">
                         </button>
                       </div>
                     </div>
@@ -605,23 +712,29 @@
 
                       <div x-show="history_DiffCache[v.ts]" class="grid grid-cols-3 gap-2 text-center">
 
-                        <div
-                          class="flex flex-col border border-green-200 bg-green-50 rounded p-1 dark:bg-green-900/20 dark:border-green-800">
-                          <span class="text-[9px] font-bold text-green-700 dark:text-green-400">ADD</span>
+                        <div class="flex flex-col border border-green-200 bg-green-50 rounded p-1
+                          dark:bg-green-900/20 dark:border-green-800">
+                          <span class="text-[9px] font-bold text-green-700 dark:text-green-400">
+                            ADD
+                          </span>
                           <span class="text-xs font-mono font-bold text-slate-700 dark:text-slate-200"
                             x-text="(history_DiffCache[v.ts] || []).filter(x => x.type === 'ADD').length">0</span>
                         </div>
 
                         <div
                           class="flex flex-col border border-blue-200 bg-blue-50 rounded p-1 dark:bg-blue-900/20 dark:border-blue-800">
-                          <span class="text-[9px] font-bold text-blue-700 dark:text-blue-400">MOD</span>
+                          <span class="text-[9px] font-bold text-blue-700 dark:text-blue-400">
+                            MOD
+                          </span>
                           <span class="text-xs font-mono font-bold text-slate-700 dark:text-slate-200"
                             x-text="(history_DiffCache[v.ts] || []).filter(x => x.type === 'MOD').length">0</span>
                         </div>
 
                         <div
                           class="flex flex-col border border-red-200 bg-red-50 rounded p-1 dark:bg-red-900/20 dark:border-red-800">
-                          <span class="text-[9px] font-bold text-red-700 dark:text-red-400">DEL</span>
+                          <span class="text-[9px] font-bold text-red-700 dark:text-red-400">
+                            DEL
+                          </span>
                           <span class="text-xs font-mono font-bold text-slate-700 dark:text-slate-200"
                             x-text="(history_DiffCache[v.ts] || []).filter(x => x.type === 'DEL').length">0</span>
                         </div>
@@ -655,8 +768,8 @@
           <div class="sidebar_section_location mb-5 border-b border-gray-100 pb-4 space-y-0 dark:border-slate-700"
             x-data="{ open: true }">
             <div @click="open = !open" class="flex justify-between items-center cursor-pointer mb-3 group select-none">
-              <h3
-                class="sidebar_section_title text-xs font-bold text-gray-400 uppercase tracking-wider group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors">
+              <h3 class="sidebar_section_title text-xs font-bold text-gray-400 uppercase tracking-wider
+                group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors">
                 📍 Location
               </h3>
               <span class="text-gray-400 text-[14px] font-bold transition-transform duration-200"
@@ -665,10 +778,13 @@
 
             <div x-show="open" x-collapse class="space-y-3">
               <div class="sidebar_location_filter_prov_group">
-                <label class="block text-[12px] font-bold text-gray-500 mb-1 dark:text-gray-400">PROVINSI</label>
+                <label class="block text-[12px] font-bold text-gray-500 mb-1 dark:text-gray-400">
+                  PROVINSI
+                </label>
                 <select x-model="filter_SelProv"
-                  @change="filter_SelKab=''; filter_SelKec=''; fetch_MainGridData_FromAPI()"
-                  class="sidebar_select_prov w-full border p-1.5 rounded text-xs bg-white focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300">
+                  @change="filter_SelKab=''; filter_SelKec=''; fetch_MainGridData_FromAPI()" class="sidebar_select_prov
+                  w-full border p-1.5 rounded text-xs bg-white focus:border-blue-500
+                  outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300">
                   <option value="">- All -</option>
                   <template x-for="p in Object.keys(meta_HierarchyTree).sort()" :key="p">
                     <option :value="p" x-text="p"></option>
@@ -677,9 +793,12 @@
               </div>
 
               <div class="sidebar_location_filter_kab_group">
-                <label class="block text-[12px] font-bold text-gray-500 mb-1 dark:text-gray-400">KABUPATEN/KOTA</label>
-                <select x-model="filter_SelKab" @change="filter_SelKec=''; fetch_MainGridData_FromAPI()"
-                  class="sidebar_select_kab w-full border p-1.5 rounded text-xs bg-white focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
+                <label class="block text-[12px] font-bold text-gray-500 mb-1 dark:text-gray-400">
+                  KABUPATEN/KOTA
+                </label>
+                <select x-model="filter_SelKab" @change="filter_SelKec=''; fetch_MainGridData_FromAPI()" class="sidebar_select_kab
+                  w-full border p-1.5 rounded text-xs bg-white
+                  focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
                   :disabled="!filter_SelProv" :class="{'bg-gray-100 dark:bg-slate-800': !filter_SelProv}">
                   <option value="">- All -</option>
                   <template x-for="k in util_GetKabOptions()" :key="k">
@@ -689,9 +808,12 @@
               </div>
 
               <div class="sidebar_location_filter_kec_group">
-                <label class="block text-[12px] font-bold text-gray-500 mb-1 dark:text-gray-400">KECAMATAN</label>
-                <select x-model="filter_SelKec" @change="fetch_MainGridData_FromAPI"
-                  class="sidebar_select_kec w-full border p-1.5 rounded text-xs bg-white focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
+                <label class="block text-[12px] font-bold text-gray-500 mb-1 dark:text-gray-400">
+                  KECAMATAN
+                </label>
+                <select x-model="filter_SelKec" @change="fetch_MainGridData_FromAPI" class="sidebar_select_kec
+                  w-full border p-1.5 rounded text-xs bg-white
+                  focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
                   :disabled="!filter_SelKab" :class="{'bg-gray-100 dark:bg-slate-800': !filter_SelKab}">
                   <option value="">- All -</option>
                   <template x-for="c in util_GetKecOptions()" :key="c">
@@ -701,17 +823,20 @@
               </div>
 
               <div class="sidebar_location_filter_search_group mb-3">
-                <input type="text" x-model="filter_NameSearch"
-                  class="sidebar_input_search_name w-full border p-2 rounded text-xs focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
+                <input type="text" x-model="filter_NameSearch" class="sidebar_input_search_name
+                  w-full border p-2 rounded text-xs focus:border-blue-500
+                  outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
                   placeholder="Search Desa Name...">
               </div>
               <div class="sidebar_search_ids mb-3">
-                <textarea x-model="filter_IdListInput"
-                  class="sidebar_input_search_ids w-full mb-2 border p-2 rounded text-xs h-20 font-mono focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
+                <textarea x-model="filter_IdListInput" class="sidebar_input_search_ids
+                  w-full mb-2 border p-2 rounded text-xs h-20 font-mono
+                  focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
                   placeholder="Paste IDs here (comma or newline separated) to search by ID Desa..."></textarea>
               </div>
-              <button @click="fetch_MainGridData_FromAPI"
-                class="sidebar_btn_apply_filter w-full bg-slate-700 text-white py-2 rounded text-xs font-bold hover:bg-slate-800 transition shadow-sm dark:bg-slate-600 dark:hover:bg-slate-500">
+              <button @click="fetch_MainGridData_FromAPI" class="sidebar_btn_apply_filter
+                w-full bg-slate-400 text-white py-2 rounded text-xs
+                font-bold hover:bg-slate-800 transition shadow-sm dark:bg-slate-600 dark:hover:bg-slate-500">
                 Apply Filters
               </button>
             </div>
@@ -754,6 +879,7 @@
         viewModeState: 'grid', // 'grid' | 'dashboard'
         isDarkModeEnabled: localStorage.getItem('theme') === 'dark',
         isTableStructureLoaded: false,
+        ui_FreezeColCount: 0,
 
         // --- DATA STORAGE ---
         meta_VersionsList: [], // From /history/versions
@@ -762,7 +888,6 @@
         agGridApiInstance: null, // AG Grid Object
         meta_ColumnList: [],
 
-        // ADD THESE NEW VARS:
         history_OpenDetailsId: null, // Tracks which card is expanded
         history_DiffCache: {},       // Caches diffs so we don't re-fetch on every toggle
 
@@ -793,6 +918,97 @@
         ui_ToggleDarkMode() {
           this.isDarkModeEnabled = !this.isDarkModeEnabled;
           localStorage.setItem('theme', this.isDarkModeEnabled ? 'dark' : 'light');
+        },
+
+        // ============================================
+        // FREEZE HANDLER
+        // ============================================
+        ui_ApplyFreeze() {
+          const count = this.ui_FreezeColCount;
+
+          // APPLY TO AG GRID
+          if (this.agGridApiInstance) {
+            const cols = this.agGridApiInstance.getColumns();
+            if (cols) {
+              // Pin the first N columns to the left
+              const state = cols.map((c, i) => ({
+                colId: c.getColId(),
+                pinned: i < count ? 'left' : null
+              }));
+              this.agGridApiInstance.applyColumnState({ state: state, defaultState: { pinned: null } });
+            }
+          }
+
+          // APPLY TO DASHBOARD HTML TABLE
+          const table = document.getElementById('dashboard_table_element');
+          if (table) {
+            // A. Reset all sticky styles first
+            table.querySelectorAll('.sticky-col').forEach(el => {
+              el.style.position = '';
+              el.style.left = '';
+              el.style.zIndex = '';
+              el.style.backgroundColor = '';
+              el.classList.remove('sticky-col');
+            });
+
+            if (count > 0) {
+              // Get widths of the first N header columns
+              // assume headers are in the first row of THEAD
+              const headers = table.querySelectorAll('thead tr:first-child th[data-col-idx]');
+              let currentLeft = 0;
+
+              for (let i = 0; i < count; i++) {
+                if (!headers[i]) continue;
+                
+                const width = headers[i].getBoundingClientRect().width;
+                
+                // Select all cells (TH and TD) with this column index
+                const cells = table.querySelectorAll(`[data-col-idx="${i}"]`);
+                
+                cells.forEach(cell => {
+                  cell.style.position = 'sticky';
+                  cell.style.left = `${currentLeft}px`;
+                  // Headers need higher z-index to sit on top of scrolling rows
+                  // Merged body cells also need z-index to sit above standard scrolling cells
+                  cell.style.zIndex = cell.tagName === 'TH' ? '30' : '20';
+                  
+                  // CRITICAL: Sticky cells need a background or text behind them shows through
+                  // Check for dark mode class on HTML body to decide color
+                  const isDark = document.documentElement.classList.contains('dark');
+                  
+                  // Dark Mode: Header = Slate-800 (#1e293b), Body = Slate-900 (#0f172a)
+                  // Light Mode: Header = Gray-100 (#f2f2f2), Body = White (#ffffff)
+                  if (isDark) {
+                     cell.style.backgroundColor = (cell.tagName === 'TH') ? '#1e293b' : '#0f172a';
+                  } else {
+                     cell.style.backgroundColor = (cell.tagName === 'TH') ? '#f2f2f2' : '#ffffff';
+                  }
+                  
+                  cell.classList.add('sticky-col');
+                });
+
+                currentLeft += width;
+              }
+            }
+          }
+        },
+
+        // ============================================
+        // Logout Handler
+        // ============================================
+        async action_Logout() {
+          try {
+            // Call Backend to kill the HttpOnly cookie
+            await fetch(`${this.apiBaseUrl}/api/logout`, {
+              method: "POST",
+              credentials: 'include'
+            });
+          } catch (e) {
+            console.error("Logout error:", e);
+          } finally {
+            // Force redirect to login page
+            window.location.href = "/login";
+          }
         },
 
         // ============================================
@@ -966,6 +1182,11 @@
                 const reqUrl = `${this.apiBaseUrl}/query/${this.targetYear}?${urlParams}`;
                 let res = await fetch(reqUrl, {credentials: 'include'});
 
+                if (res.status === 401) {
+                  window.location.href = "/login";
+                  return;
+                }
+
                 if (!res.ok) {
                   throw new Error(`Server returned status ${res.status}`);
                 }
@@ -1067,9 +1288,10 @@
           const tr2 = document.createElement('tr');
 
           const headers = ["NO", "DIMENSI", "SUB DIMENSI", "INDIKATOR", "ITEM"];
-          headers.forEach(h => {
+          headers.forEach((h, index) => {
             const th = document.createElement('th');
             th.innerHTML = `<span>${h}</span>`;
+            th.dataset.colIdx = index;
             th.rowSpan = 2;
             if (h === "NO") th.className = "col-no";
             if (h === "DIMENSI") th.className = "col-dimensi";
@@ -1153,10 +1375,11 @@
             const tr = document.createElement('tr');
 
             // Metadata Columns
-            headers.forEach(k => {
+            headers.forEach((k, index) => {
               if (rowSpans[i][k] === -1) return;
               const td = document.createElement('td');
               td.textContent = row[k] || "";
+              td.dataset.colIdx = index;
               if (rowSpans[i][k] > 1) {
                 td.rowSpan = rowSpans[i][k];
                 td.className = "merged-cell";
@@ -1190,6 +1413,7 @@
 
             tbody.appendChild(tr);
           });
+        this.$nextTick(() => this.ui_ApplyFreeze());
         },
 
         util_AddColumnResizer(th) {
@@ -1246,7 +1470,6 @@
             // If you refresh and pick this file again, this ID stays the same, so server finds the .tmp file.
             const fileUid = `${fileHash}_${file.size}_${file.lastModified}`;
 
-            // --- CHECK RESUME STATUS ---
             this.setUiStatusMessage = "Checking server resume status...";
 
             // Query server: "Do you have this file?"

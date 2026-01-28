@@ -309,7 +309,6 @@ export const useAdminLogic = () => {
       // If you refresh and pick this file again, this ID stays the same, so server finds the .tmp file.
       const fileUid = `${fileHash}_${file.size}_${file.lastModified}`;
 
-      // --- CHECK RESUME STATUS ---
       setUiStatusMessage("Checking server resume status...");
 
       // Query server: "Do you have this file?"

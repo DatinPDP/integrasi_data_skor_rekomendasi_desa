@@ -18,23 +18,23 @@ from openpyxl.styles import Font, PatternFill, Alignment
 import duckdb
 import polars as pl
 from fastapi import FastAPI, UploadFile, File, Form, Query, Request, Depends, BackgroundTasks, HTTPException, status
-from fastapi.responses import JSONResponse, FileResponse, HTMLResponse
+from fastapi.responses import JSONResponse, FileResponse, HTMLResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
+from starlette.exceptions import HTTPException as StarletteHTTPException # For 404 handler
 
 # IMPORTS FOR AUTH
 from auth import auth_verify_password, auth_create_access_token, auth_get_current_user, auth_get_users_db, ACCESS_TOKEN_EXPIRE_MINUTES
  
 # /root
-#   /.config/rekomendasi.json
 #   /root
+#   /.config/rekomendasi.json
 #   /.config/headers.txt
 #   /.config/intervensi_kegiatan.json
-#   /.config/recommendation.json
 #   /.config/table_structure.csv
 #   /desa_db/server.py
 #   /desa_db/middleware.py
-#   /front_end/web.py
+#   /front_end/router.py
 #   /front_end/templates/admin.html
 #   /front_end/templates/login.html
  
@@ -82,9 +82,9 @@ try:
         helpers_get_cache_path,
         helpers_get_or_create_intervensi_kegiatan,
         ID_COL,
-        BASE_DIR as MW_BASE_DIR, # Import BASE_DIR to ensure alignment
+        BASE_DIR as MW_BASE_DIR,
         CONFIG_DIR,
-        STAGING_FOLDER as MW_STAGING_FOLDER # You might need to add STAGING_FOLDER to middleware or keep it here
+        STAGING_FOLDER as MW_STAGING_FOLDER
     )
 except ImportError:
     # Fallback for different context import
@@ -101,13 +101,20 @@ except ImportError:
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 # Temp folder for uploads
 STAGING_FOLDER = os.path.join(BASE_DIR, "staging")
+
+# DEFINE TEMPLATE PATHS
+# Resolves to: /.../front_end/templates
+ROOT_DIR = os.path.abspath(os.path.join(BASE_DIR, ".."))
+TEMPLATE_DIR = os.path.join(ROOT_DIR, "front_end", "templates")
  
 # Ensure directories exist
 os.makedirs(STAGING_FOLDER, exist_ok=True)
 os.makedirs(CONFIG_DIR, exist_ok=True)
+os.makedirs(TEMPLATE_DIR, exist_ok=True)
+os.makedirs(ROOT_DIR, exist_ok=True)
  
 # ==========================================
-# Login & logout ENDPOINT
+# Login, logout, 404, Endpoints
 # ==========================================
 class LoginRequest(BaseModel):
     username: str
@@ -144,8 +151,47 @@ async def login(creds: LoginRequest, response: JSONResponse = None):
 @app.post("/api/logout")
 async def logout():
     resp = JSONResponse(content={"message": "Logged out"})
-    resp.delete_cookie("session_token")
+    resp.delete_cookie(
+        key="session_token", 
+        httponly=True, 
+        samesite="none", 
+        secure=True
+    )
     return resp
+
+# 404 handler
+@app.exception_handler(404)
+async def custom_404_handler(request, exc):
+    # Returns the HTML page instead of JSON {"detail": "Not Found"}
+    return FileResponse(os.path.join(TEMPLATE_DIR, "404.html"), status_code=404)
+
+# LOGIN PAGE (Public)
+@app.get("/login", response_class=HTMLResponse)
+async def get_login_page():
+    return FileResponse(os.path.join(TEMPLATE_DIR, "login.html"))
+
+# ADMIN PAGE (Protected)
+@app.get("/admin", response_class=HTMLResponse)
+async def get_admin_page(request: Request):
+    """
+    Server-Side Protection:
+    Checks if the 'session_token' cookie exists. 
+    If not, redirects to /login immediately.
+    """
+    token = request.cookies.get("session_token")
+    
+    if not token:
+        # User is not logged in -> Redirect
+        return RedirectResponse(url="/login")
+    
+    # User has a cookie -> Serve the page
+    # (The API endpoints will still verify if the token is valid/expired)
+    return FileResponse(os.path.join(TEMPLATE_DIR, "admin.html"))
+
+# ROOT REDIRECT
+@app.get("/")
+async def root_redirect():
+    return RedirectResponse(url="/admin")
 
 # ==========================================
 # API Endpoints
@@ -476,7 +522,6 @@ def endpoint_get_query_data(
         # so we can easily attach headers while keeping the data structure.
         # OR use make_json_response and attach headers.
         
-        # Let's use your existing helper but attach header
         response = make_json_response(res) 
         response.headers["X-Total-Count"] = str(total_rows)
         return response

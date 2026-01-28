@@ -12,9 +12,9 @@ FRONTEND_TYPE = "fastapi"  # Change to "nextjs" when ready
 
 FRONTEND_CONFIGS = {
     "fastapi": {
-        "cmd": [sys.executable, "front_end/web.py"],
+        "cmd": [sys.executable, "front_end/router.py"],
         "port": 8001,
-        "path": "front_end/web.py"
+        "path": "front_end/router.py"
     },
     "nextjs": {
         "cmd": ["npm", "run", "dev"],

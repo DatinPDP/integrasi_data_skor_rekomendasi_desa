@@ -11,15 +11,14 @@ from fastapi.responses import JSONResponse
 # CONFIGURATION
 # ==========================================
 # /root
-#   /.config/rekomendasi.json
 #   /root
 #   /.config/headers.txt
 #   /.config/intervensi_kegiatan.json
-#   /.config/recommendation.json
+#   /.config/rekomendasi.json
 #   /.config/table_structure.csv
 #   /desa_db/server.py
 #   /desa_db/middleware.py
-#   /front_end/web.py
+#   /front_end/router.py
 #   /front_end/templates/admin.html
 #   /front_end/templates/login.html
  
