@@ -627,7 +627,7 @@
             bg-white hover:bg-emerald-50 text-emerald-600 border-gray-200 hover:border-emerald-300
             dark:bg-slate-800 dark:hover:bg-emerald-600 dark:text-emerald-500 dark:hover:text-white dark:border-slate-700 dark:hover:border-emerald-500"
           >
-            <span class="group-hover:animate-spin">↻</span> Calc
+            <span class="group-hover:animate-spin">↻</span> Hitung Skor
           </button>
         </div>
       </div>
@@ -686,8 +686,8 @@
 
         <div class="flex items-center gap-4">
           <div class="flex flex-col items-end leading-none">
-            <span class="text-slate-400 dark:text-slate-500 text-[9px] uppercase tracking-wider font-bold">Total
-              Rows</span>
+            <span class="text-slate-400 dark:text-slate-500 text-[9px] uppercase tracking-wider font-bold">Jumlah
+              Desa</span>
             <span
               class="font-mono font-bold text-sm
               text-slate-700 dark:text-slate-200"
@@ -697,8 +697,8 @@
 
           <div class="flex flex-col items-end leading-none border-l pl-4
             border-gray-200 dark:border-slate-700">
-            <span class="text-slate-400 dark:text-slate-500 text-[9px] uppercase tracking-wider font-bold">Last
-              Update</span>
+            <span class="text-slate-400 dark:text-slate-500 text-[9px] uppercase tracking-wider font-bold">Update
+              Terakhir</span>
             <span
               class="font-mono font-bold text-sm
               text-emerald-600 dark:text-emerald-400"
@@ -991,7 +991,7 @@
                       items-center gap-2 dark:bg-green-900/20 dark:border-green-800
                       dark:hover:bg-green-500/40 min-h-[42px]"
                   >
-                    <span>💾</span> Download (Server Side)
+                    <span>💾</span> Download (Dari Server)
                   </button>
                 </div>
               </div>
@@ -1021,7 +1021,7 @@
                     <polyline points="3 6 5 6 21 6"></polyline>
                     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                   </svg>
-                  Soft Delete
+                  Hapus ID
                 </h3>
                 <span
                   class="text-gray-400 text-[14px] font-bold transition-transform duration-200"
@@ -1042,7 +1042,7 @@
                     border border-red-200 p-2 rounded text-xs
                     h-16 font-mono focus:border-red-500 focus:ring-1 focus:ring-red-200 outline-none
                     text-gray-700 dark:bg-slate-900 dark:border-red-900/50 dark:text-red-100 dark:placeholder-red-100/50"
-                    placeholder="Paste IDs here to drop from Live view..."
+                    placeholder="Letakan berbagai ID desa disini (dipisahkan dengan , atau enter) untuk di 'drop' dari Live database..."
                   ></textarea>
                 </div>
                 <button
@@ -1052,7 +1052,7 @@
                   py-1.5 rounded text-xs font-bold hover:bg-red-100 hover:text-red-700 transition
                   dark:bg-red-900/20 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/40"
                 >
-                  Confirm Delete
+                  Konfirmasi Hapus
                 </button>
               </div>
             </div>
@@ -1085,7 +1085,7 @@
                     ></circle>
                     <polyline points="12 6 12 12 16 14"></polyline>
                   </svg>
-                  History & Changes
+                  Histori & Perubahan
                 </h3>
 
                 <span
@@ -1113,7 +1113,7 @@
                   'text-green-700 dark:text-green-400' 
                   : 'text-gray-600 dark:text-gray-300'"
                   >
-                    🟢 Live (Current)
+                    🟢 Live (Sekarang)
                   </span>
                   <span
                     x-show="!filter_SelectedVersion"
@@ -1173,7 +1173,7 @@
                           : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50
                           dark:bg-slate-700 dark:text-gray-300 dark:border-slate-600'"
                           >
-                            View Data
+                            Lihat Data
                           </button>
 
                           <button
@@ -1183,7 +1183,7 @@
                             dark:hover:bg-slate-700"
                             x-text="history_OpenDetailsId === v.ts ?
                           'Hide' 
-                          : 'Details'"
+                          : 'Detail'"
                           >
                           </button>
                         </div>
@@ -1313,7 +1313,7 @@
                       r="3"
                     ></circle>
                   </svg>
-                  Location
+                  Lokasi
                 </h3>
 
                 <span
@@ -1412,7 +1412,7 @@
                     class="sidebar_input_search_name
                     w-full border p-2 rounded text-xs focus:border-blue-500
                     outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
-                    placeholder="Search Desa Name..."
+                    placeholder="Cari Nama Desa (HURUF KAPITAL)..."
                   >
                 </div>
                 <div class="sidebar_search_ids mb-3">
@@ -1421,7 +1421,7 @@
                     class="sidebar_input_search_ids
                     w-full mb-2 border p-2 rounded text-xs h-20 font-mono
                     focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
-                    placeholder="Paste IDs here (comma or newline separated) to search by ID Desa..."
+                    placeholder="Letakan berbagai ID desa disini untuk mencari (dipisah dengan , atau enter (newline) )..."
                   ></textarea>
                 </div>
                 <button
@@ -1430,7 +1430,7 @@
                   w-full bg-slate-500 text-white py-2 rounded text-xs
                   font-bold hover:bg-slate-800 transition shadow-sm dark:bg-slate-600 dark:hover:bg-slate-500"
                 >
-                  Apply Filters
+                  Filter
                 </button>
               </div>
             </div>

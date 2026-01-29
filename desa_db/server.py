@@ -25,7 +25,14 @@ from fastapi.middleware.gzip import GZipMiddleware
 from starlette.exceptions import HTTPException as StarletteHTTPException # For 404 handler
 
 # IMPORTS FOR AUTH
-from auth import auth_verify_password, auth_create_access_token, auth_get_current_user, auth_get_users_db, ACCESS_TOKEN_EXPIRE_MINUTES
+from auth import (
+    auth_verify_password,
+    auth_create_access_token,
+    auth_get_current_user,
+    auth_require_admin,
+    auth_get_users_db,
+    ACCESS_TOKEN_EXPIRE_MINUTES
+)
  
 # /root
 #   /root
@@ -241,7 +248,7 @@ class UploadFinalize(BaseModel):
     total_hash: str
  
 # Resumable Uploads Endpoints
-@app.post("/upload/init/{year}", dependencies=[Depends(auth_get_current_user)])
+@app.post("/upload/init/{year}", dependencies=[Depends(auth_require_admin)])
 async def endpoint_upload_init(year: str, payload: UploadInit):
     """
     Checks if an upload was interrupted and returns the offset to resume from.
@@ -267,7 +274,7 @@ async def endpoint_upload_init(year: str, payload: UploadInit):
     return {"status": "ready", "upload_id": payload.file_uid, "received_bytes": received_bytes}
  
 # Resumable Uploads Endpoints
-@app.post("/upload/chunk/{year}", dependencies=[Depends(auth_get_current_user)])
+@app.post("/upload/chunk/{year}", dependencies=[Depends(auth_require_admin)])
 async def endpoint_upload_chunk(
     year: str,
     chunk: UploadFile = File(...),
@@ -300,7 +307,7 @@ async def endpoint_upload_chunk(
     return {"status": "ok", "received": len(content)}
  
 # Resumable Uploads Endpoints
-@app.post("/upload/finalize/{year}", dependencies=[Depends(auth_get_current_user)])
+@app.post("/upload/finalize/{year}", dependencies=[Depends(auth_require_admin)])
 async def endpoint_upload_finalize(year: str, payload: UploadFinalize):
     """
     Triggered when all chunks are sent. 
@@ -337,7 +344,7 @@ async def endpoint_upload_finalize(year: str, payload: UploadFinalize):
         return JSONResponse(status_code=500, content={"error": str(e)})
  
 # STAGE: Upload -> Analyze Diff -> Return Stats
-@app.post("/stage/{year}", dependencies=[Depends(auth_get_current_user)])
+@app.post("/stage/{year}", dependencies=[Depends(auth_require_admin)])
 async def endpoint_post_stage_upload(
     year: str,
     file: UploadFile = File(...)
@@ -931,7 +938,7 @@ async def endpoint_post_calculate_dashboard(year: str, request: Request):
         con.close()
  
 # DELETE: Soft Delete (Expire) specific IDs
-@app.post("/delete/{year}", dependencies=[Depends(auth_get_current_user)])
+@app.post("/delete/{year}", dependencies=[Depends(auth_require_admin)])
 async def endpoint_post_delete_ids(
     year: str,
     ids: str = Query(..., description="Semicolon or newline separated list of IDs"),

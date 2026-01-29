@@ -76,3 +76,46 @@ async def auth_get_current_user(request: Request):
         raise HTTPException(status_code=401, detail="User inactive or deleted")
 
     return username
+
+# === THE GATEKEEPER ADMIN ===
+async def auth_require_admin(request: Request):
+    """
+    Strict dependency:
+    1. Checks if token exists.
+    2. Decodes token.
+    3. CHECKS IF ROLE IS 'admin'.
+    4. Throws 403 Forbidden if not admin.
+    """
+    token = request.cookies.get("session_token")
+    
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+        )
+
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        role: str = payload.get("role") # Extract role from token
+
+        if username is None:
+            raise HTTPException(status_code=401, detail="Invalid token")
+        
+        # === THE NEW CHECK ===
+        if role != "admin":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, # 403 = Access Denied
+                detail="Access restricted to Admins only"
+            )
+
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    # Optional: Double check against DB if user is still active
+    db = auth_get_users_db()
+    user = db.get(username)
+    if not user or not user.get("active"):
+        raise HTTPException(status_code=401, detail="User inactive or deleted")
+
+    return username
