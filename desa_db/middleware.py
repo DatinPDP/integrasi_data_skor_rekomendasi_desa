@@ -426,6 +426,8 @@ def helpers_get_or_create_intervensi_kegiatan(items: list[str]):
         print(f"⚠️ Could not save intervensi_kegiatan: {e}")
  
     return defaults
+
+# reusable dashboard calculate
 def helpers_calculate_dashboard_stats(df_data, structure, ordered_db_cols, templates):
     """
     Core logic to calculate dashboard statistics(based on table_structure.csv) from a Polars DataFrame.
@@ -487,3 +489,147 @@ def helpers_calculate_dashboard_stats(df_data, structure, ordered_db_cols, templ
         calculated_rows.append(row)
 
     return calculated_rows
+
+# rendering dashboard
+# the logic for rendering moved here, reason so no one can inspect the logic on <script>
+def helpers_render_dashboard_html(calculated_rows: list[dict]) -> str:
+    """
+    Generates the full HTML Table (Thead + Tbody) server-side.
+    with hooks for JS interaction.
+    Replicates the 'Row Span' logic previously done in JavaScript.
+    - Adds 'data-col-idx' to ALL cells (required for Column Freeze).
+    - Adds 'resizer' div to Headers (required for Column Resize).
+    """
+    if not calculated_rows:
+        return "<tbody><tr><td colspan='17' class='text-center p-4'>No Data</td></tr></tbody>"
+
+    # Define Column Indices mapping to ensure alignment between Header and Body
+    # 0:NO, 1:DIM, 2:SUB, 3:IND, 4:ITEM, 5-10:SKOR, 11:INTERVENSI, 12-16:PELAKSANA
+    
+    # --- BUILD HEADER (Static Structure based on your CSV layout) ---
+    #add 'data-col-idx' and the 'resizer' div.
+    html = """
+    <thead>
+        <tr>
+            <th class="col-no relative" rowspan="2" data-col-idx="0"><span>NO</span><div class="resizer"></div></th>
+            <th class="col-dimensi relative" rowspan="2" data-col-idx="1"><span>DIMENSI</span><div class="resizer"></div></th>
+            <th class="col-sub_dimensi relative" rowspan="2" data-col-idx="2"><span>SUB DIMENSI</span><div class="resizer"></div></th>
+            <th class="col-indikator relative" rowspan="2" data-col-idx="3"><span>INDIKATOR</span><div class="resizer"></div></th>
+            <th class="col-item relative" rowspan="2" data-col-idx="4"><span>ITEM</span><div class="resizer"></div></th>
+            <th colspan="6">SKOR</th>
+            <th class="col-intervensi relative" rowspan="2" data-col-idx="11">INTERVENSI<div class="resizer"></div></th>
+            <th colspan="5">PELAKSANA</th>
+        </tr>
+        <tr>
+            <th class="col-score relative" data-col-idx="5">Rata<div class="resizer"></div></th>
+            <th class="col-score relative" data-col-idx="6">1<div class="resizer"></div></th>
+            <th class="col-score relative" data-col-idx="7">2<div class="resizer"></div></th>
+            <th class="col-score relative" data-col-idx="8">3<div class="resizer"></div></th>
+            <th class="col-score relative" data-col-idx="9">4<div class="resizer"></div></th>
+            <th class="col-score relative" data-col-idx="10">5<div class="resizer"></div></th>
+            <th class="col-pusat relative" data-col-idx="12">PUSAT<div class="resizer"></div></th>
+            <th class="col-prov relative" data-col-idx="13">PROV<div class="resizer"></div></th>
+            <th class="col-kab relative" data-col-idx="14">KAB<div class="resizer"></div></th>
+            <th class="col-desa relative" data-col-idx="15">DESA<div class="resizer"></div></th>
+            <th class="col-lain relative" data-col-idx="16">LAIN<div class="resizer"></div></th>
+        </tr>
+    </thead>
+    <tbody>
+    """
+
+    # --- CALCULATE ROW SPANS (Ported from JS) ---
+    # We pre-calculate spans to know when to output <td rowspan="X"> or skip
+    n_rows = len(calculated_rows)
+    row_spans = [{"NO": 0, "DIMENSI": 0, "SUB DIMENSI": 0, "INDIKATOR": 0} for _ in range(n_rows)]
+    merge_keys = ["NO", "DIMENSI", "SUB DIMENSI", "INDIKATOR"]
+
+    # Map keys to their CSS classes
+    col_css_map = {
+        "NO": "col-no",
+        "DIMENSI": "col-dimensi",
+        "SUB DIMENSI": "col-sub_dimensi",
+        "INDIKATOR": "col-indikator"
+    }
+
+    for k in merge_keys:
+        i = 0
+        while i < n_rows:
+            # Start of a potential span
+            span = 1
+            j = i + 1
+            while j < n_rows:
+                # Check if current row matches start row
+                if calculated_rows[i].get(k) == calculated_rows[j].get(k):
+                    # STRICT CHECK: Parents must also match
+                    # (e.g., Can't merge "SUB DIMENSI A" if "DIMENSI" changed)
+                    parents_match = True
+                    idx_k = merge_keys.index(k)
+                    for p_idx in range(idx_k): # Check all keys before current K
+                        p_key = merge_keys[p_idx]
+                        if calculated_rows[i].get(p_key) != calculated_rows[j].get(p_key):
+                            parents_match = False
+                            break
+                    
+                    if parents_match:
+                        span += 1
+                        row_spans[j][k] = -1 # Mark as "skip"
+                        j += 1
+                    else:
+                        break
+                else:
+                    break
+            
+            row_spans[i][k] = span
+            i = j # Jump forward
+
+    # --- BUILD BODY HTML ---
+    for i, row in enumerate(calculated_rows):
+        html += "<tr>"
+        
+        # Helper
+        def make_td(content, idx, css_class="", rowspan=1, is_merged=False):
+            # Combine passed class with merged-cell class
+            cls = f"{css_class} {'merged-cell' if is_merged else ''}".strip()
+            
+            # Default padding is 6px, but 'col-no' has !important padding:0 in CSS
+            # We add vertical-align: top to everything.
+            style = "vertical-align: top;"
+            
+            # Only add whitespace wrap if it's NOT the NO column (which is centered/tight)
+            if "col-no" not in css_class:
+                style += " white-space: pre-wrap; padding: 6px;"
+            
+            return f'<td class="{cls}" data-col-idx="{idx}" rowspan="{rowspan}" style="{style}">{content or ""}</td>'
+
+        # 0-3: Merged Columns (NO, DIM, SUB, IND)
+        for idx, key in enumerate(merge_keys): 
+            span = row_spans[i][key]
+            if span != -1:
+                # FIX: Pass the specific CSS class (e.g., 'col-no')
+                html += make_td(row.get(key), idx, css_class=col_css_map.get(key, ""), rowspan=span, is_merged=(span > 1))
+
+        # 4: ITEM
+        html += make_td(row.get("ITEM"), 4, css_class="col-item")
+
+        # 5-10: SCORES
+        score_keys = ["SKOR Rata-Rata", "SKOR 1", "SKOR 2", "SKOR 3", "SKOR 4", "SKOR 5"]
+        for idx, key in enumerate(score_keys, 5):
+            val = row.get(key)
+            display = val if val is not None else ""
+            html += f'<td class="col-score" data-col-idx="{idx}" style="text-align:center;">{display}</td>'
+
+        # 11: INTERVENSI
+        html += make_td(row.get("INTERVENSI KEGIATAN"), 11, css_class="col-intervensi")
+
+        # 12-16: PELAKSANA
+        pelaksana_keys = ["PUSAT", "PROVINSI", "KABUPATEN", "DESA", "Lainnya"]
+        pelaksana_css = ["col-pusat", "col-prov", "col-kab", "col-desa", "col-lain"]
+        for j, suffix in enumerate(pelaksana_keys):
+            idx = 12 + j
+            key = f"PELAKSANA KEGIATAN {suffix}"
+            html += make_td(row.get(key), idx, css_class=pelaksana_css[j])
+
+        html += "</tr>"
+
+    html += "</tbody>"
+    return html

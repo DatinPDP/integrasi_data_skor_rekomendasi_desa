@@ -83,6 +83,7 @@ try:
         helpers_get_cache_path,
         helpers_get_or_create_intervensi_kegiatan,
         helpers_calculate_dashboard_stats,
+        helpers_render_dashboard_html,
         ID_COL,
         BASE_DIR as MW_BASE_DIR,
         CONFIG_DIR,
@@ -619,9 +620,7 @@ def endpoint_download_server_excel(year: str, request: Request):
     con, _ = helpers_get_db_connection(year)
     
     try:
-        # ==========================================
         # PREPARE QUERY (Filters + Sort)
-        # ==========================================
         params_dict = dict(request.query_params)
         
         # Check Translate Flag (String "true"/"false" from URL)
@@ -658,9 +657,7 @@ def endpoint_download_server_excel(year: str, request: Request):
         if do_translate:
             df_grid = apply_rekomendasis(df_grid)
 
-        # ==========================================
         # BUILD EXCEL (OpenPyXL)
-        # ==========================================
         wb = Workbook()
         
         # Define Common Styles
@@ -824,9 +821,7 @@ def endpoint_download_server_excel(year: str, request: Request):
                     merge_tracker[col_idx]["val"] = val
                     merge_tracker[col_idx]["start"] = current_excel_row
 
-        # ==========================================
         # 3. RETURN FILE
-        # ==========================================
         output = io.BytesIO()
         wb.save(output)
         output.seek(0)
@@ -884,8 +879,8 @@ async def endpoint_post_calculate_dashboard(year: str, request: Request):
         # Load CSV Structure
         csv_path = os.path.join(CONFIG_DIR, "table_structure.csv")
         if not os.path.exists(csv_path):
-            return JSONResponse(status_code=404, content={"error": "table_structure.csv missing"})
- 
+            return HTMLResponse(content="Error: table_structure.csv missing", status_code=404)
+
         with open(csv_path, "r", encoding="utf-8-sig", errors="replace") as f:
             sniffer = csv.Sniffer()
             sample = f.read(1024)
@@ -911,7 +906,7 @@ async def endpoint_post_calculate_dashboard(year: str, request: Request):
             # This list preserves the order of metric columns in the DB
             ordered_db_cols = [r[0] for r in db_cols_info if r[0] not in metadata_cols]
         except:
-            return JSONResponse(status_code=500, content={"error": "Database not initialized"})
+            return HTMLResponse(content="Error: DB not initialized", status_code=500)
  
         # Load/Init Templates
         item_names = [row.get("ITEM", "") for row in structure if row.get("ITEM")]
@@ -920,15 +915,18 @@ async def endpoint_post_calculate_dashboard(year: str, request: Request):
         # Calculate Per Row (Using helpers)
         calculated_rows = helpers_calculate_dashboard_stats(df_filtered, structure, ordered_db_cols, templates)
  
+        # RENDER HTML (NEW HELPER)
+        html_table = helpers_render_dashboard_html(calculated_rows)
+
         # Format for Frontend (Ensure numbers are strings with commas if needed, or send raw)
         # The helper sends raw numbers (Int/Float). 
         # If your frontend expects formatted strings (e.g. "1,024"), convert here or handle in JS.
         # Current frontend code handles raw numbers fine.
-        return JSONResponse(content=calculated_rows)
+        return HTMLResponse(content=html_table)
  
     except Exception as e:
         traceback.print_exc()
-        return JSONResponse(status_code=500, content={"error": str(e)})
+        return HTMLResponse(content=f"Server Error: {str(e)}", status_code=500)
     finally:
         con.close()
  
