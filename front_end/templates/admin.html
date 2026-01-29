@@ -855,31 +855,15 @@
                       </div>
                     </div>
                   </div>
-
                   <button
-                    @click="action_DownloadToExcel"
+                    @click="action_DownloadServerSide"
                     class="sidebar_btn_download_excel w-full border
-                    border-green-600 bg-green-50
-                    py-3 rounded text-xs font-bold hover:bg-green-100 transition flex justify-center
-                    items-center gap-2 dark:bg-green-900/20 dark:border-green-800
-                    dark:hover:bg-green-900/40 min-h-[42px]"
-                    :class="ui_DownloadStatusMessage ?
-                    'text-green-600 dark:text-green-400 cursor-wait' 
-                    : 'text-green-700 dark:text-green-400'"
-                    :disabled="!!ui_DownloadStatusMessage"
+                      border-green-600 bg-green-50
+                      py-3 rounded text-xs font-bold hover:bg-green-100 transition flex justify-center
+                      items-center gap-2 dark:bg-green-900/20 dark:border-green-800
+                      dark:hover:bg-green-500/40 min-h-[42px]"
                   >
-                    <template x-if="!ui_DownloadStatusMessage">
-                      <div class="flex items-center gap-2">
-                        <span>📥</span> Download Excel
-                      </div>
-                    </template>
-
-                    <template x-if="ui_DownloadStatusMessage">
-                      <span
-                        x-text="ui_DownloadStatusMessage"
-                        class="animate-pulse truncate px-1"
-                      ></span>
-                    </template>
+                    <span>📊</span> Download (Server Side)
                   </button>
                 </div>
               </div>
@@ -1323,8 +1307,6 @@
           ui_FreezeColCount: 0,
 
           // --- MODALS & MESSAGES ---
-          ui_ShowDownloadModal: false,
-          ui_DownloadStatusMessage: "",
           setUiStatusMessage: "",
           ui_UploadStatusMessage: "",
 
@@ -1680,6 +1662,21 @@
                   translate: this.isTranslationActive
                 });
 
+                // --- Handle Sorting ---
+                // params.sortModel looks like: [{ colId: 'colName', sort: 'asc' }]
+                if (params.sortModel && params.sortModel.length > 0) {
+                  const sortState = params.sortModel[0];
+                  urlParams.append("sort_by", sortState.colId);
+                  urlParams.append("sort_dir", sortState.sort); // 'asc' or 'desc'
+                }
+
+                // --- Handle Column Filters ---
+                // If you want the little filter menu on the column headers to work
+                if (params.filterModel && Object.keys(params.filterModel).length > 0) {
+                  urlParams.append("filterModel", JSON.stringify(params.filterModel));
+                }
+
+                // Existing Sidebar Filters
                 if (this.filter_SelectedVersion) urlParams.append("version", this.filter_SelectedVersion);
                 if (this.filter_SelProv) urlParams.append("Provinsi", this.filter_SelProv);
                 if (this.filter_SelKab) urlParams.append("Kabupaten/ Kota", this.filter_SelKab);
@@ -1689,7 +1686,9 @@
                 if (this.filter_IdListInput.trim()) urlParams.append("ids", this.filter_IdListInput.replace(/\n/g, ";"));
 
                 try {
-                  this.agGridApiInstance.showLoadingOverlay();
+                  // Only show loading if it's a primary load, otherwise it flickers too much
+                  if (offset === 0) this.agGridApiInstance.showLoadingOverlay();
+
                   const reqUrl = `${this.apiBaseUrl}/query/${this.targetYear}?${urlParams}`;
                   let res = await fetch(reqUrl, {credentials: 'include'});
 
@@ -2186,189 +2185,38 @@
           // ============================================
           // ACTIONS: EXPORT/DOWNLOADS
           // ============================================
-          async action_DownloadToExcel() {
-            // SCENARIO 1: User has already filtered a specific province
-            // Just download that one file normally.
-            if (this.filter_SelProv) {
-              this.ui_DownloadStatusMessage = "Downloading current view...";
-              await this.util_GenerateAndDownloadExcel(this.filter_SelProv, `Export_${this.filter_SelProv}`);
-              this.ui_DownloadStatusMessage = "";
-              return;
-            }
 
-            // SCENARIO 2: Dataset huge -> Show Custom Modal
-            this.ui_ShowDownloadModal = true;
-          },
+          // Server-side downloads
+          action_DownloadServerSide() {
+            this.setUiStatusMessage = "Downloading...";
 
-          // --- Modal Handlers ---
-          ui_DownloadModal_AllProvinces() {
-            this.ui_ShowDownloadModal = false;
-            this.util_DownloadAllProvinces();
-          },
-
-          ui_DownloadModal_DashboardOnly() {
-            this.ui_ShowDownloadModal = false;
-            this.util_DownloadDashboardOnly();
-          },
-
-          // OPTION A: Batch Download Loop
-          async util_DownloadAllProvinces() {
-            // Get list of all provinces from hierarchy
-            const provinces = Object.keys(this.meta_HierarchyTree).sort();
-            if (provinces.length === 0) {
-              this.util_Alert("Not Ready", "Province data not loaded. Please wait or refresh.", "info");
-              return;
-            }
-
-            let dirHandle = null;
-
-            // Try to open "Spawn Explorer" (Folder Picker)
-            try {
-              // This command opens the system directory chooser (Dolphin/Finder/Explorer)
-              if (window.showDirectoryPicker) {
-                dirHandle = await window.showDirectoryPicker();
-              }
-            } catch (e) {
-              // User clicked cancel or browser blocked it
-              if (e.name === 'AbortError') return; // User cancelled
-              console.warn("Folder picker not supported, falling back to standard download.");
-            }
-
-            // Loop and Save
-            for (let i = 0; i < provinces.length; i++) {
-              const prov = provinces[i];
-              const filename = `Export_${prov}.xlsx`;
-
-              this.ui_DownloadStatusMessage = `Saving ${i + 1}/${provinces.length}: ${prov}...`;
-
-              try {
-                // Step A: Generate the Workbook Data
-                const wb = await this.util_GenerateWorkbookObject(prov);
-
-                if (dirHandle) {
-                  // MODERN WAY: Write directly to selected folder
-                  const fileHandle = await dirHandle.getFileHandle(filename, {create: true});
-                  const writable = await fileHandle.createWritable();
-                  // Write binary array
-                  const buffer = XLSX.write(wb, {bookType: 'xlsx', type: 'array'});
-                  await writable.write(buffer);
-                  await writable.close();
-                } else {
-                  // OLD WAY: Fallback to individual downloads
-                  XLSX.writeFile(wb, filename);
-                  await new Promise(r => setTimeout(r, 1000)); // Pause to prevent crash
-                }
-
-              } catch (e) {
-                console.error(`Failed to download ${prov}`, e);
-              }
-            }
-
-            this.ui_DownloadStatusMessage = "✅ All Downloads Complete";
-            setTimeout(() => this.ui_DownloadStatusMessage = "", 4000);
-          },
-
-          // Helper 1: Just GENERATE the workbook (Don't save yet)
-          async util_GenerateWorkbookObject(provinceName) {
-            // Setup Filters (Force the province scope)
+            // Get Base Filters
             let params = new URLSearchParams({
-              limit: 1000000,
               translate: this.isTranslationActive,
-              Provinsi: provinceName
-            });
-            // Include Sidebar Filters in Download
-            if (this.filter_SelKab) params.append("Kabupaten/ Kota", this.filter_SelKab);
-            if (this.filter_SelKec) params.append("Kecamatan", this.filter_SelKec);
-            if (this.filter_NameSearch) params.append("Desa", this.filter_NameSearch);
-
-            // Keep version if selected
-            if (this.filter_SelectedVersion) params.append("version", this.filter_SelectedVersion);
-            // Keep IDs if pasted
-            if (this.filter_IdListInput.trim()) params.append("ids", this.filter_IdListInput.replace(/\n/g, ";"));
-
-            const wb = XLSX.utils.book_new();
-
-            // Sheet 1: Grid
-            let resGrid = await fetch(`${this.apiBaseUrl}/query/${this.targetYear}?${params}`, {credentials: 'include'});
-            if (!resGrid.ok) throw new Error("Grid fetch failed");
-            let gridData = await resGrid.json();
-
-            if (!gridData || gridData.length === 0) gridData = [{"Status": "No Data"}];
-            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(gridData), "Grid Data");
-
-            // Sheet 2: Dashboard
-            let resDash = await fetch(`${this.apiBaseUrl}/dashboard/calculate/${this.targetYear}?${params}`, {
-              method: "POST",
-              credentials: 'include'
-            });
-            if (resDash.ok) {
-              let dashData = await resDash.json();
-              XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dashData), "Dashboard");
-            }
-
-            return wb;
-          },
-
-          // OPTION B: Dashboard Only (Visual Dump)
-          util_DownloadDashboardOnly() {
-            this.ui_DownloadStatusMessage = "Exporting Dashboard...";
-            const dashTable = document.getElementById('dashboard_table_element');
-
-            if (!dashTable || !dashTable.querySelector('tbody tr')) {
-              this.util_Alert("Empty Dashboard", "Dashboard is empty. Please switch to Dashboard view and render it first.", "info");
-              this.ui_DownloadStatusMessage = "";
-              return;
-            }
-
-            const wb = XLSX.utils.book_new();
-
-            // Clone table to capture inputs correctly
-            const tableClone = dashTable.cloneNode(true);
-            tableClone.querySelectorAll('input, textarea').forEach(input => {
-              const span = document.createElement('span');
-              span.textContent = input.value;
-              if (input.parentNode) input.parentNode.replaceChild(span, input);
+              Provinsi: this.filter_SelProv,
+              "Kabupaten/ Kota": this.filter_SelKab,
+              Kecamatan: this.filter_SelKec,
+              Desa: this.filter_NameSearch
             });
 
-            const ws = XLSX.utils.table_to_sheet(tableClone, {raw: true});
-            XLSX.utils.book_append_sheet(wb, ws, "Dashboard");
-
-            XLSX.writeFile(wb, `export_all_provinsi_dashboard_${this.targetYear}.xlsx`);
-            this.ui_DownloadStatusMessage = "✅ Done";
-            setTimeout(() => this.ui_DownloadStatusMessage = "", 2000);
-          },
-
-          // HELPER: Generates 1 Excel File with 2 Sheets (Grid + Stats)
-          async util_GenerateWorkbookObject(provinceName) {
-            let params = new URLSearchParams({
-              limit: 1000000,
-              translate: this.isTranslationActive,
-              Provinsi: provinceName
-            });
             if (this.filter_SelectedVersion) params.append("version", this.filter_SelectedVersion);
             if (this.filter_IdListInput.trim()) params.append("ids", this.filter_IdListInput.replace(/\n/g, ";"));
 
-            const wb = XLSX.utils.book_new();
-
-            // Sheet 1: Grid
-            let resGrid = await fetch(`${this.apiBaseUrl}/query/${this.targetYear}?${params}`, {credentials: 'include'});
-            if (!resGrid.ok) throw new Error("Grid fetch failed");
-            let gridData = await resGrid.json();
-
-            if (!gridData || gridData.length === 0) gridData = [{"Status": "No Data"}];
-            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(gridData), "Grid Data");
-
-            // Sheet 2: Dashboard
-            let resDash = await fetch(`${this.apiBaseUrl}/dashboard/calculate/${this.targetYear}?${params}`, {
-              method: "POST",
-              credentials: 'include'
-            });
-            if (resDash.ok) {
-              let dashData = await resDash.json();
-              XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dashData), "Dashboard");
+            // Get Sorting from AG Grid
+            if (this.agGridApiInstance) {
+              const sortState = this.agGridApiInstance.getColumnState().find(s => s.sort != null);
+              if (sortState) {
+                params.append("sort_by", sortState.colId);
+                params.append("sort_dir", sortState.sort);
+              }
             }
 
-            return wb;
+            // Trigger Download (Open in new tab to force download)
+            // We use window.open because it handles the file download headers automatically
+            const url = `${this.apiBaseUrl}/download/excel/${this.targetYear}?${params.toString()}`;
+            window.open(url, '_blank');
+
+            setTimeout(() => this.setUiStatusMessage = "", 2000);
           },
 
           // ============================================
@@ -2417,95 +2265,6 @@
         }
       }
     </script>
-
-    <div
-      x-show="ui_ShowDownloadModal"
-      style="display: none;"
-      class="fixed inset-0 z-[100] flex items-center justify-center bg-black/30 backdrop-blur-sm transition-opacity"
-      x-transition:enter="ease-out duration-200"
-      x-transition:enter-start="opacity-0"
-      x-transition:enter-end="opacity-100"
-      x-transition:leave="ease-in duration-100"
-      x-transition:leave-start="opacity-100"
-      x-transition:leave-end="opacity-0"
-    >
-
-      <div
-        class="bg-white dark:bg-slate-800 rounded-lg shadow-2xl border border-slate-200 dark:border-slate-700 w-[480px]
-        max-w-[90%] p-6 transform transition-all"
-        @click.outside="ui_ShowDownloadModal = false"
-      >
-
-        <div class="flex items-start gap-4 mb-6">
-          <div class="shrink-0 p-3 bg-amber-100 dark:bg-amber-900/30 rounded-full text-amber-600 dark:text-amber-400">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="w-6 h-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464
-                0L3.34 16c-.77 1.333.192 3 1.732 3z"
-              />
-            </svg>
-          </div>
-          <div>
-            <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100 mb-1">Large Dataset Warning</h3>
-            <p class="text-[13px] text-slate-600 dark:text-slate-400 leading-relaxed">
-              Because the data is too large (will crash the browser) it will download province by province (multiple
-              files).
-            </p>
-          </div>
-        </div>
-
-        <div class="flex flex-col gap-3">
-          <button
-            @click="ui_DownloadModal_AllProvinces()"
-            class="w-full flex items-center justify-between p-3 rounded-md border border-blue-200 bg-blue-50/50
-            hover:bg-blue-100 dark:border-blue-800/50 dark:bg-blue-900/10 dark:hover:bg-blue-900/30 group transition-all"
-          >
-            <div class="flex flex-col items-start text-left">
-              <span class="font-bold text-blue-700 dark:text-blue-400 text-sm">
-                Download All Data
-              </span>
-              <span class="text-[11px] text-blue-600/70 dark:text-blue-400/70">
-                Downloads multiple files (Province by Province)
-              </span>
-            </div>
-            <span class="text-blue-400 group-hover:translate-x-1 transition-transform">→</span>
-          </button>
-
-          <button
-            @click="ui_DownloadModal_DashboardOnly()"
-            class="w-full flex items-center justify-between p-3 rounded-md border border-slate-200 bg-white
-            hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 group transition-all"
-          >
-            <div class="flex flex-col items-start text-left">
-              <span class="font-bold text-slate-700 dark:text-slate-300 text-sm">
-                Download Dashboard Only
-              </span>
-              <span class="text-[11px] text-slate-500 dark:text-slate-400">
-                Current view (HTML Table Only)
-              </span>
-            </div>
-            <span class="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
-          </button>
-
-          <button
-            @click="ui_ShowDownloadModal = false"
-            class="w-full mt-2 py-2 text-xs font-bold text-slate-400 hover:text-slate-600 dark:text-slate-500
-            dark:hover:text-slate-300 transition-colors uppercase tracking-wider"
-          >
-            Cancel
-          </button>
-        </div>
-      </div>
-    </div>
 
     <div
       x-data="{ localMsg: '', timeout: null }"

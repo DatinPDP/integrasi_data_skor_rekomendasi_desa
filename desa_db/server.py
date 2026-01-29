@@ -13,12 +13,13 @@ import hashlib
 from pydantic import BaseModel
 from datetime import datetime, timedelta
 from openpyxl import Workbook
-from openpyxl.styles import Font, PatternFill, Alignment
+from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+from openpyxl.utils import get_column_letter
  
 import duckdb
 import polars as pl
 from fastapi import FastAPI, UploadFile, File, Form, Query, Request, Depends, BackgroundTasks, HTTPException, status
-from fastapi.responses import JSONResponse, FileResponse, HTMLResponse, RedirectResponse
+from fastapi.responses import JSONResponse, FileResponse, HTMLResponse, RedirectResponse, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from starlette.exceptions import HTTPException as StarletteHTTPException # For 404 handler
@@ -81,6 +82,7 @@ try:
         helpers_build_dynamic_query,
         helpers_get_cache_path,
         helpers_get_or_create_intervensi_kegiatan,
+        helpers_calculate_dashboard_stats,
         ID_COL,
         BASE_DIR as MW_BASE_DIR,
         CONFIG_DIR,
@@ -505,11 +507,31 @@ def endpoint_get_query_data(
         count_sql = f"SELECT COUNT(*) FROM ({final_query})"
         total_rows = con.execute(count_sql, values).fetchone()[0]
 
-        # Add paginaiton & stable sort
-        # sort to ensure pages don't shuffle rows. 
-        # Using ID_COL or rowid if available, but valid_from/Provinsi is a safe fallback.
-        # Assuming ID_COL is stable.
-        final_query += f" ORDER BY \"{ID_COL}\" LIMIT {limit} OFFSET {offset}"
+        # SORTING LOGIC (AG Grid Support)
+        sort_by = params_dict.get("sort_by")
+        sort_dir = params_dict.get("sort_dir", "asc")
+
+        # Default stable sort if nothing selected
+        order_clause = f'ORDER BY "{ID_COL}" ASC'
+
+        if sort_by:
+            # Security: Validate column exists to prevent SQL Injection
+            # "DESCRIBE" is fast in DuckDB
+            try:
+                valid_cols = [r[0] for r in con.execute("DESCRIBE master_data").fetchall()]
+                
+                if sort_by in valid_cols:
+                    safe_dir = "DESC" if sort_dir.lower() == "desc" else "ASC"
+                    # sort to ensure pages don't shuffle rows. 
+                    # Using ID_COL or rowid if available, but valid_from/Provinsi is a safe fallback.
+                    # add ID_COL as a secondary sort key to ensure consistent pagination 
+                    # even if values in the primary column are identical.
+                    order_clause = f'ORDER BY "{sort_by}" {safe_dir}, "{ID_COL}" ASC'
+            except Exception as e:
+                print(f"Sorting Error (Ignored): {e}")
+
+        # Append Sort + Pagination
+        final_query += f" {order_clause} LIMIT {limit} OFFSET {offset}"
  
         res = con.execute(final_query, values).pl()
         if translate: res = apply_rekomendasis(res)
@@ -585,6 +607,244 @@ def endpoint_get_history_versions(year: str):
         return JSONResponse(status_code=500, content={"error": str(e)})
     finally:
         con.close()
+
+# Download server-side endpoints
+@app.get("/download/excel/{year}", dependencies=[Depends(auth_get_current_user)])
+def endpoint_download_server_excel(year: str, request: Request):
+    """
+    Generates a 2-Sheet Excel file (Grid Data + Dashboard Stats)
+    Generates Excel Export matching Frontend styles.
+    applying ALL current filters and sorting from the frontend.
+    """
+    con, _ = helpers_get_db_connection(year)
+    
+    try:
+        # ==========================================
+        # PREPARE QUERY (Filters + Sort)
+        # ==========================================
+        params_dict = dict(request.query_params)
+        
+        # Check Translate Flag (String "true"/"false" from URL)
+        do_translate = params_dict.get("translate", "false").lower() == "true"
+
+        # Time Travel Filter
+        version = params_dict.get("version")
+        time_filter = f"valid_from <= '{version}' AND (valid_to > '{version}' OR valid_to IS NULL)" if version else "valid_to IS NULL"
+        
+        base_query = f"SELECT * EXCLUDE (valid_from, valid_to, commit_id, source_file) FROM master_data WHERE {time_filter}"
+        
+        # Apply Filters (Provinsi, Kab, Kec, etc.)
+        final_query, values = helpers_build_dynamic_query(con, base_query, params_dict)
+
+        # Apply Sort (AG Grid State)
+        sort_by = params_dict.get("sort_by")
+        sort_dir = params_dict.get("sort_dir", "asc")
+        
+        if sort_by:
+            try:
+                # Basic injection check
+                valid_cols = [r[0] for r in con.execute("DESCRIBE master_data").fetchall()]
+                if sort_by in valid_cols:
+                    safe_dir = "DESC" if sort_dir.lower() == "desc" else "ASC"
+                    final_query += f' ORDER BY "{sort_by}" {safe_dir}, "{ID_COL}" ASC'
+            except: pass
+        else:
+            final_query += f' ORDER BY "{ID_COL}" ASC'
+
+        # Fetch Data (No Limit)
+        df_grid = con.execute(final_query, values).pl()
+
+        # APPLY TRANSLATION IF REQUESTED (Sheet 1 Fix)
+        if do_translate:
+            df_grid = apply_rekomendasis(df_grid)
+
+        # ==========================================
+        # BUILD EXCEL (OpenPyXL)
+        # ==========================================
+        wb = Workbook()
+        
+        # Define Common Styles
+        thin_border = Border(left=Side(style='thin'), right=Side(style='thin'), top=Side(style='thin'), bottom=Side(style='thin'))
+        align_top = Alignment(vertical='top', wrap_text=True)
+        align_center = Alignment(horizontal='center', vertical='center', wrap_text=True)
+        header_fill = PatternFill(start_color="F2F2F2", end_color="F2F2F2", fill_type="solid")
+        header_font = Font(bold=True)
+
+        # --- SHEET 1: GRID DATA ---
+        ws1 = wb.active
+        ws1.title = "Grid Data"
+        df_sheet1 = apply_rekomendasis(df_grid) if do_translate else df_grid
+        grid_dicts = df_sheet1.to_dicts()
+        
+        # Write Headers
+        grid_dicts = df_grid.to_dicts()
+        if grid_dicts:
+            headers = list(grid_dicts[0].keys())
+            ws1.append(headers)
+            for row in grid_dicts:
+                # Handle None/NaN for Excel
+                clean_row = [(v if v is not None else "") for v in row.values()]
+                ws1.append(clean_row)
+            
+            # Basic Formatting for Sheet 1
+            for cell in ws1[1]:
+                cell.font = header_font
+                cell.fill = header_fill
+        else:
+            ws1.append(["No Data Found for filters"])
+
+        # --- SHEET 2: DASHBOARD STATS ---
+        ws2 = wb.create_sheet("Dashboard Calc")
+
+        # A. LOAD CONFIG & TEMPLATES
+        csv_path = os.path.join(CONFIG_DIR, "table_structure.csv")
+        structure = []
+        if os.path.exists(csv_path):
+            with open(csv_path, "r", encoding="utf-8-sig", errors="replace") as f:
+                # Auto-detect delimiter
+                sample = f.read(1024)
+                f.seek(0)
+                sniffer = csv.Sniffer()
+                try: dialect = sniffer.sniff(sample, delimiters=";")
+                except: dialect = None
+                reader = csv.DictReader(f, delimiter=dialect.delimiter if dialect else ";")
+                structure = list(reader)
+
+        # Get Metrics Columns (Same logic as dashboard endpoint)
+        db_cols_info = con.execute("DESCRIBE master_data").fetchall()
+        metadata_cols = {
+            "valid_from", "valid_to", "commit_id", "source_file",
+            "Provinsi", "Kabupaten/ Kota", "Kecamatan", 
+            "Kode Wilayah Administrasi Desa", "Desa", "TAHUN DATA"
+        }
+        ordered_db_cols = [r[0] for r in db_cols_info if r[0] not in metadata_cols]
+
+        # Load Narrative Templates
+        item_names = [row.get("ITEM", "") for row in structure if row.get("ITEM")]
+        templates = helpers_get_or_create_intervensi_kegiatan(item_names)
+
+        # *** CALL HELPER ***
+        calculated_rows = helpers_calculate_dashboard_stats(df_grid, structure, ordered_db_cols, templates)
+
+        # B. SETUP COLUMNS & HEADERS
+        # Set Widths (Approximating CSS pixels to Excel chars)
+        # 40px ~= 5 chars, 300px ~= 40 chars, 1100px ~= 100 chars
+        ws2.column_dimensions['A'].width = 5   # NO
+        ws2.column_dimensions['B'].width = 15  # DIMENSI
+        ws2.column_dimensions['C'].width = 15  # SUB
+        ws2.column_dimensions['D'].width = 15  # INDIKATOR
+        ws2.column_dimensions['E'].width = 45  # ITEM (Wide)
+        for c in ['F','G','H','I','J','K']:
+            ws2.column_dimensions[c].width = 8 # Scores
+        ws2.column_dimensions['L'].width = 100 # INTERVENSI (Very Wide)
+
+        # Pelaksana Columns
+        for c in ['M','N','O','P','Q']:
+            ws2.column_dimensions[c].width = 25
+
+        # Write Headers (Rows 1 & 2)
+        # Row 1: Merged Headers
+        ws2.append(["NO", "DIMENSI", "SUB DIMENSI", "INDIKATOR", "ITEM", 
+                    "SKOR", "", "", "", "", "",         # Colspan 6
+                    "INTERVENSI",                       # Rowspan 2
+                    "PELAKSANA", "", "", "", ""])       # Colspan 5
+        
+        # Row 2: Sub Headers
+        ws2.append(["", "", "", "", "", 
+                    "Rata-Rata", "1", "2", "3", "4", "5", 
+                    "", 
+                    "PUSAT", "PROVINSI", "KABUPATEN", "DESA", "LAINNYA"])
+
+        # Merge Logic for Header
+        ws2.merge_cells("A1:A2") # NO
+        ws2.merge_cells("B1:B2") # DIM
+        ws2.merge_cells("C1:C2") # SUB
+        ws2.merge_cells("D1:D2") # IND
+        ws2.merge_cells("E1:E2") # ITEM
+        ws2.merge_cells("F1:K1") # SKOR Group
+        ws2.merge_cells("L1:L2") # INTERVENSI
+        ws2.merge_cells("M1:Q1") # PELAKSANA Group
+
+        # Style Headers
+        for r in [1, 2]:
+            for cell in ws2[r]:
+                cell.font = header_font
+                cell.fill = header_fill
+                cell.border = thin_border
+                cell.alignment = align_center
+
+        # Write Data
+        merge_tracker = {0: {"val": None, "start": 3}, 1: {"val": None, "start": 3}, 2: {"val": None, "start": 3}, 3: {"val": None, "start": 3}}
+        start_row_idx = 3 # Excel starts at row 2 (row 1 is header)
+
+        for i, row in enumerate(calculated_rows):
+            current_excel_row = start_row_idx + i
+            
+            # Extract values from the dictionary returned by the helper
+            row_values = [
+                row.get("NO"), row.get("DIMENSI"), row.get("SUB DIMENSI"), row.get("INDIKATOR"), row.get("ITEM"),
+                row.get("SKOR Rata-Rata"), row.get("SKOR 1"), row.get("SKOR 2"), row.get("SKOR 3"), row.get("SKOR 4"), row.get("SKOR 5"),
+                row.get("INTERVENSI KEGIATAN"),
+                row.get("PELAKSANA KEGIATAN PUSAT"), row.get("PELAKSANA KEGIATAN PROVINSI"), 
+                row.get("PELAKSANA KEGIATAN KABUPATEN"), row.get("PELAKSANA KEGIATAN DESA"), 
+                row.get("PELAKSANA KEGIATAN Lainnya")
+            ]
+
+            ws2.append(row_values)
+
+            # Styling (Borders & Alignment)
+            for col_idx, cell in enumerate(ws2[current_excel_row], 1):
+                cell.border = thin_border
+                cell.alignment = align_top # Top align is crucial for merged cells
+                
+                # Center align the Score columns (F to K -> 6 to 11)
+                if 6 <= col_idx <= 11:
+                    cell.alignment = Alignment(horizontal='center', vertical='top')
+
+            # Merging Logic
+            # Iterate through mergeable columns (NO, DIMENSI, SUB, INDIKATOR)
+            # Logic: If value changes OR parent value changed, trigger merge of previous block and start new.
+            meta_vals = [row.get("NO"), row.get("DIMENSI"), row.get("SUB DIMENSI"), row.get("INDIKATOR")]
+            for col_idx in [0, 1, 2, 3]: 
+                val = meta_vals[col_idx]
+                
+                # Check if parent changed (e.g., Cant merge SUB DIMENSI if DIMENSI changed)
+                parent_changed = any(meta_vals[p] != merge_tracker[p]["val"] for p in range(col_idx))
+                
+                if val != merge_tracker[col_idx]["val"] or parent_changed or (i == len(calculated_rows) - 1):
+                    # Merge the PREVIOUS block if it spanned more than 1 row
+                    prev_end = current_excel_row - 1 if not (i == len(calculated_rows) - 1) else current_excel_row
+                    prev_start = merge_tracker[col_idx]["start"]
+                    
+                    if prev_end > prev_start:
+                        col_letter = get_column_letter(col_idx + 1)
+                        ws2.merge_cells(f"{col_letter}{prev_start}:{col_letter}{prev_end}")
+                    
+                    # Reset tracker
+                    merge_tracker[col_idx]["val"] = val
+                    merge_tracker[col_idx]["start"] = current_excel_row
+
+        # ==========================================
+        # 3. RETURN FILE
+        # ==========================================
+        output = io.BytesIO()
+        wb.save(output)
+        output.seek(0)
+
+        filename = f"Export_{params_dict.get('Provinsi', 'All')}_{year}.xlsx"
+        
+        # Return as downloadable file
+        return StreamingResponse(
+            output, 
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={"Content-Disposition": f"attachment; filename={filename}"}
+        )
+
+    except Exception as e:
+        traceback.print_exc()
+        return JSONResponse(status_code=500, content={"error": str(e)})
+    finally:
+        con.close()
  
 # ==========================================
 # CALCULATION & DASHBOARD LOGIC
@@ -657,70 +917,13 @@ async def endpoint_post_calculate_dashboard(year: str, request: Request):
         item_names = [row.get("ITEM", "") for row in structure if row.get("ITEM")]
         templates = helpers_get_or_create_intervensi_kegiatan(item_names)
  
-        # Calculate Per Row (Using INDEX Matching)
-        calculated_rows = []
+        # Calculate Per Row (Using helpers)
+        calculated_rows = helpers_calculate_dashboard_stats(df_filtered, structure, ordered_db_cols, templates)
  
- 
-        for idx, row in enumerate(structure):
-            csv_item = row.get("ITEM", "Unknown Item")
- 
-            # Default Empty Stats
-            stats = {
-                "SKOR Rata-Rata": "",
-                "SKOR 1": "", "SKOR 2": "", "SKOR 3": "", "SKOR 4": "", "SKOR 5": "",
-                "INTERVENSI KEGIATAN": ""
-            }
- 
-            # MATCHING LOGIC: Use DB Column at index 'idx'
-            if idx < len(ordered_db_cols):
-                target_col = ordered_db_cols[idx]
- 
-                # Use filtered data if provided, otherwise query DB
-                try:
-                    # Calculate from filtered data
-                    if target_col in df_filtered.columns:
-                        col_data = df_filtered.select(
-                            pl.col(target_col).cast(pl.Int64, strict=False)
-                        ).to_series()
- 
- 
-                        avg = col_data.mean()
-                        c1 = (col_data == 1).sum()
-                        c2 = (col_data == 2).sum()
-                        c3 = (col_data == 3).sum()
-                        c4 = (col_data == 4).sum()
-                        c5 = (col_data == 5).sum()
- 
-                        if avg is not None: stats["SKOR Rata-Rata"] = round(avg, 2)
-                        if c1: stats["SKOR 1"] = f"{c1:,}"
-                        if c2: stats["SKOR 2"] = f"{c2:,}"
-                        if c3: stats["SKOR 3"] = f"{c3:,}"
-                        if c4: stats["SKOR 4"] = f"{c4:,}"
-                        if c5: stats["SKOR 5"] = f"{c5:,}"
- 
-                        # Narrative Generation
-                        narrative_parts = []
-                        csv_item_name = row.get("ITEM", "")
-                        t_map = templates.get(csv_item_name, {})
- 
-                        counts = {1: c1, 2: c2, 3: c3, 4: c4, 5: c5}
-                        for score in [1, 2, 3, 4, 5]:
-                            cnt = counts[score]
-                            txt = t_map.get(str(score))
-                            if cnt and cnt > 0 and txt:
-                                narrative_parts.append(f"{cnt:,} {txt}")
- 
-                        if narrative_parts:
-                            stats["INTERVENSI KEGIATAN"] = "\n".join(narrative_parts)
- 
-                except Exception as e:
-                    print(f"Calc Error on index {idx} ({target_col}): {e}")
-            else:
-                print(f"⚠️ [WARNING] Index Mismatch: CSV Row {idx} has no corresponding DB column (Out of Bounds).")
- 
-            row.update(stats)
-            calculated_rows.append(row)
- 
+        # Format for Frontend (Ensure numbers are strings with commas if needed, or send raw)
+        # The helper sends raw numbers (Int/Float). 
+        # If your frontend expects formatted strings (e.g. "1,024"), convert here or handle in JS.
+        # Current frontend code handles raw numbers fine.
         return JSONResponse(content=calculated_rows)
  
     except Exception as e:

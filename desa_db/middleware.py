@@ -426,3 +426,64 @@ def helpers_get_or_create_intervensi_kegiatan(items: list[str]):
         print(f"⚠️ Could not save intervensi_kegiatan: {e}")
  
     return defaults
+def helpers_calculate_dashboard_stats(df_data, structure, ordered_db_cols, templates):
+    """
+    Core logic to calculate dashboard statistics(based on table_structure.csv) from a Polars DataFrame.
+    Shared between Dashboard UI and Excel Export.
+    """
+    calculated_rows = []
+
+    for idx, row in enumerate(structure):
+        # Default Empty Stats
+        stats = {
+            "SKOR Rata-Rata": "",
+            "SKOR 1": "", "SKOR 2": "", "SKOR 3": "", "SKOR 4": "", "SKOR 5": "",
+            "INTERVENSI KEGIATAN": ""
+        }
+
+        # Calculation Logic (Match CSV Row Index -> DB Column Index)
+        if idx < len(ordered_db_cols):
+            target_col = ordered_db_cols[idx]
+
+            if target_col in df_data.columns:
+                try:
+                    # Select specific column as Series
+                    s = df_data.select(pl.col(target_col).cast(pl.Int64, strict=False)).to_series()
+                    
+                    avg = s.mean()
+                    c1 = (s == 1).sum()
+                    c2 = (s == 2).sum()
+                    c3 = (s == 3).sum()
+                    c4 = (s == 4).sum()
+                    c5 = (s == 5).sum()
+
+                    if avg is not None: 
+                        stats["SKOR Rata-Rata"] = round(avg, 2)
+                    if c1: stats["SKOR 1"] = c1
+                    if c2: stats["SKOR 2"] = c2
+                    if c3: stats["SKOR 3"] = c3
+                    if c4: stats["SKOR 4"] = c4
+                    if c5: stats["SKOR 5"] = c5
+
+                    # Narrative Generation
+                    narrative_parts = []
+                    t_map = templates.get(row.get("ITEM", ""), {})
+                    cnt_map = {1: c1, 2: c2, 3: c3, 4: c4, 5: c5}
+                    
+                    for score in [1, 2, 3, 4, 5]:
+                        if cnt_map[score] > 0 and t_map.get(str(score)):
+                            # Format number with commas for text
+                            narrative_parts.append(f"{cnt_map[score]:,} {t_map[str(score)]}")
+                    
+                    if narrative_parts:
+                        stats["INTERVENSI KEGIATAN"] = "\n".join(narrative_parts)
+
+                except Exception as e:
+                    print(f"Calc error on column {target_col}: {e}")
+
+        # Merge Stats into the Original Row
+        # This ensures we have the metadata (NO, DIMENSI...) + The Calculated Stats + The Pelaksana info
+        row.update(stats)
+        calculated_rows.append(row)
+
+    return calculated_rows
