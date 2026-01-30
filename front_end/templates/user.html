@@ -765,7 +765,7 @@
                       y2="15"
                     ></line>
                   </svg>
-                  Upload & Download
+                  Download
                 </h3>
 
                 <span
@@ -783,137 +783,12 @@
                 <div class="sidebar_upload_group space-y-3">
                   <div class="sidebar_upload_label_group flex items-center gap-2 mb-1">
                     <span class="text-[12px] font-bold text-slate-500 uppercase tracking-wider dark:text-slate-400">
-                      Database Import & Download
+                      Download
                     </span>
                     <div class="h-px bg-slate-200 flex-1 dark:bg-slate-700"></div>
                   </div>
 
-                  <div
-                    x-show="!stagingData_Object"
-                    class="sidebar_upload_dropzone_container"
-                  >
-                    <label class="sidebar_upload_dropzone flex flex-col items-center justify-center w-full h-12
-                      border-2 border-dashed border-blue-300 rounded-lg cursor-pointer bg-blue-50/50
-                      hover:bg-blue-100 hover:border-blue-400 transition-all dark:bg-slate-800
-                      dark:border-slate-600 dark:hover:border-blue-500 dark:hover:bg-slate-700 group relative">
-                      <div
-                        x-show="!ui_UploadStatusMessage"
-                        class="flex flex-col items-center justify-center pt-1 pb-1"
-                      >
-                        <div class="mb-1 text-blue-400 group-hover:text-blue-600 group-hover:scale-110
-                        transition-transform dark:text-slate-400 dark:group-hover:text-white">
-                          <svg
-                            class="w-4 h-3"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                              stroke-width="2"
-                              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                            >
-                            </path>
-                          </svg>
-                        </div>
-                        <p class="text-[12px] font-bold text-slate-600 group-hover:text-white dark:text-slate-300">
-                          Upload Data
-                        </p>
-                      </div>
-                      <div
-                        x-show="ui_UploadStatusMessage"
-                        class="absolute inset-0 flex items-center justify-center p-1"
-                      >
-                        <p
-                          x-text="ui_UploadStatusMessage"
-                          class="text-[12px] font-bold text-blue-600 dark:text-blue-400 animate-pulse text-center leading-tight"
-                        >
-                        </p>
-                      </div>
-                      <input
-                        type="file"
-                        @change="action_UploadFile"
-                        class="sidebar_input_file hidden"
-                        accept=".xlsb, .xlsx"
-                      />
-                    </label>
-                  </div>
 
-                  <div
-                    x-show="stagingData_Object"
-                    class="sidebar_staging_review_panel
-                    bg-white border border-slate-200 rounded-lg shadow-sm
-                    overflow-hidden dark:bg-slate-800 dark:border-slate-600"
-                    style="display: none;"
-                  >
-                    <div class="sidebar_staging_header bg-amber-50 px-3 py-2 border-b border-amber-100
-                          dark:bg-amber-900/20 dark:border-amber-800/50 flex items-center justify-between">
-                      <span class="text-[12px] font-bold text-amber-700 dark:text-amber-500">
-                        ⚠️ Review Changes
-                      </span>
-                      <div class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></div>
-                    </div>
-                    <div class="p-3">
-                      <p
-                        class="sidebar_staging_filename text-[12px] text-slate-500 mb-3 truncate font-mono
-                        bg-slate-100 p-1 rounded dark:bg-slate-900 dark:text-slate-400"
-                        x-text="stagingData_Object?.filename"
-                      ></p>
-                      <div class="sidebar_staging_stats_grid grid grid-cols-3 gap-2 mb-3 text-center">
-                        <div class="stat_box_new flex flex-col border border-green-200 bg-green-50 rounded
-                        p-1 dark:bg-green-900/20 dark:border-green-800">
-                          <span class="text-[9px] text-green-700 font-bold dark:text-green-400">
-                            NEW
-                          </span>
-                          <span
-                            class="text-xs font-mono font-bold text-slate-700 dark:text-slate-200"
-                            x-text="stagingData_Object?.diff.added"
-                          >0</span>
-                        </div>
-                        <div class="stat_box_mod flex flex-col border border-blue-200 bg-blue-50 rounded
-                              p-1 dark:bg-blue-900/20 dark:border-blue-800">
-                          <span class="text-[9px] text-blue-700 font-bold dark:text-blue-400">
-                            MOD
-                          </span>
-                          <span
-                            class="text-xs font-mono font-bold text-slate-700 dark:text-slate-200"
-                            x-text="stagingData_Object?.diff.changed"
-                          >0</span>
-                        </div>
-                        <div class="stat_box_del flex flex-col border border-red-200 bg-red-50 rounded
-                              p-1 dark:bg-red-900/20 dark:border-red-800">
-                          <span class="text-[9px] text-red-700 font-bold dark:text-red-400">
-                            DEL
-                          </span>
-                          <span
-                            class="text-xs font-mono font-bold text-slate-700 dark:text-slate-200"
-                            x-text="stagingData_Object?.diff.removed"
-                          >0</span>
-                        </div>
-                      </div>
-                      <div class="sidebar_staging_actions flex gap-2">
-                        <button
-                          @click="action_CommitStagedData_ToDB"
-                          class="sidebar_btn_commit flex-1
-                          bg-slate-800 text-white py-1.5 rounded text-[12px]
-                          font-bold hover:bg-slate-900 shadow-sm transition dark:bg-blue-600 dark:hover:bg-blue-500"
-                        >
-                          Commit to DB
-                        </button>
-                        <button
-                          @click="stagingData_Object = null; setUiStatusMessage=''"
-                          class="sidebar_btn_cancel
-                          px-3 border border-slate-300 text-slate-600 rounded
-                          text-[12px] font-bold hover:bg-slate-50 transition dark:border-slate-600
-                          dark:text-slate-300 dark:hover:bg-slate-700"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
-                  </div>
                   <button
                     @click="action_DownloadServerSide"
                     class="sidebar_btn_download_excel w-full border
@@ -928,64 +803,6 @@
               </div>
             </div>
 
-            <div
-              class="sidebar_section_delete mb-5 border-b border-gray-100 pb-4 dark:border-slate-700"
-              x-data="{ open: false }"
-            >
-              <div
-                @click="open = !open"
-                class="flex justify-between items-center cursor-pointer mb-2 group select-none"
-              >
-                <h3 class="sidebar_section_title text-xs font-bold text-gray-400 uppercase tracking-wider 
-                  group-hover:text-red-500 transition-colors flex items-center gap-2">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="w-3.5 h-3.5"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <polyline points="3 6 5 6 21 6"></polyline>
-                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                  </svg>
-                  Hapus ID
-                </h3>
-                <span
-                  class="text-gray-400 text-[14px] font-bold transition-transform duration-200"
-                  :class="open ?
-                  'rotate-90' 
-                  : 'rotate-0'"
-                >›</span>
-              </div>
-
-              <div
-                x-show="open"
-                x-collapse
-              >
-                <div class="mb-2">
-                  <textarea
-                    x-model="filter_DeleteListInput"
-                    class="sidebar_input_delete_ids w-full
-                    border border-red-200 p-2 rounded text-xs
-                    h-16 font-mono focus:border-red-500 focus:ring-1 focus:ring-red-200 outline-none
-                    text-gray-700 dark:bg-slate-900 dark:border-red-900/50 dark:text-red-100 dark:placeholder-red-100/50"
-                    placeholder="Letakan berbagai ID desa disini (dipisahkan dengan , atau enter) untuk di 'drop' dari Live database..."
-                  ></textarea>
-                </div>
-                <button
-                  @click="action_SoftDeleteIDs_FromDB"
-                  class="sidebar_btn_confirm_delete w-full
-                  bg-red-50 text-red-600 border border-red-200
-                  py-1.5 rounded text-xs font-bold hover:bg-red-100 hover:text-red-700 transition
-                  dark:bg-red-900/20 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/40"
-                >
-                  Konfirmasi Hapus
-                </button>
-              </div>
-            </div>
 
             <div
               class="sidebar_section_history mb-5 border-b border-gray-100 pb-4 dark:border-slate-700"
@@ -1427,19 +1244,19 @@
           }
       }"
       x-init="
-          // Listen for legacy Alpine variables from parent
-          $watch('$store.app.setUiStatusMessage', val => val ? showToast(val, 'info') : (toast.show = false));
-          $watch('setUiStatusMessage', val => val ? showToast(val, 'info') : (toast.show = false));
-          
-          // Listen for legacy Alert State
-          $watch('ui_AlertState', val => { 
-              if(val.isOpen) showModal(val.title, val.message, val.type, val.confirmCallback); 
-          });
+        // Listen for legacy Alpine variables from parent
+        $watch('$store.app.setUiStatusMessage', val => val ? showToast(val, 'info') : (toast.show = false));
+        $watch('setUiStatusMessage', val => val ? showToast(val, 'info') : (toast.show = false));
+        
+        // Listen for legacy Alert State
+        $watch('ui_AlertState', val => { 
+            if(val.isOpen) showModal(val.title, val.message, val.type, val.confirmCallback); 
+        });
 
-          // Listen for Global Window Events (For Login Page or detached scripts)
-          window.addEventListener('show-toast', e => showToast(e.detail.msg, e.detail.type));
-          window.addEventListener('show-alert', e => showModal(e.detail.title, e.detail.msg, e.detail.type));
-      "
+        // Listen for Global Window Events (For Login Page or detached scripts)
+        window.addEventListener('show-toast', e => showToast(e.detail.msg, e.detail.type));
+        window.addEventListener('show-alert', e => showModal(e.detail.title, e.detail.msg, e.detail.type));
+    "
     >
       <div
         x-show="toast.show"
@@ -1587,12 +1404,10 @@
 
           // --- MODALS & MESSAGES ---
           setUiStatusMessage: "",
-          ui_UploadStatusMessage: "",
 
           // --- DATA STORAGE ---
           meta_VersionsList: [], // From /history/versions
           meta_HierarchyTree: {}, // From /history/versions (used for dropdowns)
-          stagingData_Object: null, // Stores uploaded file analysis
           agGridApiInstance: null, // AG Grid Object
           meta_ColumnList: [],
           history_OpenDetailsId: null, // Tracks which card is expanded
@@ -1606,7 +1421,6 @@
           filter_SelKec: "",
           filter_NameSearch: "",
           filter_IdListInput: "", // For search
-          filter_DeleteListInput: "", // For soft delete
 
           // --- UI DISPLAY STATS ---
           stats_TotalRows: "0",
@@ -2058,185 +1872,6 @@
           },
 
           // ============================================
-          // ACTIONS: STAGING & UPLOAD (RESUMABLE CHUNKED)
-          // ============================================
-          async action_UploadFile(e) {
-            let file = e.target.files[0];
-            if (!file) return;
-
-            // Reset UI
-            this.ui_UploadStatusMessage = "Preparing...";
-            this.stagingData_Object = null;
-
-            try {
-              // --- ROBUST HASH CACHING ---
-              // If user refreshes, we don't want to re-calculate MD5 for 10 seconds.
-              // We cache the hash in LocalStorage keyed by the file's unique signature.
-              const cacheKey = `upload_hash_${file.name}_${file.size}_${file.lastModified}`;
-              let fileHash = localStorage.getItem(cacheKey);
-
-              if (!fileHash) {
-                this.ui_UploadStatusMessage = "Hashing file...";
-                fileHash = await this.helpers_compute_md5(file);
-                try {localStorage.setItem(cacheKey, fileHash);} catch (e) { } // Save for next refresh
-              }
-
-              // Generate the Unique ID for the server
-              // If you refresh and pick this file again, this ID stays the same, so server finds the .tmp file.
-              const fileUid = `${fileHash}_${file.size}_${file.lastModified}`;
-              this.ui_UploadStatusMessage = "Checking server...";
-
-              // Query server: "Do you have this file?"
-              // Added credentials
-              let initRes = await fetch(`${this.apiBaseUrl}/upload/init/${this.targetYear}`, {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                credentials: 'include',
-                body: JSON.stringify({
-                  filename: file.name,
-                  file_uid: fileUid,
-                  total_size: file.size,
-                  total_hash: fileHash
-                })
-              });
-              let initData = await initRes.json();
-
-              if (initData.status === "exists") {
-                // File already fully uploaded on server, jump to processing
-                this.ui_UploadStatusMessage = "File exists. Processing...";
-                await this.helpers_finalize_upload(initData.upload_id, file.name, fileHash);
-                e.target.value = null;
-                return;
-              }
-
-              // Start Chunking Loop
-              let offset = initData.received_bytes || 0;
-              const CHUNK_SIZE = 1024 * 1024 * 2; // 2MB Chunks (safe for slow connections)
-              const totalSizeMB = (file.size / (1024 * 1024)).toFixed(2);
-
-              while (offset < file.size) {
-                const chunkBlob = file.slice(offset, offset + CHUNK_SIZE);
-
-                // UI Progress
-                // Example: "Uploading: 12.50 / 50.00 MB (25%)"
-                const currentMB = (offset / (1024 * 1024)).toFixed(2);
-                const percent = Math.round((offset / file.size) * 100);
-                this.ui_UploadStatusMessage = `Uploading: ${currentMB} / ${totalSizeMB} MB (${percent}%)`;
-
-                // Retry Loop for current chunk
-                let retries = 5;
-                let chunkSuccess = false;
-
-                while (retries > 0 && !chunkSuccess) {
-                  try {
-                    let fd = new FormData();
-                    fd.append("chunk", chunkBlob);
-                    fd.append("upload_id", initData.upload_id);
-                    fd.append("offset", offset);
-                    fd.append("chunk_hash", await this.helpers_compute_md5(chunkBlob)); // Hash Check per chunk
-
-                    // Added credentials
-                    let chunkRes = await fetch(`${this.apiBaseUrl}/upload/chunk/${this.targetYear}`, {
-                      method: "POST",
-                      credentials: 'include',
-                      body: fd
-                    });
-
-                    if (!chunkRes.ok) throw new Error("Server rejected chunk");
-
-                    chunkSuccess = true;
-                    offset += CHUNK_SIZE; // Move to next chunk
-                  } catch (err) {
-                    retries--;
-                    console.warn(`Chunk failed, retrying... (${retries} left)`);
-                    // Exponential backoff: Wait 1s, then 2s, etc.
-                    await new Promise(r => setTimeout(r, 1000 * (5 - retries)));
-                  }
-                }
-
-                if (!chunkSuccess) throw new Error("Upload failed");
-              }
-
-              // Finalize & Process
-              this.ui_UploadStatusMessage = "Verifying...";
-              await this.helpers_finalize_upload(initData.upload_id, file.name, fileHash);
-
-              // Success
-              e.target.value = null;
-
-            } catch (err) {
-              console.error(err);
-              this.ui_UploadStatusMessage = "❌ " + (err.message || "Failed");
-            }
-          },
-
-          // Helper: Call Finalize Endpoint
-          async helpers_finalize_upload(uploadId, filename, fileHash) {
-            // Added credentials
-            let res = await fetch(`${this.apiBaseUrl}/upload/finalize/${this.targetYear}`, {
-              method: "POST",
-              headers: {"Content-Type": "application/json"},
-              credentials: 'include',
-              body: JSON.stringify({
-                upload_id: uploadId,
-                filename: filename,
-                total_hash: fileHash
-              })
-            });
-            let d = await res.json();
-
-            if (d.status === "staged") {
-              this.stagingData_Object = d;
-              this.ui_UploadStatusMessage = "";
-            } else {
-              throw new Error(d.error || "Processing failed");
-            }
-          },
-
-          // Helper: Compute MD5 using SparkMD5 (Memory efficient)
-          helpers_compute_md5(blob) {
-            return new Promise((resolve, reject) => {
-              const reader = new FileReader();
-              reader.readAsArrayBuffer(blob);
-              reader.onload = (e) => {
-                // Note: For massive files (2GB+), you'd want incremental hashing, 
-                // but for standard admin uploads (10-100MB) ArrayBuffer is fine.
-                resolve(SparkMD5.ArrayBuffer.hash(e.target.result));
-              };
-              reader.onerror = reject;
-            });
-          },
-
-          async action_CommitStagedData_ToDB() {
-            if (!this.stagingData_Object) return;
-            this.ui_UploadStatusMessage = "Saving...";
-            let p = new URLSearchParams({
-              staging_id: this.stagingData_Object.staging_id,
-              filename: this.stagingData_Object.filename
-            });
-            try {
-              // Use targetYear
-              // Added credentials
-              let res = await fetch(`${this.apiBaseUrl}/commit/${this.targetYear}?${p}`, {
-                method: "POST",
-                credentials: 'include'
-              });
-              let d = await res.json();
-              if (d.status === "success") {
-                this.util_Alert("Success", "✅ Data committed to database successfully!", "success");
-                this.stagingData_Object = null;
-                this.ui_UploadStatusMessage = "";
-                this.fetchVersionHistoryAndHierarchy();
-                this.fetch_MainGridData_FromAPI();
-              } else {
-                this.util_Alert("Commit Failed", "❌ " + d.error, "error");
-              }
-            } catch (err) {
-              this.util_Alert("System Error", "❌ Could not connect to commit endpoint.", "error");
-            }
-          },
-
-          // ============================================
           // ACTIONS: CALCULATION
           // ============================================
           async calculate_DashboardStats_FromAPI() {
@@ -2366,49 +2001,6 @@
             setTimeout(() => this.setUiStatusMessage = "", 2000);
           },
 
-          // ============================================
-          // ACTIONS: DELETE
-          // ============================================
-          async action_SoftDeleteIDs_FromDB() {
-            if (!this.filter_DeleteListInput.trim()) {
-              this.util_Alert("Input Required", "Please enter IDs to delete.", "info");
-              return;
-            }
-
-            // Using Callback pattern
-            this.util_Confirm(
-              "Confirm Deletion",
-              "⚠️ Are you sure you want to soft-delete these records from the live view?",
-              async () => {
-                // --- LOGIC MOVED INSIDE CALLBACK ---
-                this.setUiStatusMessage = "Deleting...";
-                let params = new URLSearchParams();
-                params.append("ids", this.filter_DeleteListInput);
-                params.append("summary", "User deleted from dashboard");
-
-                try {
-                  let res = await fetch(`${this.apiBaseUrl}/delete/${this.targetYear}?${params}`, {method: "POST", credentials: 'include'});
-                  let data = await res.json();
-
-                  if (data.status === "success") {
-                    this.util_Alert("Deleted", `✅ Deleted ${data.deleted_count} records.`, "success");
-                    this.filter_DeleteListInput = "";
-                    this.fetchVersionHistoryAndHierarchy();
-                    this.fetch_MainGridData_FromAPI();
-                    this.setUiStatusMessage = "";
-                  } else if (data.status === "warning") {
-                    this.util_Alert("Warning", "⚠️ " + data.message, "info");
-                    this.setUiStatusMessage = "⚠️ ID Not Found";
-                  } else {
-                    this.util_Alert("Error", "❌ " + (data.error || "Unknown error"), "error");
-                  }
-                } catch (e) {
-                  console.error(e);
-                  this.util_Alert("Connection Error", "Failed to reach server.", "error");
-                }
-              }
-            );
-          },
         }
       }
     </script>

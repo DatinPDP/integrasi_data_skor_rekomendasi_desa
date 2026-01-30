@@ -20,6 +20,7 @@ from fastapi.responses import JSONResponse
 #   /desa_db/middleware.py
 #   /front_end/router.py
 #   /front_end/templates/admin.html
+#   /front_end/templates/user.html
 #   /front_end/templates/login.html
  
  

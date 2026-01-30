@@ -3,81 +3,226 @@
 
   <head>
     <meta charset="UTF-8">
-    <title>Login</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Login data skor rekomendasi desa</title>
+    <style>
+      /* --- 1. TEXTURED BACKGROUNDS (CSS ONLY) --- */
+      body {
+        font-family: monospace;
+        height: 100vh;
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #333;
+
+        /* Dot Matrix (Active) */
+        background-color: #f0f2f5;
+        background-image: radial-gradient(#cbd5e1 1.5px, transparent 1.5px);
+        background-size: 24px 24px;
+
+      }
+
+      .login-box {
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.95);
+        /* Slight opacity */
+        padding: 2.5rem;
+        width: 380px;
+        /* Slightly wider for the split */
+        border: 1px solid #d1d5db;
+        /* Sharp shadow for retro feel */
+        box-shadow: 8px 8px 0px rgba(0, 0, 0, 0.1);
+        border-radius: 4px;
+        color: #323A45;
+      }
+
+      /* --- 2. SPLIT HEADER (30% Icon | 70% Text) --- */
+      .login-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 2rem;
+        border-bottom: 2px solid #f3f4f6;
+        padding-bottom: 1.5rem;
+      }
+
+      .header-icon {
+        width: 30%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #3b82f6;
+        /* Blue icon */
+      }
+
+      .header-title {
+        width: 70%;
+        padding-left: 1rem;
+      }
+
+      .header-title h2 {
+        margin: 0;
+        font-size: 1.25rem;
+        line-height: 1.2;
+        color: #323A45;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .header-title small {
+        display: block;
+        margin-top: 5px;
+        font-size: 0.7rem;
+        color: #6b7280;
+        font-weight: normal;
+      }
+
+      /* --- FORM ELEMENTS --- */
+      .form-group {
+        margin-bottom: 1.25rem;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 0.4rem;
+        font-weight: bold;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        color: #4b5563;
+      }
+
+      input {
+        width: 100%;
+        padding: 10px;
+        box-sizing: border-box;
+        border-radius: 2px;
+        border: 2px solid #e5e7eb;
+        background: #f9fafb;
+        font-family: inherit;
+        font-size: 0.95rem;
+        transition: all 0.2s;
+      }
+
+      input:focus {
+        outline: none;
+        border-color: #3b82f6;
+        background: #fff;
+      }
+
+      button {
+        width: 100%;
+        padding: 12px;
+        background-color: #1f2937;
+        /* Dark Grey */
+        border-radius: 2px;
+        color: white;
+        border: none;
+        cursor: pointer;
+        font-family: inherit;
+        font-weight: bold;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        transition: transform 0.1s, opacity 0.2s;
+      }
+
+      button {
+        border-radius: 2px;
+        width: 100%;
+        padding: 10px;
+        background-color: #64748B;
+        color: white;
+        border: none;
+        cursor: pointer;
+        font-family: inherit;
+        font-weight: bold;
+      }
+
+
+      button:hover {
+        background-color: #EFF1F3;
+        color: #000;
+      }
+
+      button:active {
+        transform: scale(0.98);
+        opacity: 0.9;
+      }
+
+      .error-msg {
+        background-color: #fef2f2;
+        color: #991b1b;
+        padding: 12px;
+        margin-bottom: 20px;
+        border-left: 4px solid #ef4444;
+        font-size: 0.85rem;
+        font-weight: bold;
+      }
+    </style>
   </head>
 
-  <body class="global_body_container bg-gray-200 h-screen flex items-center justify-center">
-    <div class="global_box_login_container bg-white p-8 rounded shadow-md w-96">
-      <h2 class="text-2xl font-bold mb-6 text-center text-gray-700">
-        Login data skor rekomendasi desa
-      </h2>
-      <form onsubmit="handleLogin(event)">
-        <div class="mb-4">
-          <label class="block text-sm font-bold mb-2">
-            Username
-          </label>
+  <body>
+
+    <div class="login-box">
+
+      <div class="login-header">
+        <div class="header-icon">
+          <svg
+            width="48"
+            height="48"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            <path d="M8 11h8"></path>
+            <path d="M12 11v4"></path>
+          </svg>
+        </div>
+
+        <div class="header-title">
+          <h2>Login</h2>
+          <h3>Skor Rekomendasi Desa</h3>
+        </div>
+      </div>
+
+      {% if error %}
+      <div class="error-msg">
+        ⚠ {{ error }}
+      </div>
+      {% endif %}
+
+      <form
+        action="/login"
+        method="POST"
+      >
+        <div class="form-group">
+          <label for="username">Username</label>
           <input
             type="text"
-            id="user"
-            class="w-full border p-2 rounded"
-            placeholder="admin / user"
+            id="username"
+            name="username"
+            required
+            autofocus
+            placeholder="Enter ID..."
           >
         </div>
-        <div class="mb-6">
-          <label class="block text-sm font-bold mb-2">
-            Password
-          </label>
+        <div class="form-group">
+          <label for="password">Password</label>
           <input
             type="password"
-            id="pass"
-            class="w-full border p-2 rounded"
-            placeholder="admin / user"
+            id="password"
+            name="password"
+            required
+            placeholder="Enter Password..."
           >
         </div>
-        <button class="w-full bg-blue-600 text-white py-2 rounded font-bold hover:bg-blue-700">
-          Login
-        </button>
+        <button type="submit">Sign In</button>
       </form>
     </div>
 
-    <script>
-      async function handleLogin(e) {
-        e.preventDefault();
-        const u = document.getElementById('user').value;
-        const p = document.getElementById('pass').value;
-        const btn = e.target.querySelector('button');
-
-        btn.innerText = "Verifying...";
-        btn.disabled = true;
-
-        try {
-          // Call Python Backend
-          const apiUrl = "{{ api_url }}";
-          const res = await fetch(`${apiUrl}/api/login`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            credentials: 'include', //Tells browser to save the cookie
-            body: JSON.stringify({username: u, password: p})
-          });
-
-          if (res.ok) {
-            // Redirect to Admin
-            window.location.href = '/admin';
-          } else {
-            const data = await res.json();
-            alert(data.error || "Login failed");
-            btn.innerText = "Login";
-            btn.disabled = false;
-          }
-        } catch (err) {
-          console.error(err);
-          alert("Connection error");
-          btn.innerText = "Login";
-          btn.disabled = false;
-        }
-      }
-    </script>
   </body>
 
 </html>

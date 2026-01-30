@@ -1,5 +1,9 @@
 import os
-from fastapi import FastAPI, Request
+import json
+import urllib.request
+import urllib.parse
+from datetime import datetime, timedelta
+from fastapi import FastAPI, Request, Form, Response
 from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
@@ -28,43 +32,124 @@ async def custom_404_handler(request, exc):
     # This serves templates/404.html whenever a page is not found on Port 8001
     return FileResponse(os.path.join(TEMPLATE_DIR, "404.html"), status_code=404)
 
+# --- SECURITY HELPER ---
+def get_current_user_role(token: str):
+    if not token:
+        return None
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload.get("role")
+    except JWTError:
+        return None
+
+
 @app.get("/login", response_class=HTMLResponse)
-async def login_page(request: Request):
-    # Check if user is ALREADY logged in, redirect to admin if valid
+async def login_view(request: Request):
+    """
+    Renders the pure HTML login page.
+    Redirects if user is already logged in.
+    """
+    # If already logged in, redirect immediately
     token = request.cookies.get("session_token")
     if token:
-        try:
-            jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-            return RedirectResponse(url="/admin")
-        except JWTError:
-            pass # Token invalid, show login page
+        role = get_current_user_role(token)
+        if role == "admin": 
+            return RedirectResponse(url="/admin", status_code=302)
+        elif role == "user": 
+            return RedirectResponse(url="/user", status_code=302)
+        # If role is invalid, fall through to login page (token might be bad)
 
-    #Pass API_BASE_URL to login template
-    return templates.TemplateResponse("login.html", {
+    return templates.TemplateResponse("login.html", {"request": request, "error": None})
+
+# SSR LOGIN HANDLER
+@app.post("/login", response_class=HTMLResponse)
+async def login_post(request: Request, username: str = Form(...), password: str = Form(...)):
+    """
+    SSR Login Proxy:
+    1. Accepts Username/Pass
+    2. Calls Backend API
+    3. Sets Cookie
+    4. Redirects based on Role
+    """
+    try:
+        # Prepare request to Backend API
+        url = f"{API_BASE_URL}/api/login"
+        payload = json.dumps({"username": username, "password": password}).encode("utf-8")
+        
+        req = urllib.request.Request(url, data=payload, headers={
+            'Content-Type': 'application/json',
+            'User-Agent': 'FastAPI-SSR-Proxy'
+        })
+
+        # Execute Request
+        with urllib.request.urlopen(req) as response:
+            if response.status == 200:
+                body = json.loads(response.read().decode())
+                
+                # Extract Role safely (Default to 'user' for safety)
+                user_role = body.get("role", "user")
+                
+                # Debug print to server console
+                print(f"DEBUG: Login Success. User: {username}, Role: {user_role}")
+
+                # Create Session Token (SSR Side)
+                expires = datetime.utcnow() + timedelta(minutes=360)
+                to_encode = {"sub": username, "role": user_role, "exp": expires}
+                token = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+                # Determine Redirect Target
+                if user_role == "admin":
+                    target_url = "/admin"
+                else:
+                    target_url = "/user"
+
+                # Build Response
+                resp = RedirectResponse(url=target_url, status_code=303)
+                
+                # Set Secure Cookie
+                resp.set_cookie(
+                    key="session_token",
+                    value=token,
+                    httponly=True,
+                    samesite="lax", # Lax is better for top-level navigation
+                    secure=False # Set True if using HTTPS
+                )
+                return resp
+
+    except urllib.error.HTTPError as e:
+        # Backend returned 401 (Unauthorized) or 403 or 500
+        error_msg = "Invalid username or password."
+        if e.code == 500: error_msg = "Server Error."
+        return templates.TemplateResponse("login.html", {"request": request, "error": error_msg})
+
+    except Exception as e:
+        print(f"Login Error: {e}")
+        return templates.TemplateResponse("login.html", {"request": request, "error": "Connection error to Backend"})
+
+# Logic to check cookie
+@app.get("/admin", response_class=HTMLResponse)
+async def admin_dashboard(request: Request):
+    token = request.cookies.get("session_token")
+    role = get_current_user_role(token)
+    
+    if not token: return RedirectResponse(url="/login")
+    if role != "admin": return RedirectResponse(url="/user") # Force non-admins out
+
+    return templates.TemplateResponse("admin.html", {
         "request": request, 
         "api_url": API_BASE_URL
     })
 
 # Logic to check cookie
-@app.get("/admin", response_class=HTMLResponse)
-async def admin_dashboard(request: Request):
-    # Get cookie
+@app.get("/user", response_class=HTMLResponse)
+async def user_dashboard(request: Request):
     token = request.cookies.get("session_token")
+    role = get_current_user_role(token)
+
+    if not token: return RedirectResponse(url="/login")
     
-    # If no cookie -> redirect immediate
-    if not token:
-        return RedirectResponse(url="/login")
 
-    # Verify token (checks signature & expiry)
-    try:
-        jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-    except JWTError:
-        # Token is expired or fake -> REDIRECT IMMEDIATE
-        # The browser will never receive the Admin HTML
-        return RedirectResponse(url="/login")
-
-    # ONLY SERVE HTML IF VALID
-    return templates.TemplateResponse("admin.html", {
+    return templates.TemplateResponse("user.html", {
         "request": request, 
         "api_url": API_BASE_URL
     })
@@ -72,11 +157,17 @@ async def admin_dashboard(request: Request):
 # Logout Route
 @app.get("/logout")
 async def logout():
-    # Just redirect to login, let the client-side API call handle the actual cookie clearing
-    return RedirectResponse(url="/login", status_code=303)
+    response = RedirectResponse(url="/login", status_code=302)
+    response.delete_cookie("session_token")
+    return response
 
 @app.get("/")
-async def root():
+async def root(request: Request):
+    token = request.cookies.get("session_token")
+    role = get_current_user_role(token)
+    
+    if role == "admin": return RedirectResponse(url="/admin")
+    if role == "user": return RedirectResponse(url="/user")
     return RedirectResponse(url="/login")
 
 if __name__ == "__main__":

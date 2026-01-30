@@ -44,6 +44,7 @@ from auth import (
 #   /desa_db/middleware.py
 #   /front_end/router.py
 #   /front_end/templates/admin.html
+#   /front_end/templates/user.html
 #   /front_end/templates/login.html
  
 app = FastAPI()
