@@ -3,7 +3,7 @@ Kabupaten/ Kota
 Kecamatan
 Kode Wilayah Administrasi Desa
 Desa
-TAHUN DATA
+Status ID
 Ketersediaan PAUD/ TK/ Sederajat di Desa
 Kemudahan Akses menuju PAUD/ TK/ Sederajat terdekat di Desa
 Angka Partisipasi Murni (APM) anak usia 3 - 6 tahun yang bersekolah PAUD/ TK/ Sederajat di desa

@@ -13,8 +13,9 @@ app = FastAPI()
 
 # Config
 # MUST MATCH auth.py
-# CHECK: CHANGE THIS TO A RANDOM STRING FOR PROD!
-SECRET_KEY = "CHANGE_ME_TO_SOMETHING_SUPER_SECRET_AND_LONG" 
+SECRET_KEY = os.getenv("APP_SECRET_KEY")
+if not SECRET_KEY:
+    raise ValueError("FATAL: APP_SECRET_KEY is not set in environment variables!")
 ALGORITHM = "HS256"
 
 # Setup Paths
@@ -25,7 +26,12 @@ templates = Jinja2Templates(directory=TEMPLATE_DIR)
 # Points to your Data API
 # IMPORTANT: You must set this ENV VAR to your Cloudflare Backend URL
 # Example: "https://xxx.trycloudflare.com"
-API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000")
+# old-previous: API_BASE_URL
+# API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000")
+
+# CHANGE 1: Read env var for Docker-to-Docker communication
+# Default to localhost for local testing without Docker
+API_INTERNAL_URL = os.getenv("API_BASE_URL", "http://localhost:8000")
 
 @app.exception_handler(404)
 async def custom_404_handler(request, exc):
@@ -73,7 +79,8 @@ async def login_post(request: Request, username: str = Form(...), password: str 
     """
     try:
         # Prepare request to Backend API
-        url = f"{API_BASE_URL}/api/login"
+        # url = f"{API_BASE_URL}/api/login"
+        url = f"{API_INTERNAL_URL}/api/login"
         payload = json.dumps({"username": username, "password": password}).encode("utf-8")
         
         req = urllib.request.Request(url, data=payload, headers={
@@ -90,7 +97,7 @@ async def login_post(request: Request, username: str = Form(...), password: str 
                 user_role = body.get("role", "user")
                 
                 # Debug print to server console
-                print(f"DEBUG: Login Success. User: {username}, Role: {user_role}")
+                # print(f"DEBUG: Login Success. User: {username}, Role: {user_role}")
 
                 # Create Session Token (SSR Side)
                 expires = datetime.utcnow() + timedelta(minutes=360)
@@ -112,7 +119,7 @@ async def login_post(request: Request, username: str = Form(...), password: str 
                     value=token,
                     httponly=True,
                     samesite="lax", # Lax is better for top-level navigation
-                    secure=False # Set True if using HTTPS
+                    secure=True # Set True if using HTTPS
                 )
                 return resp
 
@@ -137,7 +144,10 @@ async def admin_dashboard(request: Request):
 
     return templates.TemplateResponse("admin.html", {
         "request": request, 
-        "api_url": API_BASE_URL
+        # This forces the browser to use relative paths (e.g. "/query/...")
+        # which Nginx will correctly route to the backend.
+        "api_url": ""
+        #"api_url": API_BASE_URL
     })
 
 # Logic to check cookie
@@ -151,7 +161,8 @@ async def user_dashboard(request: Request):
 
     return templates.TemplateResponse("user.html", {
         "request": request, 
-        "api_url": API_BASE_URL
+        "api_url": ""
+        #"api_url": API_BASE_URL
     })
 
 # Logout Route

@@ -1,8 +1,8 @@
 import os
 import json
 import re
-import math
 import duckdb
+import html as h
 import polars as pl
 from fastapi import Response
 from fastapi.responses import JSONResponse
@@ -150,7 +150,7 @@ def helpers_internal_process_staging_file(year: str, file_path: str, filename: s
         # --- ETL: Extraction & Cleaning (Polars) ---
         print(f"Processing {filename} for year {year}...")
  
-        # Read .xlsb using 'calamine'
+        # Read .xlsb/.xlsx using 'calamine'
         df = pl.read_excel(
             file_path,
             sheet_name="Skor",
@@ -158,13 +158,55 @@ def helpers_internal_process_staging_file(year: str, file_path: str, filename: s
         )
  
         # Structure Cleaning:
-        # Slice: Skip the first 3 rows (assumed to be report titles/metadata)
-        df = df.slice(3, None)
- 
         # Slice: Cap width to prevent reading infinite empty Excel columns
         max_col = min(df.width, 262) 
         # Also skip the very first index column (0)
         df = df[:, 1:max_col]
+
+        # Validation check
+        # expect the first row (now at index 1) to be the headers
+        current_headers = df.row(1)
+        
+        # Define the exact expected order for the first 5 columns
+        expected_order = [
+            'Provinsi', 
+            'Kabupaten/ Kota', 
+            'Kecamatan', 
+            'Kode Wilayah Administrasi Desa', 
+            'Desa'
+        ]
+
+        # Check the first 5 columns
+        found_order = [str(h).strip() for h in current_headers[:5]]
+        
+        if found_order != expected_order:
+            for i, (exp, fnd) in enumerate(zip(expected_order, found_order)):
+                if exp != fnd:
+                    # Returns concise error: "Header Mismatch (Col 1): Expected 'Provinsi' vs 'ACEH'"
+                    raise Exception(f"Header Mismatch (Col {i+1}): Expected '{exp}' vs '{fnd}'")
+            
+            # Fallback for length mismatches
+            raise Exception(f"Header Mismatch: Expected {len(expected_order)} columns, found {len(found_order)}")
+
+        # Where the data actually is
+        df = df.slice(3, None)
+        
+        # Validation check column after 'Desa' (Index 5)
+        # ensure this column is NOT a number
+        if df.width > 5:
+            col_after_desa = df[:, 5]
+
+            # 1. Strict Dtype Check (Catch if Polars explicitly sees numbers)
+            if col_after_desa.dtype in [pl.Int8, pl.Int16, pl.Int32, pl.Int64, pl.Float32, pl.Float64]:
+                 raise Exception("Format Error: The column after 'Desa' is numeric (Dtype). It should be text.")
+            
+            # 2. Content Check (Catch "2025" hidden inside a String column)
+            # - "MAJU" becomes Null (Safe)
+            # - "2025" becomes 2025.0 (Detected)
+            numeric_hits = col_after_desa.cast(pl.Float64, strict=False).is_not_null().sum()
+            
+            if numeric_hits > 0:
+                 raise Exception(f"Error: column after 'Desa' contains numbers (found {numeric_hits} numeric values). It should be text status.")
  
         # Filter: Remove columns that are entirely Empty or Null
         df = df.select([
@@ -190,7 +232,7 @@ def helpers_internal_process_staging_file(year: str, file_path: str, filename: s
         # Identify Text Columns (same as middleware)
         TEXT_COLUMNS = {
             "Provinsi", "Kabupaten/ Kota", "Kecamatan", 
-            "Kode Wilayah Administrasi Desa", "Desa", "TAHUN DATA"
+            "Kode Wilayah Administrasi Desa", "Desa", "Status ID"
         }
  
         # Identify Score Columns
@@ -266,6 +308,10 @@ def helpers_internal_process_staging_file(year: str, file_path: str, filename: s
         raise e
 def helpers_get_db_connection(year: str):
     clean_year = os.path.basename(year)
+
+    if not re.match(r'^20\d{2}$', clean_year):
+        raise ValueError(f"Year must start with 20XX, got: '{clean_year}'")
+
     db_path = os.path.join(DB_FOLDER, f"data_{clean_year}.duckdb")
     con = duckdb.connect(db_path)
     return con, db_path
@@ -293,7 +339,7 @@ def helpers_init_db(con: duckdb.DuckDBPyConnection, headers: list[str]):
     TEXT_COLUMNS = {
         "valid_from", "valid_to", "commit_id", "source_file",
         "Provinsi", "Kabupaten/ Kota", "Kecamatan", 
-        "Kode Wilayah Administrasi Desa", "Desa", "TAHUN DATA"
+        "Kode Wilayah Administrasi Desa", "Desa", "Status ID"
     }
  
     cols_def = []
@@ -561,7 +607,6 @@ def helpers_render_dashboard_html(calculated_rows: list[dict]) -> str:
             while j < n_rows:
                 # Check if current row matches start row
                 if calculated_rows[i].get(k) == calculated_rows[j].get(k):
-                    # STRICT CHECK: Parents must also match
                     # (e.g., Can't merge "SUB DIMENSI A" if "DIMENSI" changed)
                     parents_match = True
                     idx_k = merge_keys.index(k)
@@ -600,7 +645,12 @@ def helpers_render_dashboard_html(calculated_rows: list[dict]) -> str:
             if "col-no" not in css_class:
                 style += " white-space: pre-wrap; padding: 6px;"
             
-            return f'<td class="{cls}" data-col-idx="{idx}" rowspan="{rowspan}" style="{style}">{content or ""}</td>'
+            # File: middleware.py (Function: helpers_render_dashboard_html)
+            # Vulnerability: You use f-strings to build HTML: f'>{content or ""}</td>'.
+            # The Risk: If an attacker uploads an Excel file where the "Desa" column contains <script>alert('Hacked')</script>,
+            # that script will execute in the browser of every admin who views the dashboard.
+            safe_content = h.escape(str(content)) if content else ""
+            return f'<td class="{cls}" data-col-idx="{idx}" rowspan="{rowspan}" style="{style}">{safe_content}</td>'
 
         # 0-3: Merged Columns (NO, DIM, SUB, IND)
         for idx, key in enumerate(merge_keys): 

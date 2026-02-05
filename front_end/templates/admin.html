@@ -897,7 +897,7 @@
                         <button
                           @click="action_CommitStagedData_ToDB"
                           class="sidebar_btn_commit flex-1
-                          bg-slate-800 text-white py-1.5 rounded text-[12px]
+                          bg-slate-500 text-white py-1.5 rounded text-[12px]
                           font-bold hover:bg-slate-900 shadow-sm transition dark:bg-blue-600 dark:hover:bg-blue-500"
                         >
                           Commit to DB
@@ -925,65 +925,6 @@
                     <span>💾</span> Download (Dari Server)
                   </button>
                 </div>
-              </div>
-            </div>
-
-            <div
-              class="sidebar_section_delete mb-5 border-b border-gray-100 pb-4 dark:border-slate-700"
-              x-data="{ open: false }"
-            >
-              <div
-                @click="open = !open"
-                class="flex justify-between items-center cursor-pointer mb-2 group select-none"
-              >
-                <h3 class="sidebar_section_title text-xs font-bold text-gray-400 uppercase tracking-wider 
-                  group-hover:text-red-500 transition-colors flex items-center gap-2">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="w-3.5 h-3.5"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <polyline points="3 6 5 6 21 6"></polyline>
-                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                  </svg>
-                  Hapus ID
-                </h3>
-                <span
-                  class="text-gray-400 text-[14px] font-bold transition-transform duration-200"
-                  :class="open ?
-                  'rotate-90' 
-                  : 'rotate-0'"
-                >›</span>
-              </div>
-
-              <div
-                x-show="open"
-                x-collapse
-              >
-                <div class="mb-2">
-                  <textarea
-                    x-model="filter_DeleteListInput"
-                    class="sidebar_input_delete_ids w-full
-                    border border-red-200 p-2 rounded text-xs
-                    h-16 font-mono focus:border-red-500 focus:ring-1 focus:ring-red-200 outline-none
-                    text-gray-700 dark:bg-slate-900 dark:border-red-900/50 dark:text-red-100 dark:placeholder-red-100/50"
-                    placeholder="Letakan berbagai ID desa disini (dipisahkan dengan , atau enter) untuk di 'drop' dari Live database..."
-                  ></textarea>
-                </div>
-                <button
-                  @click="action_SoftDeleteIDs_FromDB"
-                  class="sidebar_btn_confirm_delete w-full
-                  bg-red-50 text-red-600 border border-red-200
-                  py-1.5 rounded text-xs font-bold hover:bg-red-100 hover:text-red-700 transition
-                  dark:bg-red-900/20 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/40"
-                >
-                  Konfirmasi Hapus
-                </button>
               </div>
             </div>
 
@@ -1052,24 +993,23 @@
                   </span>
                 </div>
 
-                <select
-                  x-model="targetYear"
-                  @change="action_YearChanged"
-                  class="sidebar_select_year
-                  w-full border border-blue-300 mb-2 p-2 rounded text-xs
-                  bg-blue-50 focus:ring-1 focus:ring-blue-500 outline-none text-blue-900 font-bold
-                  dark:bg-slate-900 dark:border-slate-600 dark:text-blue-400"
-                >
+                <div class="grid grid-cols-2 gap-2 mb-3">
                   <template
                     x-for="y in availableYears"
                     :key="y"
                   >
-                    <option
-                      :value="y"
+                    <button
+                      @click="targetYear = y; action_YearChanged()"
+                      class="px-2 py-2 text-xs font-bold rounded border transition-all duration-200 shadow-sm"
+                      :class="targetYear == y ? 
+                      'bg-slate-600 text-white border-slate-600 ring-2 ring-slate-200 ring-offset-1 dark:ring-offset-slate-800 dark:ring-slate-900' : 
+                      'bg-white text-slate-600 border-gray-300 hover:bg-gray-50 hover:border-gray-400 dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800'
+                      "
                       x-text="y"
-                    ></option>
+                    >
+                    </button>
                   </template>
-                </select>
+                </div>
 
                 <div class="space-y-2 max-h-[700px] overflow-y-auto custom-scrollbar pr-1">
                   <template
@@ -1212,6 +1152,65 @@
                     </div>
                   </template>
                 </div>
+              </div>
+            </div>
+
+            <div
+              class="sidebar_section_delete mb-5 border-b border-gray-100 pb-4 dark:border-slate-700"
+              x-data="{ open: false }"
+            >
+              <div
+                @click="open = !open"
+                class="flex justify-between items-center cursor-pointer mb-2 group select-none"
+              >
+                <h3 class="sidebar_section_title text-xs font-bold text-gray-400 uppercase tracking-wider 
+                  group-hover:text-red-500 transition-colors flex items-center gap-2">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="w-3.5 h-3.5"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  </svg>
+                  Hapus ID
+                </h3>
+                <span
+                  class="text-gray-400 text-[14px] font-bold transition-transform duration-200"
+                  :class="open ?
+                  'rotate-90' 
+                  : 'rotate-0'"
+                >›</span>
+              </div>
+
+              <div
+                x-show="open"
+                x-collapse
+              >
+                <div class="mb-2">
+                  <textarea
+                    x-model="filter_DeleteListInput"
+                    class="sidebar_input_delete_ids w-full
+                    border border-red-200 p-2 rounded text-xs
+                    h-16 font-mono focus:border-red-500 focus:ring-1 focus:ring-red-200 outline-none
+                    text-gray-700 dark:bg-slate-900 dark:border-red-900/50 dark:text-red-100 dark:placeholder-red-100/50"
+                    placeholder="Letakan berbagai ID desa disini (dipisahkan dengan , atau enter) untuk di 'drop' dari Live database..."
+                  ></textarea>
+                </div>
+                <button
+                  @click="action_SoftDeleteIDs_FromDB"
+                  class="sidebar_btn_confirm_delete w-full
+                  bg-red-50 text-red-600 border border-red-200
+                  py-1.5 rounded text-xs font-bold hover:bg-red-100 hover:text-red-700 transition
+                  dark:bg-red-900/20 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/40"
+                >
+                  Konfirmasi Hapus
+                </button>
               </div>
             </div>
 
@@ -1571,12 +1570,21 @@
 
     <script>
       function AdminDashboardApp() {
+        // --- DYNAMIC YEAR CALCULATION ---
+        const dateNow = new Date();
+        const currentActualYear = dateNow.getFullYear();
+        const defaultSelectedYear = currentActualYear - 1;
+        // Generate available years dynamically
+        const dynamicYears = [];
+        for (let i = 0; i < 4; i++) {
+          dynamicYears.push(String(currentActualYear - i));
+        }
+
         return {
           // --- CONFIGURATION ---
           apiBaseUrl: "{{ api_url }}",
-          targetYear: "2025",
-          // Add years if the data actually exists
-          availableYears: [2025, 2024,],
+          targetYear: String(defaultSelectedYear),
+          availableYears: dynamicYears,
 
           // --- GLOBAL STATE ---
           isSidebarOpen: true,
@@ -1662,7 +1670,7 @@
           },
 
           // ============================================
-          // FREEZE CONTROLS (Scroll/Btn)
+          // FREEZE HANDLER & CONTROLS
           // ============================================
           ui_Freeze_Inc() {
             if (this.ui_FreezeColCount < 6) {
@@ -1683,9 +1691,6 @@
             else this.ui_Freeze_Dec();
           },
 
-          // ============================================
-          // FREEZE HANDLER
-          // ============================================
           ui_ApplyFreeze() {
             const count = this.ui_FreezeColCount;
 
@@ -2064,110 +2069,115 @@
             let file = e.target.files[0];
             if (!file) return;
 
-            // Reset UI
-            this.ui_UploadStatusMessage = "Preparing...";
-            this.stagingData_Object = null;
+            // Clear input immediately so same file can be selected again if cancelled
+            e.target.value = null;
 
-            try {
-              // --- ROBUST HASH CACHING ---
-              // If user refreshes, we don't want to re-calculate MD5 for 10 seconds.
-              // We cache the hash in LocalStorage keyed by the file's unique signature.
-              const cacheKey = `upload_hash_${file.name}_${file.size}_${file.lastModified}`;
-              let fileHash = localStorage.getItem(cacheKey);
+            this.util_Confirm(
+              "Konfirmasi Tahun Upload",
+              `Bagian ini akan mengupdate tahun ${this.targetYear}, untuk mengganti pilih dropdown tahun di 'Histori & Perubahan'. Tekan Confirm untuk melanjutkan`,
+              async () => {
+                try {
+                  // Reset UI
+                  this.ui_UploadStatusMessage = "Preparing...";
+                  this.stagingData_Object = null;
 
-              if (!fileHash) {
-                this.ui_UploadStatusMessage = "Hashing file...";
-                fileHash = await this.helpers_compute_md5(file);
-                try {localStorage.setItem(cacheKey, fileHash);} catch (e) { } // Save for next refresh
-              }
+                  // --- ROBUST HASH CACHING ---
+                  // If user refreshes, we don't want to re-calculate MD5 for 10 seconds.
+                  // We cache the hash in LocalStorage keyed by the file's unique signature.
+                  const cacheKey = `upload_hash_${file.name}_${file.size}_${file.lastModified}`;
+                  let fileHash = localStorage.getItem(cacheKey);
 
-              // Generate the Unique ID for the server
-              // If you refresh and pick this file again, this ID stays the same, so server finds the .tmp file.
-              const fileUid = `${fileHash}_${file.size}_${file.lastModified}`;
-              this.ui_UploadStatusMessage = "Checking server...";
-
-              // Query server: "Do you have this file?"
-              // Added credentials
-              let initRes = await fetch(`${this.apiBaseUrl}/upload/init/${this.targetYear}`, {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                credentials: 'include',
-                body: JSON.stringify({
-                  filename: file.name,
-                  file_uid: fileUid,
-                  total_size: file.size,
-                  total_hash: fileHash
-                })
-              });
-              let initData = await initRes.json();
-
-              if (initData.status === "exists") {
-                // File already fully uploaded on server, jump to processing
-                this.ui_UploadStatusMessage = "File exists. Processing...";
-                await this.helpers_finalize_upload(initData.upload_id, file.name, fileHash);
-                e.target.value = null;
-                return;
-              }
-
-              // Start Chunking Loop
-              let offset = initData.received_bytes || 0;
-              const CHUNK_SIZE = 1024 * 1024 * 2; // 2MB Chunks (safe for slow connections)
-              const totalSizeMB = (file.size / (1024 * 1024)).toFixed(2);
-
-              while (offset < file.size) {
-                const chunkBlob = file.slice(offset, offset + CHUNK_SIZE);
-
-                // UI Progress
-                // Example: "Uploading: 12.50 / 50.00 MB (25%)"
-                const currentMB = (offset / (1024 * 1024)).toFixed(2);
-                const percent = Math.round((offset / file.size) * 100);
-                this.ui_UploadStatusMessage = `Uploading: ${currentMB} / ${totalSizeMB} MB (${percent}%)`;
-
-                // Retry Loop for current chunk
-                let retries = 5;
-                let chunkSuccess = false;
-
-                while (retries > 0 && !chunkSuccess) {
-                  try {
-                    let fd = new FormData();
-                    fd.append("chunk", chunkBlob);
-                    fd.append("upload_id", initData.upload_id);
-                    fd.append("offset", offset);
-                    fd.append("chunk_hash", await this.helpers_compute_md5(chunkBlob)); // Hash Check per chunk
-
-                    // Added credentials
-                    let chunkRes = await fetch(`${this.apiBaseUrl}/upload/chunk/${this.targetYear}`, {
-                      method: "POST",
-                      credentials: 'include',
-                      body: fd
-                    });
-
-                    if (!chunkRes.ok) throw new Error("Server rejected chunk");
-
-                    chunkSuccess = true;
-                    offset += CHUNK_SIZE; // Move to next chunk
-                  } catch (err) {
-                    retries--;
-                    console.warn(`Chunk failed, retrying... (${retries} left)`);
-                    // Exponential backoff: Wait 1s, then 2s, etc.
-                    await new Promise(r => setTimeout(r, 1000 * (5 - retries)));
+                  if (!fileHash) {
+                    this.ui_UploadStatusMessage = "Hashing file...";
+                    fileHash = await this.helpers_compute_md5(file);
+                    try {localStorage.setItem(cacheKey, fileHash);} catch (e) { } // Save for next refresh
                   }
+
+                  // Generate the Unique ID for the server
+                  // If you refresh and pick this file again, this ID stays the same, so server finds the .tmp file.
+                  const fileUid = `${fileHash}_${file.size}_${file.lastModified}`;
+                  this.ui_UploadStatusMessage = "Checking server...";
+
+                  // Query server: "Do you have this file?"
+                  // Added credentials
+
+                  let initRes = await fetch(`${this.apiBaseUrl}/upload/init/${this.targetYear}`, {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    credentials: 'include',
+                    body: JSON.stringify({
+                      filename: file.name,
+                      file_uid: fileUid,
+                      total_size: file.size,
+                      total_hash: fileHash
+                    })
+                  });
+                  let initData = await initRes.json();
+
+                  if (initData.status === "exists") {
+                    this.ui_UploadStatusMessage = "File exists. Processing...";
+                    await this.helpers_finalize_upload(initData.upload_id, file.name, fileHash);
+                    return;
+                  }
+
+                  // Start Chunking Loop
+                  let offset = initData.received_bytes || 0;
+                  const CHUNK_SIZE = 1024 * 1024 * 2; // 2MB Chunks (safe for slow connections)
+                  const totalSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+
+                  while (offset < file.size) {
+                    const chunkBlob = file.slice(offset, offset + CHUNK_SIZE);
+
+                    // UI Progress
+                    // Example: "Uploading: 12.50 / 50.00 MB (25%)"
+                    const currentMB = (offset / (1024 * 1024)).toFixed(2);
+                    const percent = Math.round((offset / file.size) * 100);
+                    this.ui_UploadStatusMessage = `Uploading: ${currentMB} / ${totalSizeMB} MB (${percent}%)`;
+
+                    // Retry Loop for current chunk
+                    let retries = 5;
+                    let chunkSuccess = false;
+
+                    while (retries > 0 && !chunkSuccess) {
+                      try {
+                        let fd = new FormData();
+                        fd.append("chunk", chunkBlob);
+                        fd.append("upload_id", initData.upload_id);
+                        fd.append("offset", offset);
+                        fd.append("chunk_hash", await this.helpers_compute_md5(chunkBlob)); // Hash Check per chunk
+
+                        // Added credentials
+                        let chunkRes = await fetch(`${this.apiBaseUrl}/upload/chunk/${this.targetYear}`, {
+                          method: "POST",
+                          credentials: 'include',
+                          body: fd
+                        });
+
+                        if (!chunkRes.ok) throw new Error("Server rejected chunk");
+
+                        chunkSuccess = true;
+                        offset += CHUNK_SIZE; // Move to next chunk
+                      } catch (err) {
+                        retries--;
+                        console.warn(`Chunk failed, retrying... (${retries} left)`);
+                        // Exponential backoff: Wait 1s, then 2s, etc.
+                        await new Promise(r => setTimeout(r, 1000 * (5 - retries)));
+                      }
+                    }
+
+                    if (!chunkSuccess) throw new Error("Upload failed");
+                  }
+
+                  // Finalize & Process
+                  this.ui_UploadStatusMessage = "Verifying...";
+                  await this.helpers_finalize_upload(initData.upload_id, file.name, fileHash);
+
+                } catch (err) {
+                  console.error(err);
+                  this.ui_UploadStatusMessage = "❌ " + (err.message || "Failed");
                 }
-
-                if (!chunkSuccess) throw new Error("Upload failed");
               }
-
-              // Finalize & Process
-              this.ui_UploadStatusMessage = "Verifying...";
-              await this.helpers_finalize_upload(initData.upload_id, file.name, fileHash);
-
-              // Success
-              e.target.value = null;
-
-            } catch (err) {
-              console.error(err);
-              this.ui_UploadStatusMessage = "❌ " + (err.message || "Failed");
-            }
+            );
           },
 
           // Helper: Call Finalize Endpoint
@@ -2223,7 +2233,7 @@
               });
               let d = await res.json();
               if (d.status === "success") {
-                this.util_Alert("Success", "✅ Data committed to database successfully!", "success");
+                this.util_Alert("Success", "✅ Data berhasil diupdate", "success");
                 this.stagingData_Object = null;
                 this.ui_UploadStatusMessage = "";
                 this.fetchVersionHistoryAndHierarchy();

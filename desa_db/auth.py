@@ -8,8 +8,9 @@ from jose import JWTError, jwt
 import bcrypt
 
 # === CONFIGURATION ===
-# CHECK: CHANGE THIS TO A RANDOM STRING FOR PROD!
-SECRET_KEY = "CHANGE_ME_TO_SOMETHING_SUPER_SECRET_AND_LONG" 
+SECRET_KEY = os.getenv("APP_SECRET_KEY")
+if not SECRET_KEY:
+    raise ValueError("FATAL: APP_SECRET_KEY is not set in environment variables!")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 360 # 6 Hours
 

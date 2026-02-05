@@ -5,9 +5,7 @@ import traceback
 import json
 import re
 import uuid
-import glob
 import csv
-import numpy as np
 import io
 import hashlib
 from pydantic import BaseModel
@@ -59,6 +57,8 @@ app.add_middleware(GZipMiddleware, minimum_size=1000)
  
 # CORS
 # CHECK: REMOVE ON PROD;Allow Frontend (8001) to talk to Backend (8000)
+# on PROD
+# ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:8001,http://localhost:8000").split(",")
 app.add_middleware(
     CORSMiddleware,
     # MUST list specific ports. Wildcard "*" will BLOCK cookies.
@@ -68,6 +68,8 @@ app.add_middleware(
         "http://localhost:8000",
         "http://127.0.0.1:8000"
     ],
+    # on PROD
+    # allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -153,8 +155,7 @@ async def login(creds: LoginRequest, response: JSONResponse = None):
         value=access_token, 
         httponly=True,   # JavaScript cannot read this (Security +)
         max_age=86400,   # 1 day
-        # ESSENTIAL FOR CLOUDFLARE TUNNELS (Different Domains):
-        samesite="none", 
+        samesite="lax", 
         secure=True      
     )
     return resp
@@ -165,7 +166,7 @@ async def logout():
     resp.delete_cookie(
         key="session_token", 
         httponly=True, 
-        samesite="none", 
+        samesite="lax", 
         secure=True
     )
     return resp
@@ -254,6 +255,13 @@ async def endpoint_upload_init(year: str, payload: UploadInit):
     """
     Checks if an upload was interrupted and returns the offset to resume from.
     """
+    # File: server.py (endpoint_upload_init)
+    # Vulnerability: payload.file_uid is used directly in os.path.join.
+    # The Risk: If an attacker sends a file_uid like ../../../../etc/passwd, they could overwrite sensitive system files.
+    # Strict validation: Only allow alphanumeric and underscores
+    if not re.match(r'^[a-zA-Z0-9_]+$', payload.file_uid):
+        return JSONResponse(status_code=400, content={"error": "Invalid upload ID"})
+
     # Use file_uid (hash+size) to track partial uploads
     temp_file_path = os.path.join(STAGING_FOLDER, f"partial_{payload.file_uid}.tmp")
  
@@ -367,7 +375,8 @@ async def endpoint_post_stage_upload(
     staging_id = str(uuid.uuid4())
     # Preserve extension so Calamine knows if it's xlsx or xlsb
     _, ext = os.path.splitext(file.filename)
-    if not ext: ext = ".xlsb"
+    if ext.lower() not in ['.xlsb', '.xlsx']:
+        ext = ".xlsb" # Force default or raise error
     temp_path = os.path.join(STAGING_FOLDER, f"temp_legacy_{staging_id}{ext}")
  
     try:
@@ -720,7 +729,7 @@ def endpoint_download_server_excel(year: str, request: Request):
         metadata_cols = {
             "valid_from", "valid_to", "commit_id", "source_file",
             "Provinsi", "Kabupaten/ Kota", "Kecamatan", 
-            "Kode Wilayah Administrasi Desa", "Desa", "TAHUN DATA"
+            "Kode Wilayah Administrasi Desa", "Desa", "Status ID"
         }
         ordered_db_cols = [r[0] for r in db_cols_info if r[0] not in metadata_cols]
 
@@ -908,7 +917,7 @@ async def endpoint_post_calculate_dashboard(year: str, request: Request):
             metadata_cols = {
                 "valid_from", "valid_to", "commit_id", "source_file",
                 "Provinsi", "Kabupaten/ Kota", "Kecamatan",
-                "Kode Wilayah Administrasi Desa", "Desa", "TAHUN DATA"
+                "Kode Wilayah Administrasi Desa", "Desa", "Status ID"
             }
  
             # This list preserves the order of metric columns in the DB
@@ -966,25 +975,29 @@ async def endpoint_post_delete_ids(
         con.execute("BEGIN TRANSACTION")
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
  
-        # Create SQL list: 'ID1', 'ID2', ...
-        id_sql_list = ", ".join([f"'{x}'" for x in id_list])
- 
-        # ROBUST QUERY:
-        # 1. TRIM(CAST(...)): Handles whitespace and ensures we compare strings
-        # 2. RETURNING: Captures the IDs that were actually touched
+        # Vulnerability 1: Soft Delete (server.py) The ids list is pasted directly into the query string using an f-string.
+        #     Code: id_sql_list = ", ".join([f"'{x}'" for x in id_list])
+        #     Attack: If a user sends an ID like 100' OR '1'='1, the query becomes WHERE ID IN ('100' OR '1'='1'), potentially deleting all records.
+        #     Fix: Use DuckDB's parameter substitution.
+        # Vulnerability 2: Time Travel (server.py) The version parameter is injected directly.
+        #     Code: f"valid_from <= '{version}' ..."
+        #     Attack: ?version=2025-01-01'; DROP TABLE master_data; --
+        # Use executing with parameters requires a list of values, not a formatted string.
+        # Since IN clauses are hard with parameters, loop or use a temporary table.
+        # Better DuckDB approach:
+        con.execute("CREATE TEMP TABLE target_ids (id VARCHAR)")
+        con.executemany("INSERT INTO target_ids VALUES (?)", [[x] for x in id_list])
+
         query = f"""
             UPDATE master_data 
-            SET valid_to = '{now}'
+            SET valid_to = ?
             WHERE valid_to IS NULL 
-            AND TRIM(CAST("{ID_COL}" AS VARCHAR)) IN ({id_sql_list})
+            AND "{ID_COL}" IN (SELECT id FROM target_ids)
             RETURNING "{ID_COL}"
-        """
- 
-        # Debugging: 
-        # print(f"Executing Delete: {query}")
- 
+        """ 
+
         # Execute and fetch the IDs that were actually updated
-        deleted_rows = con.execute(query).fetchall()
+        deleted_rows = con.execute(query, [now]).fetchall()
         changes = len(deleted_rows)
  
         if changes > 0:

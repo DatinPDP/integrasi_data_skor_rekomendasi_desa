@@ -13,6 +13,13 @@ All configuration files are stored in the `.config/` directory:
 ## System Requirements
 - Python 3.11.9
 
+## Run docker
+you need to install docker & docker-compose if you haven't
+on windows wsl is recommended
+```
+docker compose up -d --build
+```
+
 ## Virtual Environment Setup (run once)
 ```bash
 Python311 -m venv .venv
@@ -36,24 +43,19 @@ python add_user.py <user> <password>
 ```
 it will be saved in .config/
 
-# nodejs requirements
+### (deprecated) nodejs requirements
 ```
 npm install ag-grid-react ag-grid-community xlsx
 npm install -D tailwindcss postcss autoprefixer
 npm install spark-md5
 ```
-# run frontend nextjs
+### (deprecated) run frontend nextjs
 ```
 cd js_front_end
 npm run dev
 ```
 
-## Run mock frontend
+### (deprecated) Run mock frontend
 ```bash
 streamlit run tests/test_serverSheets.py
-```
-
-To run the tests for the server, use the following command in your terminal:
-```bash
-pytest tests/test_server.py
 ```

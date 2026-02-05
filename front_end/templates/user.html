@@ -788,7 +788,6 @@
                     <div class="h-px bg-slate-200 flex-1 dark:bg-slate-700"></div>
                   </div>
 
-
                   <button
                     @click="action_DownloadServerSide"
                     class="sidebar_btn_download_excel w-full border
@@ -802,7 +801,6 @@
                 </div>
               </div>
             </div>
-
 
             <div
               class="sidebar_section_history mb-5 border-b border-gray-100 pb-4 dark:border-slate-700"
@@ -869,24 +867,22 @@
                   </span>
                 </div>
 
-                <select
-                  x-model="targetYear"
-                  @change="action_YearChanged"
-                  class="sidebar_select_year
-                  w-full border border-blue-300 mb-2 p-2 rounded text-xs
-                  bg-blue-50 focus:ring-1 focus:ring-blue-500 outline-none text-blue-900 font-bold
-                  dark:bg-slate-900 dark:border-slate-600 dark:text-blue-400"
-                >
+                <div class="grid grid-cols-2 gap-2 mb-3">
                   <template
                     x-for="y in availableYears"
                     :key="y"
                   >
-                    <option
-                      :value="y"
+                    <button
+                      @click="targetYear = y; action_YearChanged()"
+                      class="px-2 py-2 text-xs font-bold rounded border transition-all duration-200 shadow-sm"
+                      :class="targetYear == y ? 
+                      'bg-slate-600 text-white border-slate-600 ring-2 ring-slate-200 ring-offset-1 dark:ring-offset-slate-800 dark:ring-slate-900' : 
+                      'bg-white text-slate-600 border-gray-300 hover:bg-gray-50 hover:border-gray-400 dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800'"
                       x-text="y"
-                    ></option>
+                    >
+                    </button>
                   </template>
-                </select>
+                </div>
 
                 <div class="space-y-2 max-h-[700px] overflow-y-auto custom-scrollbar pr-1">
                   <template
@@ -1388,12 +1384,21 @@
 
     <script>
       function AdminDashboardApp() {
+        // --- DYNAMIC YEAR CALCULATION ---
+        const dateNow = new Date();
+        const currentActualYear = dateNow.getFullYear();
+        const defaultSelectedYear = currentActualYear - 1;
+        // Generate available years dynamically
+        const dynamicYears = [];
+        for (let i = 0; i < 4; i++) {
+          dynamicYears.push(String(currentActualYear - i));
+        }
+
         return {
           // --- CONFIGURATION ---
           apiBaseUrl: "{{ api_url }}",
-          targetYear: "2025",
-          // Add years if the data actually exists
-          availableYears: [2025, 2024,],
+          targetYear: String(defaultSelectedYear),
+          availableYears: dynamicYears,
 
           // --- GLOBAL STATE ---
           isSidebarOpen: true,
@@ -1476,7 +1481,7 @@
           },
 
           // ============================================
-          // FREEZE CONTROLS (Scroll/Btn)
+          // FREEZE HANDLER & CONTROLS
           // ============================================
           ui_Freeze_Inc() {
             if (this.ui_FreezeColCount < 6) {
@@ -1497,9 +1502,6 @@
             else this.ui_Freeze_Dec();
           },
 
-          // ============================================
-          // FREEZE HANDLER
-          // ============================================
           ui_ApplyFreeze() {
             const count = this.ui_FreezeColCount;
 
