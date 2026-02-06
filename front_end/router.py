@@ -27,7 +27,8 @@ templates = Jinja2Templates(directory=TEMPLATE_DIR)
 # IMPORTANT: You must set this ENV VAR to your Cloudflare Backend URL
 # Example: "https://xxx.trycloudflare.com"
 # old-previous: API_BASE_URL
-# API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000")
+# uncomment when needed
+#API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000")
 
 # CHANGE 1: Read env var for Docker-to-Docker communication
 # Default to localhost for local testing without Docker
@@ -146,6 +147,7 @@ async def admin_dashboard(request: Request):
         "request": request, 
         # This forces the browser to use relative paths (e.g. "/query/...")
         # which Nginx will correctly route to the backend.
+        # API_BASE_URL is for non docker, uncomment when needed
         "api_url": ""
         #"api_url": API_BASE_URL
     })
@@ -161,6 +163,7 @@ async def user_dashboard(request: Request):
 
     return templates.TemplateResponse("user.html", {
         "request": request, 
+        # API_BASE_URL is for non docker, uncomment when needed
         "api_url": ""
         #"api_url": API_BASE_URL
     })
