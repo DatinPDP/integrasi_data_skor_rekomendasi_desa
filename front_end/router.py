@@ -9,7 +9,11 @@ from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from jose import jwt, JWTError
 
-app = FastAPI()
+app = FastAPI(
+    docs_url=None, 
+    redoc_url=None, 
+    openapi_url=None
+) 
 
 # Config
 # MUST MATCH auth.py
