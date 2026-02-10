@@ -306,6 +306,7 @@ def helpers_internal_process_staging_file(year: str, file_path: str, filename: s
         }
     except Exception as e:
         raise e
+
 def helpers_get_db_connection(year: str):
     clean_year = os.path.basename(year)
 

@@ -45,8 +45,12 @@ from auth import (
 #   /front_end/templates/user.html
 #   /front_end/templates/login.html
  
-app = FastAPI()
- 
+app = FastAPI(
+    docs_url=None, 
+    redoc_url=None, 
+    openapi_url=None
+) 
+
 # ==========================================
 # MIDDLEWARE SETUP
 # ==========================================
@@ -251,11 +255,11 @@ class UploadFinalize(BaseModel):
  
 # Resumable Uploads Endpoints
 @app.post("/upload/init/{year}", dependencies=[Depends(auth_require_admin)])
-async def endpoint_upload_init(year: str, payload: UploadInit):
+async def endpoint_post_upload_init(year: str, payload: UploadInit):
     """
     Checks if an upload was interrupted and returns the offset to resume from.
     """
-    # File: server.py (endpoint_upload_init)
+    # File: server.py (endpoint_post_upload_init)
     # Vulnerability: payload.file_uid is used directly in os.path.join.
     # The Risk: If an attacker sends a file_uid like ../../../../etc/passwd, they could overwrite sensitive system files.
     # Strict validation: Only allow alphanumeric and underscores
@@ -284,7 +288,7 @@ async def endpoint_upload_init(year: str, payload: UploadInit):
  
 # Resumable Uploads Endpoints
 @app.post("/upload/chunk/{year}", dependencies=[Depends(auth_require_admin)])
-async def endpoint_upload_chunk(
+async def endpoint_post_upload_chunk(
     year: str,
     chunk: UploadFile = File(...),
     upload_id: str = Form(...),
@@ -317,7 +321,7 @@ async def endpoint_upload_chunk(
  
 # Resumable Uploads Endpoints
 @app.post("/upload/finalize/{year}", dependencies=[Depends(auth_require_admin)])
-async def endpoint_upload_finalize(year: str, payload: UploadFinalize):
+async def endpoint_post_upload_finalize(year: str, payload: UploadFinalize):
     """
     Triggered when all chunks are sent. 
     1. Validates Total File Hash.
@@ -367,8 +371,6 @@ async def endpoint_post_stage_upload(
     3. Compare new data against existing DB data.
     4. Archive changed rows to 'history'.
     5. Upsert (Update/Insert) new rows to 'master_data'.
-    Legacy simple upload (kept for compatibility or small files).
-    Now just wrappers the internal helper.
     """
  
     # Security: Sanitize filename
@@ -628,7 +630,7 @@ def endpoint_get_history_versions(year: str):
 
 # Download server-side endpoints
 @app.get("/download/excel/{year}", dependencies=[Depends(auth_get_current_user)])
-def endpoint_download_server_excel(year: str, request: Request):
+def endpoint_get_download_server_excel(year: str, request: Request):
     """
     Generates a 2-Sheet Excel file (Grid Data + Dashboard Stats)
     Generates Excel Export matching Frontend styles.
