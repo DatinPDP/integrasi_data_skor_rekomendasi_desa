@@ -12,13 +12,38 @@ All configuration files are stored in the `.config/` directory:
 
 ## System Requirements
 - Python 3.11.9
+- (Recommended) any cpu supported with AVX2 (earliest Intel 4th gen, AMD Ryzen)
 
-## Run docker
+## (Recommended) Run docker
+
+create .env file
+copy and paste this below
+```
+APP_SECRET_KEY=
+DUCKDB_MEMORY_LIMIT=256MB
+
+```
+
+generate APP_SECRET_KEY with command below:
+```
+openssl rand -hex 32
+```
+and put into .env
+
 you need to install docker & docker-compose if you haven't
 on windows wsl is recommended
 ```
 docker compose up -d --build
 ```
+
+# Add user
+```
+python add_user.py <username> <password> <role>
+python add_user.py admin MySecretPass123 admin
+```
+it will be saved in .config/
+
+# Below are not recommended =====================================================
 
 ## Virtual Environment Setup (run once)
 ```bash
@@ -37,12 +62,6 @@ python desa_db/server.py
 ```bash
 python run_system.py
 ```
-# Add user
-```
-python add_user.py <username> <password> <role>
-python add_user.py admin MySecretPass123 admin
-```
-it will be saved in .config/
 
 ### (deprecated) nodejs requirements
 ```

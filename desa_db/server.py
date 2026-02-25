@@ -8,6 +8,9 @@ import uuid
 import csv
 import io
 import hashlib
+import time
+import threading
+import multiprocessing
 from pydantic import BaseModel
 from datetime import datetime, timedelta
 from openpyxl import Workbook
@@ -21,6 +24,7 @@ from fastapi.responses import JSONResponse, FileResponse, HTMLResponse, Redirect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from starlette.exceptions import HTTPException as StarletteHTTPException # For 404 handler
+from contextlib import asynccontextmanager
 
 # IMPORTS FOR AUTH
 from auth import (
@@ -45,10 +49,42 @@ from auth import (
 #   /front_end/templates/user.html
 #   /front_end/templates/login.html
 
+def _excel_worker(year):
+    """
+    Runs in a separate process - all memory freed on exit
+    """
+    from middleware import helpers_background_task_generate_pre_render_excel
+    helpers_background_task_generate_pre_render_excel(year)
+
+@asynccontextmanager
+async def app_lifespan(app: FastAPI):
+    # Cleanup stale temp files on startup (older than 24h)
+    cutoff = time.time() - (24 * 3600)
+    for f in os.listdir(TEMP_FOLDER):
+        fpath = os.path.join(TEMP_FOLDER, f)
+        try:
+            if os.path.getmtime(fpath) < cutoff:
+                os.remove(fpath)
+        except:
+            pass
+
+    # Startup Logic
+    db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "dbs")
+    if os.path.exists(db_path):
+        for filename in os.listdir(db_path):
+            if filename.startswith("data_") and filename.endswith(".duckdb"):
+                year = filename.replace("data_", "").replace(".duckdb", "")
+                p = multiprocessing.Process(target=_excel_worker, args=(year,), daemon=True)
+                p.start()
+    yield # Server runs here
+    
+    # Shutdown logic (if any) would go here
+
 app = FastAPI(
     docs_url=None, 
     redoc_url=None, 
-    openapi_url=None
+    openapi_url=None,
+    lifespan=app_lifespan
 ) 
 
 # ==========================================
@@ -93,23 +129,28 @@ try:
         helpers_init_db,
         helpers_read_excel_preview,
         helpers_generate_header_mapping,
-        helpers_internal_process_staging_file,
+        helpers_internal_process_temp_file,
         helpers_build_dynamic_query,
         helpers_get_cache_path,
         helpers_get_or_create_intervensi_kegiatan,
         helpers_calculate_dashboard_stats,
         helpers_render_dashboard_html,
+        helpers_generate_excel_workbook,
+        helpers_background_task_generate_pre_render_excel,
         ID_COL,
         BASE_DIR as MW_BASE_DIR,
         CONFIG_DIR,
-        STAGING_FOLDER as MW_STAGING_FOLDER
+        TEMP_FOLDER as MW_TEMP_FOLDER
     )
 except ImportError:
     # Fallback for different context import
     from desa_db.middleware import apply_rekomendasis, make_json_response, helpers_get_db_connection
     from desa_db.middleware import helpers_read_excel_preview, helpers_generate_header_mapping
-    from desa_db.middleware import helpers_init_db, helpers_internal_process_staging_file
+    from desa_db.middleware import helpers_init_db, helpers_internal_process_temp_file
     from desa_db.middleware import helpers_build_dynamic_query, helpers_get_cache_path
+    from desa_db.middleware import helpers_build_dynamic_query, helpers_get_cache_path
+    from desa_db.middleware import helpers_generate_excel_workbook
+    from desa_db.middleware import helpers_background_task_generate_pre_render_excel
     from desa_db.middleware import ID_COL, BASE_DIR as MW_BASE_DIR, CONFIG_DIR
 
 # ==========================================
@@ -119,7 +160,7 @@ except ImportError:
 # Get the directory where server.py is located (e.g., C:/.../desa_db)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 # Temp folder for uploads
-STAGING_FOLDER = os.path.join(BASE_DIR, "staging")
+TEMP_FOLDER = os.path.join(BASE_DIR, "temp")
 
 # DEFINE TEMPLATE PATHS
 # Resolves to: /.../front_end/templates
@@ -127,10 +168,14 @@ ROOT_DIR = os.path.abspath(os.path.join(BASE_DIR, ".."))
 TEMPLATE_DIR = os.path.join(ROOT_DIR, "front_end", "templates")
 
 # Ensure directories exist
-os.makedirs(STAGING_FOLDER, exist_ok=True)
+os.makedirs(TEMP_FOLDER, exist_ok=True)
 os.makedirs(CONFIG_DIR, exist_ok=True)
 os.makedirs(TEMPLATE_DIR, exist_ok=True)
 os.makedirs(ROOT_DIR, exist_ok=True)
+
+# Pre-compiled exports directory
+EXPORT_FOLDER = os.path.abspath(os.path.join(BASE_DIR, "../exports"))
+os.makedirs(EXPORT_FOLDER, exist_ok=True)
 
 # ==========================================
 # Login, logout, 404, Endpoints
@@ -307,7 +352,7 @@ async def endpoint_post_upload_init(year: str, payload: UploadInit):
         return JSONResponse(status_code=400, content={"error": "Invalid upload ID"})
 
     # Use file_uid (hash+size) to track partial uploads
-    temp_file_path = os.path.join(STAGING_FOLDER, f"partial_{payload.file_uid}.tmp")
+    temp_file_path = os.path.join(TEMP_FOLDER, f"partial_{payload.file_uid}.tmp")
 
     received_bytes = 0
     if os.path.exists(temp_file_path):
@@ -342,7 +387,7 @@ async def endpoint_post_upload_chunk(
         dict: {"status": "ok", "received": int}
     """
 
-    temp_file_path = os.path.join(STAGING_FOLDER, f"partial_{upload_id}.tmp")
+    temp_file_path = os.path.join(TEMP_FOLDER, f"partial_{upload_id}.tmp")
 
     # Read chunk content
     content = await chunk.read()
@@ -369,7 +414,7 @@ async def endpoint_post_upload_finalize(year: str, payload: UploadFinalize):
     Finalizes resumable upload after all chunks are received.
     Validates full file MD5 hash, renames to stable temp file, and returns temp_id.
     """
-    temp_file_path = os.path.join(STAGING_FOLDER, f"partial_{payload.upload_id}.tmp")
+    temp_file_path = os.path.join(TEMP_FOLDER, f"partial_{payload.upload_id}.tmp")
 
     if not os.path.exists(temp_file_path):
          return JSONResponse(status_code=404, content={"error": "Upload not found"})
@@ -383,23 +428,23 @@ async def endpoint_post_upload_finalize(year: str, payload: UploadFinalize):
         return JSONResponse(status_code=400, content={"error": "Final File Corruption (MD5 Mismatch)"})
 
     # Rename to a stable temp file for the next steps
-    staging_id = str(uuid.uuid4())
+    temp_id = str(uuid.uuid4())
     # Determine extension
     _, ext = os.path.splitext(payload.filename)
     if not ext: ext = ".xlsb"
     
-    safe_temp_path = os.path.join(STAGING_FOLDER, f"raw_{staging_id}{ext}")
+    safe_temp_path = os.path.join(TEMP_FOLDER, f"raw_{temp_id}{ext}")
     os.rename(temp_file_path, safe_temp_path)
 
     # Return ID for the frontend to call /preview
     return {
         "status": "uploaded_raw", 
-        "temp_id": staging_id, 
+        "temp_id": temp_id, 
         "filename": payload.filename,
         "path_ref": safe_temp_path 
     }
 
-# Preview Endpoint
+# Upload preview table
 @app.post("/upload/preview/{year}", dependencies=[Depends(auth_require_admin)])
 async def endpoint_post_upload_preview(year: str, payload: PreviewRequest):
     """
@@ -407,7 +452,7 @@ async def endpoint_post_upload_preview(year: str, payload: PreviewRequest):
     """
     # Reconstruct path based on temp_id
     _, ext = os.path.splitext(payload.filename)
-    file_path = os.path.join(STAGING_FOLDER, f"raw_{payload.temp_id}{ext}")
+    file_path = os.path.join(TEMP_FOLDER, f"raw_{payload.temp_id}{ext}")
     
     if not os.path.exists(file_path):
         return JSONResponse(status_code=404, content={"error": "Temp file expired or missing"})
@@ -418,7 +463,7 @@ async def endpoint_post_upload_preview(year: str, payload: PreviewRequest):
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
 
-# Get Header Suggestions
+# Upload preview Get Header Suggestions
 @app.post("/upload/analyze-headers/{year}", dependencies=[Depends(auth_require_admin)])
 async def endpoint_post_analyze_headers(year: str, payload: HeaderAnalysisRequest):
     """
@@ -426,7 +471,7 @@ async def endpoint_post_analyze_headers(year: str, payload: HeaderAnalysisReques
     (first 6 columns by index + fuzzy matching for the rest).
     """
     _, ext = os.path.splitext(payload.filename)
-    file_path = os.path.join(STAGING_FOLDER, f"raw_{payload.temp_id}{ext}")
+    file_path = os.path.join(TEMP_FOLDER, f"raw_{payload.temp_id}{ext}")
     
     try:
         mapping = helpers_generate_header_mapping(file_path, payload.header_row_index)
@@ -435,7 +480,7 @@ async def endpoint_post_analyze_headers(year: str, payload: HeaderAnalysisReques
         traceback.print_exc()
         return JSONResponse(status_code=500, content={"error": str(e)})
 
-# Execute Processing with Map
+# Upload preview Execute Processing with Map
 @app.post("/upload/process-mapped/{year}", dependencies=[Depends(auth_require_admin)])
 async def endpoint_post_process_mapped(year: str, payload: ProcessRequest):
     """
@@ -444,17 +489,17 @@ async def endpoint_post_process_mapped(year: str, payload: ProcessRequest):
     Returns staging result (added/removed/changed counts).
     """
     _, ext = os.path.splitext(payload.filename)
-    file_path = os.path.join(STAGING_FOLDER, f"raw_{payload.temp_id}{ext}")
+    file_path = os.path.join(TEMP_FOLDER, f"raw_{payload.temp_id}{ext}")
     
     try:
-        # Create a new staging ID for the Parquet result
-        staging_id = str(uuid.uuid4())
+        # Create a new temp ID for the Parquet result
+        temp_id = str(uuid.uuid4())
         
-        result = helpers_internal_process_staging_file(
+        result = helpers_internal_process_temp_file(
             year, 
             file_path, 
             payload.filename, 
-            staging_id,
+            temp_id,
             payload.header_row_index,
             payload.data_start_index,
             payload.confirmed_mapping
@@ -468,11 +513,12 @@ async def endpoint_post_process_mapped(year: str, payload: ProcessRequest):
         traceback.print_exc()
         return JSONResponse(status_code=500, content={"error": str(e)})
 
-# COMMIT: Apply the Staged Changes
+# Upload or Commit Apply the Staged Changes to update database
 @app.post("/commit/{year}", dependencies=[Depends(auth_get_current_user)])
 async def endpoint_post_commit_stage(
     year: str,
-    staging_id: str = Query(...),
+    background_tasks: BackgroundTasks,
+    temp_id: str = Query(...),
     filename: str = Query(...)
     ):
     """
@@ -487,10 +533,10 @@ async def endpoint_post_commit_stage(
         or JSONResponse 404/500 on error
     """
 
-    if not re.match(r'^[a-zA-Z0-9_-]+$', staging_id):
-        return JSONResponse(status_code=400, content={"error": "Invalid staging ID"})
+    if not re.match(r'^[a-zA-Z0-9_-]+$', temp_id):
+        return JSONResponse(status_code=400, content={"error": "Invalid temp ID"})
 
-    temp_path = os.path.join(STAGING_FOLDER, f"{staging_id}.parquet")
+    temp_path = os.path.join(TEMP_FOLDER, f"{temp_id}.parquet")
     if not os.path.exists(temp_path):
         return JSONResponse(status_code=404, content={"error": "Staging session expired. Please upload again."})
 
@@ -529,7 +575,7 @@ async def endpoint_post_commit_stage(
         # Insert New IDs
         con.execute(f"""
             INSERT INTO master_data 
-            SELECT '{now}', NULL, '{staging_id}', ?, i.* FROM incoming i
+            SELECT '{now}', NULL, '{temp_id}', ?, i.* FROM incoming i
             WHERE i."{ID_COL}" NOT IN (
                 SELECT "{ID_COL}" FROM master_data WHERE valid_to IS NULL
             )
@@ -537,9 +583,12 @@ async def endpoint_post_commit_stage(
 
         # Log Commit
         summary = "Update"
-        con.execute("INSERT INTO commits VALUES (?, ?, ?, ?)", [staging_id, now, filename, summary])
+        con.execute("INSERT INTO commits VALUES (?, ?, ?, ?)", [temp_id, now, filename, summary])
 
         con.execute("COMMIT")
+
+        # Trigger background rebuild of the static Excel file
+        background_tasks.add_task(helpers_background_task_generate_pre_render_excel, year)
 
         return {"status": "success", "message": "Database updated successfully."}
 
@@ -551,12 +600,12 @@ async def endpoint_post_commit_stage(
         con.close()
         if os.path.exists(temp_path): os.remove(temp_path)
 
-# QUERY: Supports Time Travel via 'version' (Timestamp)
+# Query history changes
 @app.get("/query/{year}", dependencies=[Depends(auth_get_current_user)])
 def endpoint_get_query_data(
     year: str,
     request: Request,
-    limit: int = 1000,
+    limit: int = 100,
     offset: int = 0,
     filter_col: str = None,
     filter_val: str = None,
@@ -640,11 +689,6 @@ def endpoint_get_query_data(
 
         # Sanitize NaNs
         records = res.to_dicts()
-        clean = [{k: (None if isinstance(v, float) and math.isnan(v) else v) for k,v in r.items()} for r in records]
-        # Return with header
-        # Instead of make_json_response (which returns Response), we use JSONResponse 
-        # so we can easily attach headers while keeping the data structure.
-        # OR use make_json_response and attach headers.
         
         response = make_json_response(res) 
         response.headers["X-Total-Count"] = str(total_rows)
@@ -712,11 +756,27 @@ def endpoint_get_history_versions(year: str):
 @app.get("/download/excel/{year}", dependencies=[Depends(auth_get_current_user)])
 def endpoint_get_download_server_excel(year: str, request: Request):
     """
-    Two-sheet Excel export using parameterized queries for filters and version.
-    Sheet 1: full grid data
-    Sheet 2: dashboard stats with merged headers and rowspans.
+    Downloads Excel export (two sheets) for the given year.
+    
+    Smart logic:
+    - If NO filters and NO ?version → serves pre-compiled master file instantly
+      (Export_Nasional_{year}_text.xlsx or Export_Nasional_{year}_skor.xlsx)
+    - If any filter or ?version is present → builds on-the-fly using helpers_generate_excel_workbook
+    
+    Features:
+    - Full support for translate flag (text vs skor)
+    - All dynamic filters and sorting from URL params
+    - Time travel via ?version
+    - Parameterized query for safety
+    
+    Sheet 1: Grid Data (full filtered rows)
+    Sheet 2: Dashboard Calc (stats + merged headers + rowspans)
+    
     Returns:
-        StreamingResponse: .xlsx file (media_type application/vnd.openxmlformats-officedocument.spreadsheetml.sheet)
+        FileResponse: pre-compiled master file (when available)
+        or
+        StreamingResponse: dynamically generated .xlsx
+        (media_type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet)
     """
     con, _ = helpers_get_db_connection(year)
     
@@ -729,6 +789,35 @@ def endpoint_get_download_server_excel(year: str, request: Request):
 
         # Time Travel Filter
         version = params_dict.get("version")
+
+        # 1. INTERCEPT: Check if there are any active filters
+        valid_cols = [r[0] for r in con.execute("DESCRIBE master_data").fetchall()]
+        ignored_keys = {"ids", "version", "limit", "translate", "temp_id", "filename", "sort_by", "sort_dir"}
+        
+        is_filtered = False
+        if params_dict.get("ids"):
+            is_filtered = True
+        
+        for k, v in params_dict.items():
+            if k in valid_cols and k not in ignored_keys and v:
+                is_filtered = True
+                break
+
+        # If NO filters and NO time-travel -> Serve Pre-compiled
+        if not is_filtered and not version:
+            # Pick the correct file based on frontend UI toggle
+            file_suffix = "text" if do_translate else "skor"
+            precompiled_path = os.path.join(EXPORT_FOLDER, f"Export_Nasional_{year}_{file_suffix}.xlsx")
+            
+            if os.path.exists(precompiled_path):
+                print(f"[{datetime.now()}] Serving pre-compiled {file_suffix} master excel for {year}")
+                return FileResponse(
+                    path=precompiled_path,
+                    filename=f"Export_Nasional_{file_suffix}_{year}.xlsx",
+                    media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                )
+
+        # 2. DYNAMIC COMPILE: User has active filters, build Excel on the fly
         base_values = []
         if version:
             time_filter = "valid_from <= ? AND (valid_to > ? OR valid_to IS NULL)"
@@ -759,175 +848,10 @@ def endpoint_get_download_server_excel(year: str, request: Request):
         # Fetch Data (No Limit)
         df_grid = con.execute(final_query, values).pl()
 
-        # APPLY TRANSLATION IF REQUESTED (Sheet 1 Fix)
-        if do_translate:
-            df_grid = apply_rekomendasis(df_grid)
+        # BUILD EXCEL (Using shared helper)
+        wb = helpers_generate_excel_workbook(con, df_grid, do_translate)
 
-        # BUILD EXCEL (OpenPyXL)
-        wb = Workbook()
-        
-        # Define Common Styles
-        thin_border = Border(left=Side(style='thin'), right=Side(style='thin'), top=Side(style='thin'), bottom=Side(style='thin'))
-        align_top = Alignment(vertical='top', wrap_text=True)
-        align_center = Alignment(horizontal='center', vertical='center', wrap_text=True)
-        header_fill = PatternFill(start_color="F2F2F2", end_color="F2F2F2", fill_type="solid")
-        header_font = Font(bold=True)
-
-        # --- SHEET 1: GRID DATA ---
-        ws1 = wb.active
-        ws1.title = "Grid Data"
-        df_sheet1 = apply_rekomendasis(df_grid) if do_translate else df_grid
-        grid_dicts = df_sheet1.to_dicts()
-        
-        # Write Headers
-        grid_dicts = df_grid.to_dicts()
-        if grid_dicts:
-            headers = list(grid_dicts[0].keys())
-            ws1.append(headers)
-            for row in grid_dicts:
-                # Handle None/NaN for Excel
-                clean_row = [(v if v is not None else "") for v in row.values()]
-                ws1.append(clean_row)
-            
-            # Basic Formatting for Sheet 1
-            for cell in ws1[1]:
-                cell.font = header_font
-                cell.fill = header_fill
-        else:
-            ws1.append(["No Data Found for filters"])
-
-        # --- SHEET 2: DASHBOARD STATS ---
-        ws2 = wb.create_sheet("Dashboard Calc")
-
-        # A. LOAD CONFIG & TEMPLATES
-        csv_path = os.path.join(CONFIG_DIR, "table_structure.csv")
-        structure = []
-        if os.path.exists(csv_path):
-            with open(csv_path, "r", encoding="utf-8-sig", errors="replace") as f:
-                # Auto-detect delimiter
-                sample = f.read(1024)
-                f.seek(0)
-                sniffer = csv.Sniffer()
-                try: dialect = sniffer.sniff(sample, delimiters=";")
-                except: dialect = None
-                reader = csv.DictReader(f, delimiter=dialect.delimiter if dialect else ";")
-                structure = list(reader)
-
-        # Get Metrics Columns (Same logic as dashboard endpoint)
-        db_cols_info = con.execute("DESCRIBE master_data").fetchall()
-        metadata_cols = {
-            "valid_from", "valid_to", "commit_id", "source_file",
-            "Provinsi", "Kabupaten/ Kota", "Kecamatan", 
-            "Kode Wilayah Administrasi Desa", "Desa", "Status ID"
-        }
-        ordered_db_cols = [r[0] for r in db_cols_info if r[0] not in metadata_cols]
-
-        # Load Narrative Templates
-        item_names = [row.get("ITEM", "") for row in structure if row.get("ITEM")]
-        templates = helpers_get_or_create_intervensi_kegiatan(item_names)
-
-        # *** CALL HELPER ***
-        calculated_rows = helpers_calculate_dashboard_stats(df_grid, structure, ordered_db_cols, templates)
-
-        # B. SETUP COLUMNS & HEADERS
-        # Set Widths (Approximating CSS pixels to Excel chars)
-        # 40px ~= 5 chars, 300px ~= 40 chars, 1100px ~= 100 chars
-        ws2.column_dimensions['A'].width = 5   # NO
-        ws2.column_dimensions['B'].width = 15  # DIMENSI
-        ws2.column_dimensions['C'].width = 15  # SUB
-        ws2.column_dimensions['D'].width = 15  # INDIKATOR
-        ws2.column_dimensions['E'].width = 45  # ITEM (Wide)
-        for c in ['F','G','H','I','J','K']:
-            ws2.column_dimensions[c].width = 8 # Scores
-        ws2.column_dimensions['L'].width = 100 # INTERVENSI (Very Wide)
-
-        # Pelaksana Columns
-        for c in ['M','N','O','P','Q']:
-            ws2.column_dimensions[c].width = 25
-
-        # Write Headers (Rows 1 & 2)
-        # Row 1: Merged Headers
-        ws2.append(["NO", "DIMENSI", "SUB DIMENSI", "INDIKATOR", "ITEM", 
-                    "SKOR", "", "", "", "", "",         # Colspan 6
-                    "INTERVENSI",                       # Rowspan 2
-                    "PELAKSANA", "", "", "", ""])       # Colspan 5
-        
-        # Row 2: Sub Headers
-        ws2.append(["", "", "", "", "", 
-                    "Rata-Rata", "1", "2", "3", "4", "5", 
-                    "", 
-                    "PUSAT", "PROVINSI", "KABUPATEN", "DESA", "LAINNYA"])
-
-        # Merge Logic for Header
-        ws2.merge_cells("A1:A2") # NO
-        ws2.merge_cells("B1:B2") # DIM
-        ws2.merge_cells("C1:C2") # SUB
-        ws2.merge_cells("D1:D2") # IND
-        ws2.merge_cells("E1:E2") # ITEM
-        ws2.merge_cells("F1:K1") # SKOR Group
-        ws2.merge_cells("L1:L2") # INTERVENSI
-        ws2.merge_cells("M1:Q1") # PELAKSANA Group
-
-        # Style Headers
-        for r in [1, 2]:
-            for cell in ws2[r]:
-                cell.font = header_font
-                cell.fill = header_fill
-                cell.border = thin_border
-                cell.alignment = align_center
-
-        # Write Data
-        merge_tracker = {0: {"val": None, "start": 3}, 1: {"val": None, "start": 3}, 2: {"val": None, "start": 3}, 3: {"val": None, "start": 3}}
-        start_row_idx = 3 # Excel starts at row 2 (row 1 is header)
-
-        for i, row in enumerate(calculated_rows):
-            current_excel_row = start_row_idx + i
-            
-            # Extract values from the dictionary returned by the helper
-            row_values = [
-                row.get("NO"), row.get("DIMENSI"), row.get("SUB DIMENSI"), row.get("INDIKATOR"), row.get("ITEM"),
-                row.get("SKOR Rata-Rata"), row.get("SKOR 1"), row.get("SKOR 2"), row.get("SKOR 3"), row.get("SKOR 4"), row.get("SKOR 5"),
-                row.get("INTERVENSI KEGIATAN"),
-                row.get("PELAKSANA KEGIATAN PUSAT"), row.get("PELAKSANA KEGIATAN PROVINSI"), 
-                row.get("PELAKSANA KEGIATAN KABUPATEN"), row.get("PELAKSANA KEGIATAN DESA"), 
-                row.get("PELAKSANA KEGIATAN Lainnya")
-            ]
-
-            ws2.append(row_values)
-
-            # Styling (Borders & Alignment)
-            for col_idx, cell in enumerate(ws2[current_excel_row], 1):
-                cell.border = thin_border
-                cell.alignment = align_top # Top align is crucial for merged cells
-                
-                # Center align the Score columns (F to K -> 6 to 11)
-                if 6 <= col_idx <= 11:
-                    cell.alignment = Alignment(horizontal='center', vertical='top')
-
-            # Merging Logic
-            # Iterate through mergeable columns (NO, DIMENSI, SUB, INDIKATOR)
-            # Logic: If value changes OR parent value changed, trigger merge of previous block and start new.
-            meta_vals = [row.get("NO"), row.get("DIMENSI"), row.get("SUB DIMENSI"), row.get("INDIKATOR")]
-            for col_idx in [0, 1, 2, 3]: 
-                val = meta_vals[col_idx]
-                
-                # Check if parent changed (e.g., Cant merge SUB DIMENSI if DIMENSI changed)
-                parent_changed = any(meta_vals[p] != merge_tracker[p]["val"] for p in range(col_idx))
-                
-                if val != merge_tracker[col_idx]["val"] or parent_changed or (i == len(calculated_rows) - 1):
-                    # Merge the PREVIOUS block if it spanned more than 1 row
-                    prev_end = current_excel_row - 1 if not (i == len(calculated_rows) - 1) else current_excel_row
-                    prev_start = merge_tracker[col_idx]["start"]
-                    
-                    if prev_end > prev_start:
-                        col_letter = get_column_letter(col_idx + 1)
-                        ws2.merge_cells(f"{col_letter}{prev_start}:{col_letter}{prev_end}")
-                    
-                    # Reset tracker
-                    merge_tracker[col_idx]["val"] = val
-                    merge_tracker[col_idx]["start"] = current_excel_row
-
-        # 3. RETURN FILE
+        # RETURN FILE
         output = io.BytesIO()
         wb.save(output)
         output.seek(0)
@@ -1070,7 +994,8 @@ async def endpoint_post_delete_ids(
 
         # Vulnerability 1: Soft Delete (server.py) The ids list is pasted directly into the query string using an f-string.
         #     Code: id_sql_list = ", ".join([f"'{x}'" for x in id_list])
-        #     Attack: If a user sends an ID like 100' OR '1'='1, the query becomes WHERE ID IN ('100' OR '1'='1'), potentially deleting all records.
+        #     Attack: If a user sends an ID like 100' OR '1'='1, the query becomes WHERE ID IN ('100' OR '1'='1'),
+        #     potentially deleting all records.
         #     Fix: Use DuckDB's parameter substitution.
         # Vulnerability 2: Time Travel (server.py) The version parameter is injected directly.
         #     Code: f"valid_from <= '{version}' ..."

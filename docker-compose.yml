@@ -1,14 +1,15 @@
 services:
-  backup:
+  backup-integrasi_data_skor_rekomendasi_desa:
       image: alpine:latest
       volumes:
         - ./desa_db/dbs:/app/desa_db/dbs:ro # Read-Only access to live DBs
         - ./backups:/app/backups            # Save backups to root/backups
         - ./backup.sh:/backup.sh:ro         # Inject the script
       # Make script executable, set cron to run daily at 02:00 AM, start cron daemon
-      command: /bin/sh -c "echo '0 2 * * * /bin/sh /backup.sh' > /etc/crontabs/root && crond -f -d 8"
+      command: /bin/sh -c "/bin/sh /backup.sh && echo '0 2 * * * /bin/sh /backup.sh' > /etc/crontabs/root && crond -f -d 8"
       restart: always
-  backend:
+
+  backend-integrasi_data_skor_rekomendasi_desa:
     build: .
     image: integrasi_data_skor_rekomendasi_desa
     command: python desa_db/server.py
@@ -16,30 +17,32 @@ services:
     volumes:
       - ./.config:/app/.config
       - ./desa_db/dbs:/app/desa_db/dbs
-      - ./desa_db/staging:/app/desa_db/staging
+      - ./desa_db/temp:/app/desa_db/temp
+      - ./exports:/app/exports
     env_file:
       - .env
 
-  frontend:
+  frontend-integrasi_data_skor_rekomendasi_desa:
     image: integrasi_data_skor_rekomendasi_desa
     command: python front_end/router.py
     restart: always
     environment:
       # Internal Docker URL for SSR Login
-      - API_BASE_URL=http://backend:8000 
+      - API_BASE_URL=http://backend-integrasi_data_skor_rekomendasi_desa:8000 
     volumes:
       - ./.config:/app/.config
     env_file:
       - .env
     depends_on:
-      - backend
+      - backend-integrasi_data_skor_rekomendasi_desa
 
-  nginx:
+  nginx-integrasi_data_skor_rekomendasi_desa:
     image: nginx:alpine
     ports:
       - "8080:80" # This is the SINGLE port you will Tunnel
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./exports:/app/exports:ro
     depends_on:
-      - backend
-      - frontend
+      - backend-integrasi_data_skor_rekomendasi_desa
+      - frontend-integrasi_data_skor_rekomendasi_desa

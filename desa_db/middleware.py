@@ -5,9 +5,18 @@ import duckdb
 import html as h
 import polars as pl
 import openpyxl
+import csv
+import io
+import time
+import traceback
+import gc
 from difflib import SequenceMatcher
 from fastapi import Response
 from fastapi.responses import JSONResponse
+from datetime import datetime, timedelta
+from openpyxl import Workbook
+from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+from openpyxl.utils import get_column_letter
 
 # ==========================================
 # CONFIGURATION
@@ -26,17 +35,18 @@ from fastapi.responses import JSONResponse
 #   /front_end/templates/login.html
 
 
-# Resolves to: /.../desa_db
+# Resolves to: /.../desa_db/
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# Resolves to: /.../.config
+# Resolves to: /.../.config/
 CONFIG_DIR = os.path.abspath(os.path.join(BASE_DIR, "../.config"))
 
-# Resolves to: /.../desa_db/dbs
+# Resolves to: /.../desa_db/dbs/
 DB_FOLDER = os.path.join(BASE_DIR, "dbs")
 
-# Resolves to: /.../desa_db/staging
-STAGING_FOLDER = os.path.join(BASE_DIR, "staging")
+# Resolves to: /.../desa_db/temp/
+TEMP_FOLDER = os.path.join(BASE_DIR, "temp")
+os.makedirs(TEMP_FOLDER, exist_ok=True)
 
 # Config Files
 JSON_PATH = os.path.join(CONFIG_DIR, "rekomendasi.json")
@@ -51,9 +61,15 @@ HEADER_FILE = os.path.join(CONFIG_DIR, "headers.json")
 # ID_COL acts as the Primary Key for deduplication and version control.
 ID_COL = "Kode Wilayah Administrasi Desa" 
 
+# Export Folder for Ready to download
+EXPORT_FOLDER = os.path.abspath(os.path.join(BASE_DIR, "../exports"))
+os.makedirs(EXPORT_FOLDER, exist_ok=True)
 
 # Point to ../.config/rekomendasi.json relative to this file
 os.makedirs(DB_FOLDER, exist_ok=True)
+
+# Duckdb memory limit, can be defined on .env
+DUCKDB_MEMORY_LIMIT = os.getenv("DUCKDB_MEMORY_LIMIT") or helpers_get_dynamic_duckdb_memory_limit()
 
 # ==========================================
 # LOGIC LOADER (Existing)
@@ -147,23 +163,26 @@ def helpers_read_excel_preview(file_path: str, limit_rows: int = 25):
         if file_path.lower().endswith(".xlsx"):
             # read_only=True ensures we don't load the whole file
             wb = openpyxl.load_workbook(file_path, read_only=True, data_only=True)
-            
-            # Handle Sheet Selection
-            if "Skor" in wb.sheetnames:
-                ws = wb["Skor"]
-            else:
-                ws = wb.active
 
-            # Iterate only the rows we need
-            # fetch limit_rows + 5 just in case some are empty, but typically exact limit is fine
-            for row in ws.iter_rows(min_row=1, max_row=limit_rows, values_only=True):
-                # Convert None to "" and map to list
-                clean_row = [str(cell) if cell is not None else "" for cell in row]
-                
-                # Check if row has data
-                rows.append(clean_row[:263])
+            try:
+                # Handle Sheet Selection
+                if "Skor" in wb.sheetnames:
+                    ws = wb["Skor"]
+                else:
+                    ws = wb.active
 
-            wb.close()
+                # Iterate only the rows we need
+                # fetch limit_rows + 5 just in case some are empty, but typically exact limit is fine
+                for row in ws.iter_rows(min_row=1, max_row=limit_rows, values_only=True):
+                    # Convert None to "" and map to list
+                    clean_row = [str(cell) if cell is not None else "" for cell in row]
+                    
+                    # Check if row has data
+                    rows.append(clean_row[:263])
+
+            finally:
+                wb.close()
+
             return rows
 
         # Read without headers to get raw grid
@@ -411,11 +430,11 @@ def helpers_sync_db_schema(con: duckdb.DuckDBPyConnection, year: str):
                 print(f"Failed to add column {clean_h}: {e}")
 
 # INTERNAL FILE PROCESSOR, staging uploads basically
-def helpers_internal_process_staging_file(
+def helpers_internal_process_temp_file(
     year: str,
     file_path: str,
     filename: str,
-    staging_id: str,
+    temp_id: str,
     header_row_idx: int,
     data_start_idx: int,
     confirmed_mapping: list
@@ -435,10 +454,20 @@ def helpers_internal_process_staging_file(
     - Strict Status ID validation
     - Filter 10-digit IDs
     - Cast: text columns → String, scores → Int8 (strict=False)
-    - Write {staging_id}.parquet
+    - Write {temp_id}.parquet
     - CDC diff vs current master_data (valid_to IS NULL)
     Returns:
-        dict: {"status": "staged", "staging_id": str, "filename": str, "diff": {"added": int, "removed": int, "changed": int, "total_incoming": int}}
+        dict: {
+            "status": "staged",
+            "temp_id": str,
+            "filename": str,
+            "diff": {
+                "added": int,
+                "removed": int,
+                "changed": int,
+                "total_incoming": int
+            }
+        }
     """
 
     try:
@@ -485,7 +514,11 @@ def helpers_internal_process_staging_file(
             engine="calamine",
             has_header=False # Direct argument, not inside dict
         )
-        print(f"1. Initial read: {df.height} rows (Empty rows stripped: {calamine_row_offset}, Col Offset: {calamine_col_offset})", flush=True)
+        # DEBUG TAG
+        print(
+        f"1. Initial read: {df.height} rows (Empty rows stripped: {calamine_row_offset}, Col Offset: {calamine_col_offset})",
+        flush=True
+        )
 
         # Structure Cleaning:
         # Slice: Cap width to prevent reading infinite empty Excel columns
@@ -501,7 +534,12 @@ def helpers_internal_process_staging_file(
         # df[4] is the first data row.
         if adjusted_data_start < df.height:
             df = df.slice(adjusted_data_start, None)
-            print(f"2. After row slice (UI start={data_start_idx}, Adjusted={adjusted_data_start}): {df.height} rows", flush=True)
+            # DEBUG TAG
+            print(
+            f"2. After row slice (UI start={data_start_idx}, Adjusted={adjusted_data_start}): {df.height} rows",
+            flush=True
+            )
+
         else:
              raise Exception(f"Data start index {data_start_idx} is out of bounds")
 
@@ -545,6 +583,7 @@ def helpers_internal_process_staging_file(
             raise Exception("No columns were confirmed for mapping.")
 
         df = df.select(selection_exprs)
+        # DEBUG TAG
         print(f"3. After column mapping: {df.height} rows", flush=True)
         if ID_COL in df.columns:
             print(f" -> Sample data in ID_COL: {df[ID_COL].head(3).to_list()}", flush=True)
@@ -554,6 +593,7 @@ def helpers_internal_process_staging_file(
             col for col in df 
             if not (col.is_null().all() or (col.dtype == pl.String and (col == "").all()))
         ])
+        # DEBUG TAG
         print(f"4. After dropping empty cols: {df.height} rows", flush=True)
 
         # VALIDATION: Status ID (Strict)
@@ -577,11 +617,13 @@ def helpers_internal_process_staging_file(
         if ID_COL in df.columns:
             pattern = r"[0-9]{10}"
             match_count = df.filter(pl.col(ID_COL).cast(pl.String).str.contains(pattern)).height
+            # DEBUG TAG
             print(f"5. Rows matching exactly 10 digits: {match_count}", flush=True)
             
             df = df.filter(
                 pl.col(ID_COL).cast(pl.String).str.contains(pattern)
             )
+            # DEBUG TAG
             print(f"6. After ID filter: {df.height} rows", flush=True)
 
         # OPTIMIZATION Type Casting (Optimized)
@@ -602,7 +644,7 @@ def helpers_internal_process_staging_file(
         df = df.with_columns(exprs)
 
         # Save Staged Data (Parquet will now store these as Integers)
-        final_parquet_path = os.path.join(STAGING_FOLDER, f"{staging_id}.parquet")
+        final_parquet_path = os.path.join(TEMP_FOLDER, f"{temp_id}.parquet")
         df.write_parquet(final_parquet_path)
 
         # Uncomment for the debug to activate. what this debug does is to check what's inside
@@ -656,7 +698,7 @@ def helpers_internal_process_staging_file(
 
         return {
             "status": "staged",
-            "staging_id": staging_id,
+            "temp_id": temp_id,
             "filename": filename,
             "diff": {
                 "added": added_count,
@@ -667,6 +709,28 @@ def helpers_internal_process_staging_file(
         }
     except Exception as e:
         raise e
+
+def helpers_get_dynamic_duckdb_memory_limit() -> str:
+    """
+    Sets DuckDB memory limit dynamically based on available system RAM.
+    
+    Strategy:
+    - Read total system RAM from /proc/meminfo (works on Linux/Docker)
+    - Use 20% of total RAM, floored at 128MB, capped at 512MB
+    - For your dataset (~25MB raw), 128MB is already 5x headroom
+    """
+    try:
+        with open("/proc/meminfo", "r") as f:
+            for line in f:
+                if line.startswith("MemTotal:"):
+                    total_kb = int(line.split()[1])
+                    total_mb = total_kb // 1024
+                    dynamic_mb = int(total_mb * 0.20)
+                    clamped_mb = max(128, min(dynamic_mb, 512))
+                    return f"{clamped_mb}MB"
+    except:
+        pass
+    return "256MB"  # safe fallback
 
 def helpers_get_db_connection(year: str):
     """
@@ -680,6 +744,7 @@ def helpers_get_db_connection(year: str):
 
     db_path = os.path.join(DB_FOLDER, f"data_{clean_year}.duckdb")
     con = duckdb.connect(db_path)
+    con.execute(f"SET memory_limit='{DUCKDB_MEMORY_LIMIT}'")
     return con, db_path
 
 def helpers_get_cache_path(year: str):
@@ -778,7 +843,7 @@ def helpers_build_dynamic_query(con, base_query, request_params, base_values=Non
             values.extend(id_list)
 
     # B. STANDARD FILTERS
-    ignored_keys = ["ids", "version", "limit", "translate", "staging_id", "filename", "sort_by", "sort_dir"]
+    ignored_keys = ["ids", "version", "limit", "translate", "temp_id", "filename", "sort_by", "sort_dir"]
     for key, val in request_params.items():
         # Map URL friendly names if necessary, or use direct keys
         # Assume frontend sends specific column names like "Provinsi"
@@ -796,6 +861,289 @@ def helpers_build_dynamic_query(con, base_query, request_params, base_values=Non
             base_query += f" WHERE {filter_str}"
 
     return base_query, values
+
+def helpers_generate_excel_workbook(con, df_grid: pl.DataFrame, do_translate: bool) -> Workbook:
+    """
+    Builds a complete two-sheet Excel Workbook from the provided DataFrame.
+    
+    Sheet 1: "Grid Data"
+    - Full rows from df_grid
+    - If do_translate=True: applies apply_rekomendasis() (scores → text)
+    - Simple header + data + basic bold/fill styling
+    
+    Sheet 2: "Dashboard Calc"
+    - Loads table_structure.csv
+    - Determines metric column order from master_data schema
+    - Loads intervention templates
+    - Calls helpers_calculate_dashboard_stats() for averages, counts, and narrative
+    - Builds fully formatted table with:
+        • Proper merged headers (SKOR group + PELAKSANA group)
+        • Column widths optimized for readability
+        • Rowspans for NO / DIMENSI / SUB DIMENSI / INDIKATOR
+        • Borders, alignment, and styling
+    
+    Returns:
+        openpyxl.workbook.workbook.Workbook: fully built workbook (not saved)
+    """
+    # BUILD EXCEL (OpenPyXL)
+    wb = Workbook()
+    
+    # Define Common Styles
+    thin_border = Border(
+        left=Side(style='thin'),
+        right=Side(style='thin'),
+        top=Side(style='thin'),
+        bottom=Side(style='thin')
+    )
+    align_top = Alignment(vertical='top', wrap_text=True)
+    align_center = Alignment(horizontal='center', vertical='center', wrap_text=True)
+    header_fill = PatternFill(start_color="F2F2F2", end_color="F2F2F2", fill_type="solid")
+    header_font = Font(bold=True)
+
+    # --- SHEET 1: GRID DATA ---
+    ws1 = wb.active
+    ws1.title = "Grid Data"
+    df_sheet1 = apply_rekomendasis(df_grid) if do_translate else df_grid
+    grid_dicts = df_sheet1.to_dicts()
+    
+    # Write Headers
+    if grid_dicts:
+        headers = list(grid_dicts[0].keys())
+        ws1.append(headers)
+        for row in grid_dicts:
+            # Handle None/NaN for Excel
+            clean_row = [(v if v is not None else "") for v in row.values()]
+            ws1.append(clean_row)
+        
+        # Basic Formatting for Sheet 1
+        for cell in ws1[1]:
+            cell.font = header_font
+            cell.fill = header_fill
+    else:
+        ws1.append(["No Data Found for filters"])
+
+    del grid_dicts  # free after writing to workbook
+    gc.collect()
+
+    # --- SHEET 2: DASHBOARD STATS ---
+    ws2 = wb.create_sheet("Dashboard Calc")
+
+    # A. LOAD CONFIG & TEMPLATES
+    csv_path = os.path.join(CONFIG_DIR, "table_structure.csv")
+    structure = []
+    if os.path.exists(csv_path):
+        with open(csv_path, "r", encoding="utf-8-sig", errors="replace") as f:
+            # Auto-detect delimiter
+            sample = f.read(1024)
+            f.seek(0)
+            sniffer = csv.Sniffer()
+            try: dialect = sniffer.sniff(sample, delimiters=";")
+            except: dialect = None
+            reader = csv.DictReader(f, delimiter=dialect.delimiter if dialect else ";")
+            structure = list(reader)
+
+    # Get Metrics Columns (Same logic as dashboard endpoint)
+    db_cols_info = con.execute("DESCRIBE master_data").fetchall()
+    metadata_cols = {
+        "valid_from", "valid_to", "commit_id", "source_file",
+        "Provinsi", "Kabupaten/ Kota", "Kecamatan", 
+        "Kode Wilayah Administrasi Desa", "Desa", "Status ID"
+    }
+    ordered_db_cols = [r[0] for r in db_cols_info if r[0] not in metadata_cols]
+
+    # Load Narrative Templates
+    item_names = [row.get("ITEM", "") for row in structure if row.get("ITEM")]
+    templates = helpers_get_or_create_intervensi_kegiatan(item_names)
+
+    # Call Helper
+    calculated_rows = helpers_calculate_dashboard_stats(df_grid, structure, ordered_db_cols, templates)
+
+    # B. SETUP COLUMNS & HEADERS
+    # Set Widths (Approximating CSS pixels to Excel chars)
+    # 40px ~= 5 chars, 300px ~= 40 chars, 1100px ~= 100 chars
+    ws2.column_dimensions['A'].width = 5   # NO
+    ws2.column_dimensions['B'].width = 15  # DIMENSI
+    ws2.column_dimensions['C'].width = 15  # SUB
+    ws2.column_dimensions['D'].width = 15  # INDIKATOR
+    ws2.column_dimensions['E'].width = 45  # ITEM (Wide)
+    for c in ['F','G','H','I','J','K']:
+        ws2.column_dimensions[c].width = 8 # Scores
+    ws2.column_dimensions['L'].width = 100 # INTERVENSI (Very Wide)
+
+    # Pelaksana Columns
+    for c in ['M','N','O','P','Q']:
+        ws2.column_dimensions[c].width = 25
+
+    # Write Headers (Rows 1 & 2)
+    # Row 1: Merged Headers
+    ws2.append(["NO", "DIMENSI", "SUB DIMENSI", "INDIKATOR", "ITEM", 
+                "SKOR", "", "", "", "", "",         # Colspan 6
+                "INTERVENSI",                       # Rowspan 2
+                "PELAKSANA", "", "", "", ""])       # Colspan 5
+    
+    # Row 2: Sub Headers
+    ws2.append(["", "", "", "", "", 
+                "Rata-Rata", "1", "2", "3", "4", "5", 
+                "", 
+                "PUSAT", "PROVINSI", "KABUPATEN", "DESA", "LAINNYA"])
+
+    # Merge Logic for Header
+    ws2.merge_cells("A1:A2") # NO
+    ws2.merge_cells("B1:B2") # DIM
+    ws2.merge_cells("C1:C2") # SUB
+    ws2.merge_cells("D1:D2") # IND
+    ws2.merge_cells("E1:E2") # ITEM
+    ws2.merge_cells("F1:K1") # SKOR Group
+    ws2.merge_cells("L1:L2") # INTERVENSI
+    ws2.merge_cells("M1:Q1") # PELAKSANA Group
+
+    # Style Headers
+    for r in [1, 2]:
+        for cell in ws2[r]:
+            cell.font = header_font
+            cell.fill = header_fill
+            cell.border = thin_border
+            cell.alignment = align_center
+
+    # Write Data
+    merge_tracker = {
+        0: {"val": None, "start": 3},
+        1: {"val": None, "start": 3},
+        2: {"val": None, "start": 3},
+        3: {"val": None, "start": 3}
+    }
+    start_row_idx = 3 # Excel starts at row 2 (row 1 is header)
+
+    for i, row in enumerate(calculated_rows):
+        current_excel_row = start_row_idx + i
+        
+        # Extract values from the dictionary returned by the helper
+        row_values = [
+            row.get("NO"), row.get("DIMENSI"), row.get("SUB DIMENSI"), row.get("INDIKATOR"), row.get("ITEM"),
+            row.get("SKOR Rata-Rata"), row.get("SKOR 1"), row.get("SKOR 2"), row.get("SKOR 3"), row.get("SKOR 4"), row.get("SKOR 5"),
+            row.get("INTERVENSI KEGIATAN"),
+            row.get("PELAKSANA KEGIATAN PUSAT"), row.get("PELAKSANA KEGIATAN PROVINSI"), 
+            row.get("PELAKSANA KEGIATAN KABUPATEN"), row.get("PELAKSANA KEGIATAN DESA"), 
+            row.get("PELAKSANA KEGIATAN Lainnya")
+        ]
+
+        ws2.append(row_values)
+
+        # Styling (Borders & Alignment)
+        for col_idx, cell in enumerate(ws2[current_excel_row], 1):
+            cell.border = thin_border
+            cell.alignment = align_top # Top align is crucial for merged cells
+            
+            # Center align the Score columns (F to K -> 6 to 11)
+            if 6 <= col_idx <= 11:
+                cell.alignment = Alignment(horizontal='center', vertical='top')
+
+        # Merging Logic
+        # Iterate through mergeable columns (NO, DIMENSI, SUB, INDIKATOR)
+        # Logic: If value changes OR parent value changed, trigger merge of previous block and start new.
+        meta_vals = [row.get("NO"), row.get("DIMENSI"), row.get("SUB DIMENSI"), row.get("INDIKATOR")]
+        for col_idx in [0, 1, 2, 3]: 
+            val = meta_vals[col_idx]
+            
+            # Check if parent changed (e.g., Cant merge SUB DIMENSI if DIMENSI changed)
+            parent_changed = any(meta_vals[p] != merge_tracker[p]["val"] for p in range(col_idx))
+            
+            if val != merge_tracker[col_idx]["val"] or parent_changed or (i == len(calculated_rows) - 1):
+                # Merge the PREVIOUS block if it spanned more than 1 row
+                prev_end = current_excel_row - 1 if not (i == len(calculated_rows) - 1) else current_excel_row
+                prev_start = merge_tracker[col_idx]["start"]
+                
+                if prev_end > prev_start:
+                    col_letter = get_column_letter(col_idx + 1)
+                    ws2.merge_cells(f"{col_letter}{prev_start}:{col_letter}{prev_end}")
+                
+                # Reset tracker
+                merge_tracker[col_idx]["val"] = val
+                merge_tracker[col_idx]["start"] = current_excel_row
+
+    return wb
+
+def helpers_background_task_generate_pre_render_excel(year: str):
+    """
+    Background task that generates two complete master_data db to
+    Excel (All data) files for the given year.
+    
+    Behavior:
+    - Fetches ALL current active rows (valid_to IS NULL) ordered by ID_COL
+    - Generates both versions via helpers_generate_excel_workbook:
+        • Translated (scores → text recommendations)
+        • Raw (original numeric scores)
+    - Writes atomically using .tmp + os.replace to prevent Nginx from serving partial files
+    - Skips silently if master_data table does not exist or contains zero rows
+    - Logs progress with timestamps (flush=True for immediate Docker visibility)
+    
+    No return value.
+    """
+    start_time = time.time()
+    # flush=True forces Docker to print immediately instead of buffering
+    print(f"[{datetime.now()}]  Compiling background Master Excel for {year}...", flush=True)
+    
+    con, _ = helpers_get_db_connection(year)
+    
+    try:
+        query = f'SELECT * EXCLUDE (valid_from, valid_to, commit_id, source_file) FROM master_data WHERE valid_to IS NULL ORDER BY "{ID_COL}" ASC'
+        try:
+            df_grid = con.execute(query).pl()
+        except duckdb.CatalogException:
+            print(f"[{datetime.now()}]  Table not built yet for {year}. Skipping.", flush=True)
+            return # Skip if table not built yet
+        
+        if df_grid.height == 0: 
+            print(f"[{datetime.now()}]  No data found for {year}. Skipping.", flush=True)
+            return
+
+        print(f"[{datetime.now()}]  Data fetched ({df_grid.height} rows). Building Excel... (This may take several minutes)", flush=True)
+
+        # Call the new clean helper
+        wb_trans = helpers_generate_excel_workbook(con, df_grid, do_translate=True)
+        file_path_trans = os.path.join(EXPORT_FOLDER, f"Export_Nasional_{year}_text.xlsx")
+        temp_trans = f"{file_path_trans}.tmp"
+        
+        print(f"[{datetime.now()}] Saving Translated file to disk...", flush=True)
+
+        # Save to a temporary file first to prevent Nginx from serving an incomplete file
+        wb_trans.save(temp_trans)
+        if os.path.exists(temp_trans) and os.path.getsize(temp_trans) > 0:
+            os.replace(temp_trans, file_path_trans) # Atomic swap
+        # Explicitly free translated workbook before building raw
+        del wb_trans
+        gc.collect()
+
+        # Compile Raw Version
+        wb_raw = helpers_generate_excel_workbook(con, df_grid, do_translate=False)
+        file_path_raw = os.path.join(EXPORT_FOLDER, f"Export_Nasional_{year}_skor.xlsx")
+        temp_raw = f"{file_path_raw}.tmp"
+        
+        # Explicit validation checks
+        print(f"[{datetime.now()}] Saving Raw file to disk...", flush=True)
+        wb_raw.save(temp_raw)
+        if os.path.exists(temp_raw) and os.path.getsize(temp_raw) > 0:
+            os.replace(temp_raw, file_path_raw) # Atomic swap
+
+        # Free everything after done
+        del wb_raw
+        del df_grid
+        gc.collect()
+
+        elapsed = round(time.time() - start_time, 2)
+        print(f"[{datetime.now()}] ✅ Successfully compiled BOTH Translated & Raw files in {elapsed}s", flush=True)
+
+    except Exception as e:
+        print(f"[{datetime.now()}] ❌ Failed to generate master excel: {e}", flush=True)
+        traceback.print_exc() # Prints the exact line that crashed to Docker logs
+    finally:
+        con.close()
+        # Cleanup any stuck temp files
+        for t in [f"{os.path.join(EXPORT_FOLDER, f'Export_Nasional_{year}_text.xlsx')}.tmp", 
+                  f"{os.path.join(EXPORT_FOLDER, f'Export_Nasional_{year}_skor.xlsx')}.tmp"]:
+            if os.path.exists(t):
+                try: os.remove(t)
+                except: pass
 
 def helpers_get_or_create_intervensi_kegiatan(items: list[str]):
     """
@@ -1019,7 +1367,8 @@ def helpers_render_dashboard_html(calculated_rows: list[dict]) -> str:
             
             # File: middleware.py (Function: helpers_render_dashboard_html)
             # Vulnerability: You use f-strings to build HTML: f'>{content or ""}</td>'.
-            # The Risk: If an attacker uploads an Excel file where the "Desa" column contains <script>alert('Hacked')</script>,
+            # The Risk: If an attacker uploads an Excel file where the "Desa"
+            # column contains <script>alert('Hacked')</script>,
             # that script will execute in the browser of every admin who views the dashboard.
             safe_content = h.escape(str(content)) if content else ""
             return f'<td class="{cls}" data-col-idx="{idx}" rowspan="{rowspan}" style="{style}">{safe_content}</td>'
