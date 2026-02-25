@@ -38,14 +38,13 @@ __pycache__
 *.zip
 *.tmp
 *.part
+desa_db/dbs/
+desa_db/staging/
 
 # EXCEPTION: Keep config CSVs
 !.config/
 !.config/table_structure.csv
 
-# EXCEPTION: Keep Database
-# do NOT ignore .duckdb here so it gets copied into the image.
-# *.duckdb
 
 # ==========================
 # FRONTEND (Next.js / Node)

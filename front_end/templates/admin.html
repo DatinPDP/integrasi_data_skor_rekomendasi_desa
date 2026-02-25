@@ -47,6 +47,34 @@
       /* slate-500 */
       .dark ::-webkit-scrollbar-corner { background: #0f172a; }
 
+      *, ::after, ::before { border-color: none }
+
+      /* Modal Styling */
+      .modal-overlay {
+        background-color: rgba(0,0,0,0.5);
+        backdrop-filter: blur(2px);
+      }
+      /* Mapping List */
+      .map-list-container {
+        max-height: 60vh;
+        overflow-y: auto;
+      }
+      .map-item {
+        display: grid;
+        grid-template-columns: 300px 1fr 100px;
+        gap: 10px;
+        align-items: center;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 8px 0;
+      }
+      .dark .map-item { border-bottom-color: #334155; }
+      /* Step 2 Upload window Text Wrap Fix */
+      .map-text-wrap {
+          white-space: normal;
+          word-break: break-word;
+          line-height: 1.2;
+      }
+
       /* ===========================
          5. AG GRID & TABLE OVERRIDES
          =========================== */
@@ -93,7 +121,7 @@
       .col-indikator { width: 40px; max-width: 200px; }
       .col-item { width: 300px; min-width: 150px; }
       .col-score { width: 60px; min-width: 60px; }
-      .col-intervensi { min-width: 1100px; }
+      .col-intervensi { width: 500px; min-width: 300px; }
       .col-pusat { width: 200px; min-width: 150px; }
       .col-prov { width: 200px; min-width: 150px; }
       .col-kab { width: 200px; min-width: 150px; }
@@ -335,7 +363,7 @@
                   height="5"
                 ></rect>
               </svg>
-              <span>Dashboard</span>
+              <span>Rekomendasi ID</span>
             </button>
 
           </div>
@@ -521,8 +549,8 @@
           @click="ui_ToggleDarkMode"
           class="header_btn_theme_toggle w-8 h-8 rounded transition border border-transparent flex items-center justify-center
           hover:bg-gray-100 hover:border-gray-300 text-black
-          dark:hover:bg-slate-700 dark:text-yellow-400 dark:hover:border-slate-600"
-          title="Toggle Theme"
+          dark:hover:bg-slate-700 dark:text-slate-400 dark:hover:border-slate-600"
+          title="Dark/Light mode"
         >
           <svg
             x-show="!isDarkModeEnabled"
@@ -658,19 +686,12 @@
                 x-collapse
               >
                 <div class="sidebar_upload_group space-y-3">
-                  <div class="sidebar_upload_label_group flex items-center gap-2 mb-1">
-                    <span class="text-[12px] font-bold text-slate-500 uppercase tracking-wider dark:text-slate-400">
-                      Database Import & Download
-                    </span>
-                    <div class="h-px bg-slate-200 flex-1 dark:bg-slate-700"></div>
-                  </div>
-
                   <div
                     x-show="!stagingData_Object"
                     class="sidebar_upload_dropzone_container"
                   >
                     <label class="sidebar_upload_dropzone flex flex-col items-center justify-center w-full h-12
-                      border-2 border-dashed border-blue-300 rounded-lg cursor-pointer bg-blue-50/50
+                      border-2 border-dashed border-slate-300 rounded-lg cursor-pointer bg-blue-50/50
                       hover:bg-blue-100 hover:border-blue-400 transition-all dark:bg-slate-800
                       dark:border-slate-600 dark:hover:border-blue-500 dark:hover:bg-slate-700 group relative">
                       <div
@@ -695,7 +716,7 @@
                             </path>
                           </svg>
                         </div>
-                        <p class="text-[12px] font-bold text-slate-600 group-hover:text-white dark:text-slate-300">
+                        <p class="text-[12px] font-bold text-slate-600 dark:text-slate-300 dark:group-hover:text-white">
                           Upload Data
                         </p>
                       </div>
@@ -728,7 +749,7 @@
                     <div class="sidebar_staging_header bg-amber-50 px-3 py-2 border-b border-amber-100
                           dark:bg-amber-900/20 dark:border-amber-800/50 flex items-center justify-between">
                       <span class="text-[12px] font-bold text-amber-700 dark:text-amber-500">
-                        ⚠️ Review Changes
+                        ⚠️ Review Perubahan
                       </span>
                       <div class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></div>
                     </div>
@@ -775,9 +796,9 @@
                           @click="action_CommitStagedData_ToDB"
                           class="sidebar_btn_commit flex-1
                           bg-slate-500 text-white py-1.5 rounded text-[12px]
-                          font-bold hover:bg-slate-900 shadow-sm transition dark:bg-blue-600 dark:hover:bg-blue-500"
+                          font-bold hover:bg-slate-700 shadow-sm transition dark:bg-slate-700 dark:hover:bg-slate-500"
                         >
-                          Commit to DB
+                          Upload Data Base
                         </button>
                         <button
                           @click="stagingData_Object = null; setUiStatusMessage=''"
@@ -799,7 +820,22 @@
                       items-center gap-2 dark:bg-green-900/20 dark:border-green-800
                       dark:hover:bg-green-500/40 min-h-[42px]"
                   >
-                    <span>💾</span> Download (Dari Server)
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      fill="currentColor"
+                      class="bi bi-download"
+                      viewBox="0 0 16 16"
+                    >
+                      <path
+                        d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"
+                      />
+                      <path
+                        d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"
+                      />
+                    </svg>
+                    Download (Dari Server)
                   </button>
                 </div>
               </div>
@@ -870,7 +906,7 @@
                   </span>
                 </div>
 
-                <div class="grid grid-cols-2 gap-2 mb-3">
+                <div class="grid grid-cols-2 gap-2 mb-3 max-h-24 overflow-y-auto custom-scrollbar pr-1">
                   <template
                     x-for="y in availableYears"
                     :key="y"
@@ -915,9 +951,8 @@
                             @click="ui_LoadVersion(v.ts)"
                             class="flex-1 py-1 text-[10px] font-bold rounded border transition-colors"
                             :class="filter_SelectedVersion === v.ts ?
-                          'bg-blue-600 text-white border-blue-600' 
-                          : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50
-                          dark:bg-slate-700 dark:text-gray-300 dark:border-slate-600'"
+                            'bg-blue-600 text-white border-blue-600' :
+                            'bg-white text-gray-600 border-gray-300 hover:bg-gray-50 dark:bg-slate-700 dark:text-gray-300 dark:border-slate-600'"
                           >
                             Lihat Data
                           </button>
@@ -1304,7 +1339,6 @@
       }"
       x-init="
           // Listen for legacy Alpine variables from parent
-          $watch('$store.app.setUiStatusMessage', val => val ? showToast(val, 'info') : (toast.show = false));
           $watch('setUiStatusMessage', val => val ? showToast(val, 'info') : (toast.show = false));
           
           // Listen for legacy Alert State
@@ -1320,7 +1354,8 @@
       <div
         x-show="toast.show"
         x-transition.duration.300ms
-        class="fixed top-6 left-1/2 transform -translate-x-1/2 z-[150] px-6 py-3 rounded shadow-xl flex items-center gap-3 border transition-colors duration-300"
+        class="fixed top-6 left-1/2 transform -translate-x-1/2 z-[150] px-6 py-3 rounded shadow-xl flex items-center
+              gap-3 border transition-colors duration-300"
         :class="{
             'bg-slate-800 text-white border-slate-700': toast.type === 'info',
             'bg-red-600 text-white border-red-700': toast.type === 'error',
@@ -1369,7 +1404,8 @@
       >
 
         <div
-          class="bg-white dark:bg-slate-800 rounded-lg shadow-2xl border border-gray-200 dark:border-slate-600 w-[400px] max-w-[90%] p-5 transform transition-all scale-100"
+          class="bg-white dark:bg-slate-800 rounded-lg shadow-2xl border border-gray-200 dark:border-slate-600 w-[400px]
+                max-w-[90%] p-5 transform transition-all scale-100"
           @click.outside="if(modal.type !== 'confirm') modal.show = false"
         >
 
@@ -1418,14 +1454,15 @@
 
           <p
             class="mb-6 pl-1 text-sm text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-wrap"
-            x-text="modal.msg"
+            x-html="modal.msg"
           ></p>
 
           <div class="flex justify-end gap-2">
             <button
               x-show="modal.type === 'confirm'"
               @click="modal.show = false"
-              class="px-4 py-2 text-xs font-bold text-gray-500 hover:text-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700 rounded"
+              class="px-4 py-2 text-xs font-bold text-gray-500 hover:text-gray-700 dark:text-gray-400 hover:bg-gray-100
+                    dark:hover:bg-slate-700 rounded"
             >
               Cancel
             </button>
@@ -1445,17 +1482,314 @@
       </div>
     </div>
 
+    <div
+      x-show="ui_Step === 'preview'"
+      class="floating_window_main_data_selector modal-overlay fixed inset-0 z-[200] flex items-center justify-center"
+      style="display:none;"
+    >
+      <div
+        class="floating_window_header_and_dataframe_selector bg-white dark:bg-slate-800 w-[95%] h-[90%] rounded-lg
+              shadow-2xl flex flex-col overflow-hidden"
+      >
+
+        <div class="p-4 border-b dark:border-slate-700 flex justify-between items-center bg-gray-50 dark:bg-slate-900">
+          <div>
+            <h3 class="font-bold text-lg text-slate-700 dark:text-slate-200">Step 1: Pemilihan Data</h3>
+            <p class="text-xs text-slate-500">Klik Pertama (Biru) untuk Row Header. Klik Ke Dua (Hijau) untuk Row "Set Data Start"</p>
+          </div>
+          <button
+            @click="ui_Step = 0"
+            class="text-slate-500 hover:text-red-500 font-bold"
+          >✕ Cancel</button>
+        </div>
+
+        <div class="flex-1 overflow-auto bg-gray-100 dark:bg-slate-900/50">
+          <table class="w-full text-xs border-collapse bg-white dark:bg-slate-800 shadow-sm relative">
+            <thead class="sticky top-0 z-10 bg-gray-200 dark:bg-slate-700 text-gray-600 dark:text-gray-300">
+              <tr>
+                <th class="p-2 border dark:border-slate-700">#</th>
+                <template x-for="i in 10">
+                  <th
+                    class="p-2 border dark:border-slate-700 min-w-[100px]"
+                    x-text="'Col ' + i"
+                  ></th>
+                </template>
+              </tr>
+            </thead>
+            <tbody>
+              <template
+                x-for="(row, rIdx) in upload_PreviewRows"
+                :key="rIdx"
+              >
+                <tr
+                  class="cursor-pointer border-b dark:border-slate-700 transition-colors"
+                  :class="{
+                    'bg-blue-100 dark:bg-blue-900/60': upload_SelHeaderRow === rIdx,
+                    'bg-green-100 dark:bg-green-900/60': upload_SelDataRow === rIdx,
+                    'bg-gray-300 dark:bg-slate-600': upload_SelRowHover === rIdx && upload_SelHeaderRow !== rIdx && upload_SelDataRow !== rIdx,
+                    'hover:bg-gray-200 dark:hover:bg-slate-700': upload_SelHeaderRow !== rIdx && upload_SelDataRow !== rIdx
+                  }"
+                  @click="
+                    if (upload_SelHeaderRow === null) {
+                        upload_SelHeaderRow = rIdx;
+                    } else if (upload_SelDataRow === null) {
+                        upload_SelDataRow = rIdx;
+                    } else {
+                        upload_SelHeaderRow = rIdx;
+                        upload_SelDataRow = null;
+                    }
+                  "
+                >
+
+                  <td
+                    class="p-2 border-r dark:border-slate-700 font-mono text-gray-500 font-bold w-10 text-center select-none"
+                    x-text="rIdx + 1"
+                  ></td>
+
+                  <template
+                    x-for="(cell, cIdx) in row.slice(0, 10)"
+                    :key="cIdx"
+                  >
+                    <td
+                      class="p-2 border-r dark:border-slate-700 max-w-[150px] truncate"
+                      x-text="cell"
+                      :title="cell"
+                    ></td>
+                  </template>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="p-4 border-t dark:border-slate-700 flex justify-end items-center gap-6 bg-white dark:bg-slate-800">
+          <div class="flex gap-6 text-xs font-bold">
+            <span class="flex items-center gap-2">
+              <span class="w-3 h-3 bg-blue-100 border border-blue-500 block"></span>
+              Header Row: <span
+                class="text-blue-600"
+                x-text="upload_SelHeaderRow !== null ? (upload_SelHeaderRow+1) : 'Not Set'"
+              ></span>
+            </span>
+            <span class="flex items-center gap-2">
+              <span class="w-3 h-3 bg-green-100 border border-green-500 block"></span>
+              Data Start: <span
+                class="text-green-600"
+                x-text="upload_SelDataRow !== null ? (upload_SelDataRow+1) : 'Not Set'"
+              ></span>
+            </span>
+          </div>
+
+          <button
+            @click="action_AnalyzeHeaders"
+            :disabled="upload_SelHeaderRow === null || upload_SelDataRow === null"
+            class="px-6 py-2 bg-slate-500 text-white rounded font-bold hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
+          >
+            Next: Verifikasi Header >
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div
+      x-show="ui_Step === 'mapping'"
+      class="modal-overlay fixed inset-0 z-[200] flex items-center justify-center"
+      style="display:none;"
+    >
+      <div
+        class="floating_window_confirm_dataframe_selector bg-white dark:bg-slate-800 w-[900px] max-w-[95%] h-[90%] rounded-lg shadow-2xl flex flex-col"
+      >
+        <div class="p-4 border-b dark:border-slate-700 flex justify-between items-center bg-gray-50 dark:bg-slate-900">
+          <h3 class="font-bold text-lg text-slate-700 dark:text-slate-200">Step 2: Verify Headers</h3>
+          <button
+            @click="ui_Step = 0"
+            class="text-slate-500 hover:text-red-500 font-bold"
+          >✕ Cancel</button>
+        </div>
+
+        <div
+          class="p-2 border-b dark:border-slate-700 flex justify-between items-center bg-gray-50 dark:bg-slate-800 px-4"
+        >
+          <div class="flex items-center gap-4">
+            <span class="text-xs text-gray-500 italic">Hanya "Confirmed" kolom yang akan dipilih.</span>
+
+            <label
+              class="flex items-center gap-1.5 text-[11px] font-bold text-amber-600 dark:text-amber-500 cursor-pointer
+                    bg-amber-50 dark:bg-amber-900/20 px-2 py-1 rounded border border-amber-200 dark:border-amber-800
+                    transition-colors hover:bg-amber-100 dark:hover:bg-amber-900/40"
+            >
+              <input
+                type="checkbox"
+                x-model="upload_SortIssuesFirst"
+                class="rounded text-amber-500 focus:ring-amber-500"
+              >
+              Sort &lt; 100% Matches & Unconfirmed to Top
+            </label>
+          </div>
+
+          <div class="flex gap-2">
+            <button
+              @click="action_ToggleAllMaps(true)"
+              class="text-[10px] font-bold px-3 py-1 bg-green-100 text-green-700 rounded border border-green-200 hover:bg-green-200"
+            >Confirm All</button>
+            <button
+              @click="action_ToggleAllMaps(false)"
+              class="text-[10px] font-bold px-3 py-1 bg-red-100 text-red-700 rounded border border-red-200 hover:bg-red-200"
+            >Deny All</button>
+          </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto custom-scrollbar bg-white dark:bg-slate-900">
+          <div
+            class="sticky top-0 bg-gray-100 dark:bg-slate-800 z-10 grid grid-cols-[30%_1fr_100px] gap-4 px-4 py-3 border-b
+                  dark:border-slate-700 text-xs font-bold text-gray-500 uppercase shadow-sm"
+          >
+            <div>Standard Header (DB)</div>
+            <div>File Header (Excel)</div>
+            <div class="text-center">Action</div>
+          </div>
+
+          <template
+            x-for="map in upload_HeaderMapping.slice().sort((a, b) => {
+                if (!upload_SortIssuesFirst) return a.col_index - b.col_index;
+                let aIssue = (!a.is_confirmed || a.standard === '(No Match)' || (a.match_type === 'fuzzy' && a.score < 1.0)) ? 1 : 0;
+                let bIssue = (!b.is_confirmed || b.standard === '(No Match)' || (b.match_type === 'fuzzy' && b.score < 1.0)) ? 1 : 0;
+                if (aIssue !== bIssue) return bIssue - aIssue;
+                return a.col_index - b.col_index;
+            })"
+            :key="map.col_index"
+          >
+            <div
+              class="grid grid-cols-[30%_1fr_100px] gap-4 px-4 py-4 border-b dark:border-slate-700 items-start hover:bg-slate-50
+                    dark:hover:bg-slate-800/50 transition-colors"
+              :class="{'opacity-50': !map.is_confirmed}"
+            >
+
+              <div class="text-xs font-bold text-slate-700 dark:text-slate-200 map-text-wrap">
+                <span x-text="map.standard"></span>
+                <span
+                  x-show="map.match_type === 'index_forced'"
+                  class="ml-1 text-[9px] bg-blue-100 text-blue-600 px-1 rounded inline-block"
+                >FIXED</span>
+              </div>
+
+              <div class="flex flex-col gap-1 overflow-hidden">
+                <span
+                  class="text-xs font-mono text-slate-600 dark:text-slate-300 map-text-wrap bg-gray-50 dark:bg-slate-800 p-1
+                        rounded border border-gray-100 dark:border-slate-700 flex items-start gap-1"
+                >
+                  <span
+                    class="text-gray-400 font-bold shrink-0 select-none"
+                    x-text="'Col ' + (map.col_index + 1) + ':'"
+                  ></span>
+                  <span x-text="map.file_header || '(Empty)'"></span>
+                </span>
+
+                <div
+                  class="mt-1 bg-amber-50/50 dark:bg-slate-800/80 p-1.5 rounded border border-amber-100 dark:border-slate-600
+                        flex items-start gap-2"
+                >
+                  <span class="text-[9px] font-bold text-amber-600 dark:text-amber-500 mt-0.5 shrink-0">DATA:</span>
+                  <span
+                    class="text-[11px] font-mono text-slate-700 dark:text-slate-300 truncate"
+                    x-text="upload_PreviewRows[upload_SelDataRow] ? (upload_PreviewRows[upload_SelDataRow][map.col_index] || '(Empty)') : 'Select Data Start in Step 1'"
+                    :title="upload_PreviewRows[upload_SelDataRow] ? upload_PreviewRows[upload_SelDataRow][map.col_index] : ''"
+                  ></span>
+                </div>
+
+                <div
+                  x-show="map.match_type === 'fuzzy'"
+                  class="flex items-center gap-2"
+                >
+                  <span
+                    class="text-[9px] font-bold uppercase tracking-wider"
+                    :class="map.score > 0.8 ? 'text-green-600' : (map.score > 0.5 ? 'text-orange-500' : 'text-red-500')"
+                  >
+                    Match: <span x-text="(map.score * 100).toFixed(0) + '%'"></span>
+                  </span>
+                  <span
+                    x-show="map.file_header && !map.standard"
+                    class="text-[9px] text-red-500 font-bold"
+                  >NO MATCH FOUND</span>
+                </div>
+              </div>
+
+              <div class="flex justify-center pt-1">
+                <button
+                  @click="map.is_confirmed = !map.is_confirmed"
+                  class="w-20 py-1.5 rounded text-[10px] font-bold border shadow-sm transition-all"
+                  :class="map.is_confirmed ? 
+                  'bg-green-500 text-white border-green-600 hover:bg-green-600' : 
+                  'bg-white text-gray-400 border-gray-300 hover:bg-gray-50 dark:bg-slate-700 dark:border-slate-600 dark:hover:bg-slate-600'"
+                >
+                  <span x-text="map.is_confirmed ? '✓ CONFIRM' : '✕ IGNORED'"></span>
+                </button>
+              </div>
+            </div>
+          </template>
+        </div>
+
+        <div class="p-4 border-t dark:border-slate-700 flex justify-between items-center bg-gray-50 dark:bg-slate-900">
+          <button
+            @click="ui_Step = 'preview'"
+            class="text-slate-500 font-bold text-xs hover:underline"
+          >
+            &larr; Kembali ke Pemilihan Data
+          </button>
+
+          <div class="flex items-center gap-4">
+
+            <div
+              class="text-[11px] bg-white dark:bg-slate-800 border dark:border-slate-700 rounded px-3 py-1.5 shadow-sm flex gap-3"
+            >
+              <span class="text-emerald-600 dark:text-emerald-400">
+                <span
+                  class="font-bold text-sm"
+                  x-text="upload_HeaderMapping.filter(m => m.is_confirmed).length"
+                ></span> Confirmed
+              </span>
+              <span class="border-l border-gray-200 dark:border-slate-600"></span>
+              <span class="text-red-500">
+                <span
+                  class="font-bold text-sm"
+                  x-text="upload_HeaderMapping.filter(m => !m.is_confirmed).length"
+                ></span> Not Match
+              </span>
+              <span class="border-l border-gray-200 dark:border-slate-600"></span>
+              <span class="text-slate-500 dark:text-slate-400">
+                <span
+                  class="font-bold text-sm"
+                  x-text="upload_HeaderMapping.length"
+                ></span> Total
+              </span>
+            </div>
+
+            <button
+              @click="action_SubmitProcessing"
+              class="px-6 py-2 bg-emerald-600 text-white rounded font-bold hover:bg-emerald-700 shadow-lg transform active:scale-95 transition-transform"
+            >
+              Start Processing
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <script>
       function AdminDashboardApp() {
         // --- DYNAMIC YEAR CALCULATION ---
         const dateNow = new Date();
         const currentActualYear = dateNow.getFullYear();
+        // Always focus/default on the current year
         const defaultSelectedYear = currentActualYear - 1;
-        // Generate available years dynamically
+
+        // Generate available years dynamically starting from 2025 up to current
         const dynamicYears = [];
-        for (let i = 0; i < 4; i++) {
-          dynamicYears.push(String(currentActualYear - i));
+        for (let y = currentActualYear; y >= 2025; y--) {
+          dynamicYears.push(String(y));
         }
+        // Fallback safety if server clock is somehow behind
+        if (dynamicYears.length === 0) dynamicYears.push("2025");
 
         return {
           // --- CONFIGURATION ---
@@ -1505,6 +1839,17 @@
             message: '',
             confirmCallback: null // Function to run if user clicks "Yes"
           },
+
+          // --- FLOATING VIEW HEADER DIFF ---
+          ui_Step: 0, // 0=None, 'preview', 'mapping'
+          upload_TempId: null,
+          upload_Filename: null,
+          upload_PreviewRows: [],
+          upload_SelHeaderRow: null,
+          upload_SelDataRow: null,
+          upload_SelRowHover: null,
+          upload_HeaderMapping: [],
+          upload_SortIssuesFirst: true,
 
           // --- REUSABLE HELPERS ---
           util_Alert(title, message, type = 'info') {
@@ -1766,8 +2111,8 @@
           initializeAgGridConfig() {
             const gridOptions = {
               rowModelType: 'infinite',
-              cacheBlockSize: 10000,
-              infiniteInitialRowCount: 10000,
+              cacheBlockSize: 1000,
+              infiniteInitialRowCount: 1000,
               columnDefs: [],
               defaultColDef: {
                 sortable: true,
@@ -1940,6 +2285,87 @@
           },
 
           // ============================================
+          // ACTIONS: STAGING & UPLOAD PREVIEW & SELECT HEADERS
+          // ============================================
+          action_SelectRow(idx) {
+            if (this.upload_SelHeaderRow === null) {
+              this.upload_SelHeaderRow = idx;
+              // Auto-guess data row (usually Header + 1 or Header + 2)
+              this.upload_SelDataRow = idx + 1;
+            } else if (this.upload_SelHeaderRow === idx) {
+              // Deselect
+              this.upload_SelHeaderRow = null;
+            } else {
+              // Set Data Row
+              this.upload_SelDataRow = idx;
+            }
+          },
+
+          async action_AnalyzeHeaders() {
+            this.ui_UploadStatusMessage = "Analyzing Headers...";
+            try {
+              let res = await fetch(`${this.apiBaseUrl}/upload/analyze-headers/${this.targetYear}`, {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                credentials: 'include',
+                body: JSON.stringify({
+                  temp_id: this.upload_TempId,
+                  filename: this.upload_Filename,
+                  header_row_index: this.upload_SelHeaderRow
+                })
+              });
+              let data = await res.json();
+              if (data.error) throw new Error(data.error);
+
+              this.upload_HeaderMapping = data.mapping;
+              this.ui_Step = 'mapping'; // Go to next modal
+              this.ui_UploadStatusMessage = "";
+            } catch (e) {
+              this.util_Alert("Error", e.message, "error");
+              this.ui_UploadStatusMessage = "";
+            }
+          },
+
+          action_ToggleAllMaps(val) {
+            this.upload_HeaderMapping.forEach(m => m.is_confirmed = val);
+          },
+
+          async action_SubmitProcessing() {
+            this.ui_Step = 0; // Close Modals
+            this.ui_UploadStatusMessage = "Processing Database...";
+
+            try {
+              let res = await fetch(`${this.apiBaseUrl}/upload/process-mapped/${this.targetYear}`, {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                credentials: 'include',
+                body: JSON.stringify({
+                  temp_id: this.upload_TempId,
+                  filename: this.upload_Filename,
+                  header_row_index: this.upload_SelHeaderRow,
+                  data_start_index: this.upload_SelDataRow,
+                  confirmed_mapping: this.upload_HeaderMapping
+                })
+              });
+
+              let d = await res.json();
+
+              if (d.status === "staged") {
+                this.stagingData_Object = d;
+                this.ui_UploadStatusMessage = "";
+                this.util_Alert("Ready", "Data sudah terproses. Silahkan review di sidebar.", "success");
+              } else {
+                throw new Error(d.error || "Processing Failed");
+              }
+
+            } catch (e) {
+              console.error(e);
+              this.ui_UploadStatusMessage = "";
+              this.util_Alert("Error", e.message, "error");
+            }
+          },
+
+          // ============================================
           // ACTIONS: STAGING & UPLOAD (RESUMABLE CHUNKED)
           // ============================================
           async action_UploadFile(e) {
@@ -1951,7 +2377,7 @@
 
             this.util_Confirm(
               "Konfirmasi Tahun Upload",
-              `Bagian ini akan mengupdate tahun ${this.targetYear}, untuk mengganti pilih dropdown tahun di 'Histori & Perubahan'. Tekan Confirm untuk melanjutkan`,
+              `Bagian ini akan mengupdate tahun <span class="text-red-400 font-bold">${this.targetYear}</span>, untuk mengganti pilih dropdown tahun di 'Histori & Perubahan'. Tekan Confirm untuk melanjutkan`,
               async () => {
                 try {
                   // Reset UI
@@ -1977,7 +2403,6 @@
 
                   // Query server: "Do you have this file?"
                   // Added credentials
-
                   let initRes = await fetch(`${this.apiBaseUrl}/upload/init/${this.targetYear}`, {
                     method: "POST",
                     headers: {"Content-Type": "application/json"},
@@ -1992,8 +2417,10 @@
                   let initData = await initRes.json();
 
                   if (initData.status === "exists") {
+                    // Handle Exists case: Still go to mapping
                     this.ui_UploadStatusMessage = "File exists. Processing...";
-                    await this.helpers_finalize_upload(initData.upload_id, file.name, fileHash);
+                    let finalData = await this.helpers_finalize_upload(initData.upload_id, file.name, fileHash);
+                    this.handle_UploadSuccess(finalData);
                     return;
                   }
 
@@ -2031,31 +2458,59 @@
                         });
 
                         if (!chunkRes.ok) throw new Error("Server rejected chunk");
-
                         chunkSuccess = true;
                         offset += CHUNK_SIZE; // Move to next chunk
                       } catch (err) {
                         retries--;
-                        console.warn(`Chunk failed, retrying... (${retries} left)`);
                         // Exponential backoff: Wait 1s, then 2s, etc.
                         await new Promise(r => setTimeout(r, 1000 * (5 - retries)));
                       }
                     }
-
                     if (!chunkSuccess) throw new Error("Upload failed");
                   }
 
                   // Finalize & Process
                   this.ui_UploadStatusMessage = "Verifying...";
-                  await this.helpers_finalize_upload(initData.upload_id, file.name, fileHash);
+
+                  // CALL FINALIZE (It now returns temp_id, not staged data)
+                  let finalData = await this.helpers_finalize_upload(initData.upload_id, file.name, fileHash);
+
+                  // SUCCESS HANDLER WITH ALERT
+                  this.handle_UploadSuccess(finalData);
 
                 } catch (err) {
                   console.error(err);
                   this.ui_UploadStatusMessage = "❌ " + (err.message || "Failed");
+                  this.util_Alert("Upload Failed", err.message, "error");
                 }
               }
             );
           },
+
+          // Helper to handle the transition after upload
+          async handle_UploadSuccess(finalData) {
+            // Set State
+            this.upload_TempId = finalData.temp_id;
+            this.upload_Filename = finalData.filename;
+
+            // Fetch Preview
+            this.ui_UploadStatusMessage = "Loading Preview...";
+            let previewRes = await fetch(`${this.apiBaseUrl}/upload/preview/${this.targetYear}`, {
+              method: "POST",
+              headers: {"Content-Type": "application/json"},
+              credentials: 'include',
+              body: JSON.stringify({temp_id: this.upload_TempId, filename: this.upload_Filename})
+            });
+            let previewData = await previewRes.json();
+
+            this.upload_PreviewRows = previewData.rows;
+            this.upload_SelHeaderRow = null;
+            this.upload_SelDataRow = null;
+
+            this.ui_Step = 'preview'; // OPEN MODAL
+            this.ui_UploadStatusMessage = "";
+          },
+
 
           // Helper: Call Finalize Endpoint
           async helpers_finalize_upload(uploadId, filename, fileHash) {
@@ -2072,9 +2527,9 @@
             });
             let d = await res.json();
 
-            if (d.status === "staged") {
-              this.stagingData_Object = d;
-              this.ui_UploadStatusMessage = "";
+            if (d.status === "uploaded_raw") {
+              return d;
+
             } else {
               throw new Error(d.error || "Processing failed");
             }

@@ -6,7 +6,7 @@ WORKDIR /app
 # libgomp1 is required for some math libraries
 # 'procps' is added so we can check cpuinfo
 RUN apt-get update && \
-    apt-get install -y libgomp1 procps && \
+    apt-get install -y libgomp1 && \
     rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first to cache installation

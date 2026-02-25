@@ -4,15 +4,17 @@ import re
 import duckdb
 import html as h
 import polars as pl
+import openpyxl
+from difflib import SequenceMatcher
 from fastapi import Response
 from fastapi.responses import JSONResponse
- 
+
 # ==========================================
 # CONFIGURATION
 # ==========================================
 # /root
 #   /root
-#   /.config/headers.txt
+#   /.config/headers.json
 #   /.config/intervensi_kegiatan.json
 #   /.config/rekomendasi.json
 #   /.config/table_structure.csv
@@ -22,71 +24,75 @@ from fastapi.responses import JSONResponse
 #   /front_end/templates/admin.html
 #   /front_end/templates/user.html
 #   /front_end/templates/login.html
- 
- 
+
+
 # Resolves to: /.../desa_db
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
- 
+
 # Resolves to: /.../.config
 CONFIG_DIR = os.path.abspath(os.path.join(BASE_DIR, "../.config"))
- 
+
 # Resolves to: /.../desa_db/dbs
 DB_FOLDER = os.path.join(BASE_DIR, "dbs")
- 
+
 # Resolves to: /.../desa_db/staging
 STAGING_FOLDER = os.path.join(BASE_DIR, "staging")
- 
+
 # Config Files
 JSON_PATH = os.path.join(CONFIG_DIR, "rekomendasi.json")
- 
+
 # intervensi_kegiatan files
 INTERVENTION_FILE = os.path.join(CONFIG_DIR, "intervensi_kegiatan.json")
- 
-# Header File: inside .config/headers.txt (sibling of desa_db)
-HEADER_FILE = os.path.join(CONFIG_DIR, "headers.txt")
- 
+
+# Header File: inside .config/headers.json (sibling of desa_db)
+HEADER_FILE = os.path.join(CONFIG_DIR, "headers.json")
+
 # Data Structure Constants
 # ID_COL acts as the Primary Key for deduplication and version control.
 ID_COL = "Kode Wilayah Administrasi Desa" 
- 
- 
+
+
 # Point to ../.config/rekomendasi.json relative to this file
 os.makedirs(DB_FOLDER, exist_ok=True)
- 
+
 # ==========================================
 # LOGIC LOADER (Existing)
 # ==========================================
 def load_logic():
+    """
+    Loads rekomendasi.json and converts string keys ("1", "2", ...) to integers.
+    Returns empty dict if file is missing (safe fallback).
+    """
     if not os.path.exists(JSON_PATH):
         # Fallback: Return empty dict if file is missing (prevents crashes)
         return {}
- 
+
     with open(JSON_PATH, "r", encoding="utf-8") as f:
         raw_data = json.load(f)
- 
+
     # CRITICAL STEP: Convert JSON String keys ("1") to Integers (1)
     # If we don't do this, Polars won't match the Integer data in DB.
     clean_logic = {}
     for col_name, mapping in raw_data.items():
         # Convert keys to int, keep values as is
         clean_logic[col_name] = {int(k): v for k, v in mapping.items()}
- 
+
     return clean_logic
- 
+
 # Load once on startup
 RECOMMENDATION_LOGIC = load_logic()
- 
+
 # ==========================================
 # OPTIMIZED BATCH EXECUTION
 # ==========================================
 def apply_rekomendasis(df: pl.DataFrame) -> pl.DataFrame:
     """
-    Apply all 120+ rules in a SINGLE pass (Batch Execution).
-    This allows Polars to optimize the plan and execute in parallel.
-    Uses replace_strict to avoid DeprecationWarnings in Polars 1.0+.
+    Applies all recommendation rules from RECOMMENDATION_LOGIC in a single batch pass.
+    Uses replace_strict for Polars 1.0+ compatibility and optimal performance.
+    Only processes columns that exist in the DataFrame.
     """
     exprs = []
- 
+
     # Build the list of instructions (Lazy Evaluation)
     for col_name, logic_map in RECOMMENDATION_LOGIC.items():
         if col_name in df.columns:
@@ -98,201 +104,556 @@ def apply_rekomendasis(df: pl.DataFrame) -> pl.DataFrame:
                 .alias(col_name)
             )
             exprs.append(expr)
- 
+
     # Execute all instructions at once
     if exprs:
         return df.with_columns(exprs)
- 
+
     return df
- 
+
 def make_json_response(df: pl.DataFrame) -> Response:
     """
     OPTIMIZATION: 
-    Directly converts Polars DataFrame to JSON string, bypassing 
-    Python's slow list-of-dicts conversion.
-    In newer Polars versions, write_json() defaults to row-oriented (list of dicts).
+    Converts Polars DataFrame directly to JSON string using Rust engine
+    and returns a FastAPI Response. Bypasses Python's slow list-of-dicts conversion
+    for better performance on large datasets.
     """
     # Serialize directly to JSON string using Rust engine
     json_str = df.write_json()
- 
+
     # Return direct Response (skips FastAPI's jsonable_encoder overhead)
     return Response(content=json_str, media_type="application/json")
- 
+
 # ==========================================
 # DATABASE HELPERS
 # ==========================================
- 
-# INTERNAL FILE PROCESSOR, staging uploads basically
-def helpers_internal_process_staging_file(year: str, file_path: str, filename: str, staging_id: str):
+
+# PREVIEW & MAPPING HELPERS, sends back to frontend for user to check headers
+def helpers_read_excel_preview(file_path: str, limit_rows: int = 25):
     """
-    Core Logic extracted from endpoint_post_stage_upload.
-    Parses the file (XLSX/XLSB) and compares with DB.
- 
-    Ingests an Excel (.xlsb) file, cleans it, and performs a "Change Data Capture" (CDC) update.
- 
-    Workflow:
-    1. Read Excel via Polars.
-    2. clean structural garbage (headers/empty cols).
-    3. Compare new data against existing DB data.
-    4. Archive changed rows to 'history'.
-    5. Upsert (Update/Insert) new rows to 'master_data'.
- 
+    Reads first N rows of 'Skor' sheet for frontend preview.
+    - .xlsx: openpyxl streaming (read_only=True) for low memory
+    - .xlsb/.xlsx fallback: Polars calamine
+    - Caps at 263 columns
+    - Converts None → ""
+    - Returns pure list-of-lists
+    Returns:
+        list[list[str]]: rows as list of lists (max limit_rows rows, 263 cols)
     """
+    rows = []
+
     try:
-        # --- Load Schema Definition ---
-        # Ideally, load this from a config file.
-        if not os.path.exists(HEADER_FILE):
-             raise Exception(f"Configuration file not found: {HEADER_FILE}")
- 
-        with open(HEADER_FILE, "r", encoding="utf-8") as f:
-            stage_upload_header = [line.strip() for line in f if line.strip()]
- 
+        # OPTIMIZATION: Streaming for .xlsx
+        if file_path.lower().endswith(".xlsx"):
+            # read_only=True ensures we don't load the whole file
+            wb = openpyxl.load_workbook(file_path, read_only=True, data_only=True)
+            
+            # Handle Sheet Selection
+            if "Skor" in wb.sheetnames:
+                ws = wb["Skor"]
+            else:
+                ws = wb.active
+
+            # Iterate only the rows we need
+            # fetch limit_rows + 5 just in case some are empty, but typically exact limit is fine
+            for row in ws.iter_rows(min_row=1, max_row=limit_rows, values_only=True):
+                # Convert None to "" and map to list
+                clean_row = [str(cell) if cell is not None else "" for cell in row]
+                
+                # Check if row has data
+                rows.append(clean_row[:263])
+
+            wb.close()
+            return rows
+
+        # Read without headers to get raw grid
+        else:
+            df = pl.read_excel(
+                file_path,
+                sheet_name="Skor",
+                engine="calamine",
+                has_header=False # Direct argument, not inside dict
+            )
+            
+            # Slice row limit manually
+            df = df.head(limit_rows)
+
+            # Limit width (similar to existing logic)
+            max_col = min(df.width, 263)
+            df = df[:, :max_col]
+            
+            # Replace nulls with empty string for JSON safety
+            data = df.fill_null("").to_dicts()
+            
+            # Convert to list of lists (easier for generic grid in JS)
+            # Polars to_dicts returns list of objects with "column_0", "column_1", etc.
+            # Only pure values.
+            rows = [list(row.values()) for row in data]
+            return rows
+
+    except Exception as e:
+        raise Exception(f"Preview Error: {str(e)}")
+
+def helpers_normalize_text(text: str):
+    """
+    Normalizes text for fuzzy header matching:
+    - Lowercase
+    - Remove quotes
+    - Collapse multiple whitespace
+    - Strip
+    """
+    if not text: return ""
+    text = str(text).lower()
+    text = re.sub(r'["\']', '', text) # Remove quotes
+    text = re.sub(r'\s+', ' ', text)  # Collapse spaces
+    return text.strip()
+
+def helpers_generate_header_mapping(file_path: str, header_row_idx: int):
+    """
+    Generates column mapping from uploaded Excel against headers.json.
+
+    Logic:
+    - Detects first non-empty column → start_col (dynamic alignment)
+    - First 6 columns: forced index mapping + auto-confirm
+    - Remaining columns: alias_exact (from headers.json "aliases") or fuzzy SequenceMatcher
+      - > 85% → auto-confirm
+      - < 40% → "(No Match)"
+    - .xlsx: streams only the header row with openpyxl
+    - Skips empty columns
+    Returns:
+        list[dict]: mapping entries with keys: standard, file_header, col_index, is_confirmed, match_type, score
+    """
+
+    # Load Standard Headers
+    if not os.path.exists(HEADER_FILE):
+        raise Exception("Configuration file not found: headers.json")
+
+    with open(HEADER_FILE, "r", encoding="utf-8") as f:
+        headers_data = json.load(f)
+        standard_headers = [item["standard"] for item in headers_data]
+
+    file_headers_raw = []
+
+    # OPTIMIZATION: Streaming for .xlsx
+    if file_path.lower().endswith(".xlsx"):
+        wb = openpyxl.load_workbook(file_path, read_only=True, data_only=True)
+        if "Skor" in wb.sheetnames:
+            ws = wb["Skor"]
+        else:
+            ws = wb.active
+        
+        # OpenPyXL is 1-based, header_row_idx is 0-based.
+        target_excel_row = header_row_idx + 1
+        
+        # Iterate until we hit the row (efficient skipping)
+        for i, row in enumerate(ws.iter_rows(min_row=target_excel_row, max_row=target_excel_row, values_only=True)):
+            clean_row = [str(cell) if cell is not None else "" for cell in row]
+            file_headers_raw = clean_row[:263]
+            break
+        
+        wb.close()
+        
+        if not file_headers_raw:
+             raise Exception(f"Header row index {header_row_idx} is out of bounds or empty.")
+             
+    else:
+        # Fallback for .xlsb
+        df = pl.read_excel(
+            file_path,
+            sheet_name="Skor",
+            engine="calamine",
+            has_header=False
+        )
+        max_col = min(df.width, 263)
+        df = df[:, :max_col]
+
+        if header_row_idx >= df.height:
+            raise Exception(f"Header row index {header_row_idx} is out of bounds")
+
+        # Get the raw list of values from the target row
+        # Polars reads as col_0, col_1.
+        file_headers_raw = list(df.row(header_row_idx))
+    
+    mapping = []
+    special_first_6 = standard_headers[:6]
+    remaining_standards = standard_headers[6:]
+    
+    # DYNAMIC ALIGNMENT: Find the first non-empty column in the Excel file.
+    # This prevents assigning "Provinsi" to an empty Column A.
+    start_col = 0
+    for i, val in enumerate(file_headers_raw):
+        if val.strip() != "":
+            start_col = i
+            break
+
+    # Map Special First 6 using the actual start column
+    for i in range(min(6, len(file_headers_raw) - start_col)):
+        if start_col + i >= len(file_headers_raw):
+            break
+        file_val = str(file_headers_raw[start_col + i]).strip()
+        std_val = special_first_6[i]
+        
+        # Auto-confirm the first 6 based on User's rule "the order always right"
+        mapping.append({
+            "standard": std_val,
+            "file_header": file_val,
+            "col_index": start_col + i,
+            "is_confirmed": True, 
+            "match_type": "index_forced"
+        })
+
+    # --- LOGIC: REMAINING COLUMNS (Fuzzy Name Match) ---
+    # Create a lookup for normalized standard headers
+    # use a list of tuples to keep order: [(norm, original), ...]
+    norm_standards = [(helpers_normalize_text(h), h) for h in remaining_standards]
+    
+    # Resume fuzzy mapping after the first 6
+    fuzzy_start_idx = start_col + 6
+    for i in range(fuzzy_start_idx, len(file_headers_raw)):
+        file_val = str(file_headers_raw[i]).strip()
+
+        # Even if empty, we list it so user can see it (but usually ignore)
+        if not file_val: continue # Skip empty columns
+        
+        # SKIP EMPTY COLUMNS
+        # If the header in the file is empty/None/NaN, it's not a valid data column.
+        # Don't even try to map it.
+        if not file_val or file_val.lower() == "none" or file_val == "":
+            continue
+
+        norm_file = helpers_normalize_text(file_val)
+        best_match = None
+        highest_ratio = 0.0
+        is_match = False
+        match_type = "fuzzy"
+
+        # Match based on headers.json and it's aliases
+        for item in headers_data[6:]: 
+            original_std = item["standard"]
+            valid_names = [helpers_normalize_text(a) for a in item.get("aliases", [])]
+            valid_names.append(helpers_normalize_text(original_std)) 
+
+            if norm_file in valid_names:
+                best_match = original_std
+                highest_ratio = 1.0
+                is_match = True
+                match_type = "alias_exact"
+                break
+
+        if not best_match:
+            # Find best match in remaining standards
+            for norm_std, orig_std in norm_standards:
+                # Exact match (normalized)
+                if norm_std == norm_file:
+                    best_match = orig_std
+                    highest_ratio = 1.0
+                    is_match = True
+                    match_type = "fuzzy_exact"
+                    break
+            
+                # Fuzzy match (Levenshtein) using python's difflib
+                ratio = SequenceMatcher(None, norm_std, norm_file).ratio()
+                if ratio > highest_ratio:
+                    highest_ratio = ratio
+                    best_match = orig_std
+
+            # If the best match is less than 40%, it's likely garbage.
+            if highest_ratio < 0.4:
+                best_match = None
+
+            # Threshold for "Auto Confirm" (e.g., 85% similarity)
+            # "Apakah ..." vs "Apakah ...?" usually > 0.95
+            # Display all, BUT auto-confirm only if > 85%
+            is_match = highest_ratio > 0.85
+        
+        # If no match found above 0, just leave standard empty or guess best
+        mapping.append({
+            "standard": best_match if best_match else "(No Match)",
+            "file_header": file_val,
+            "col_index": i,
+            "is_confirmed": is_match,
+            "match_type": match_type,
+            "score": round(highest_ratio, 2)
+        })
+
+    return mapping
+
+# PROCESSOR to rebould db based on headers.json
+def helpers_sync_db_schema(con: duckdb.DuckDBPyConnection, year: str):
+    """
+    Synchronizes master_data table schema with headers.json.
+    Adds any missing columns (VARCHAR for text columns, TINYINT for scores).
+    """
+    if not os.path.exists(HEADER_FILE): return
+
+    with open(HEADER_FILE, "r", encoding="utf-8") as f:
+        headers_data = json.load(f)
+        target_headers = [item["standard"] for item in headers_data]
+
+    # Get existing DB columns
+    existing_cols = set([r[0] for r in con.execute("DESCRIBE master_data").fetchall()])
+    
+    TEXT_COLUMNS = {
+        "Provinsi", "Kabupaten/ Kota", "Kecamatan", 
+        "Kode Wilayah Administrasi Desa", "Desa", "Status ID"
+    }
+
+    for h in target_headers:
+        # If header contains quotes, strip them for comparison
+        clean_h = h.replace('"', '')
+        if clean_h not in existing_cols:
+            print(f"Schema Evolution: Adding column '{clean_h}' to {year}...")
+            # Determine Type
+            dtype = "VARCHAR" if clean_h in TEXT_COLUMNS else "TINYINT"
+            try:
+                con.execute(f'ALTER TABLE master_data ADD COLUMN "{clean_h}" {dtype}')
+            except Exception as e:
+                print(f"Failed to add column {clean_h}: {e}")
+
+# INTERNAL FILE PROCESSOR, staging uploads basically
+def helpers_internal_process_staging_file(
+    year: str,
+    file_path: str,
+    filename: str,
+    staging_id: str,
+    header_row_idx: int,
+    data_start_idx: int,
+    confirmed_mapping: list
+    ):
+    """
+    Full ETL processor for staging upload.
+    
+    Alignment fixes:
+    - openpyxl scan: counts leading empty rows + first non-empty column offset
+    - calamine read (has_header=False) then applies row/col offsets
+    - Duplicate column resolution: prefers column with highest numeric values
+    
+    Processing steps:
+    - Row slice after offset
+    - Confirmed mapping only (renames to standard names)
+    - Drop fully null/empty columns
+    - Strict Status ID validation
+    - Filter 10-digit IDs
+    - Cast: text columns → String, scores → Int8 (strict=False)
+    - Write {staging_id}.parquet
+    - CDC diff vs current master_data (valid_to IS NULL)
+    Returns:
+        dict: {"status": "staged", "staging_id": str, "filename": str, "diff": {"added": int, "removed": int, "changed": int, "total_incoming": int}}
+    """
+
+    try:
+
         # --- ETL: Extraction & Cleaning (Polars) ---
         print(f"Processing {filename} for year {year}...")
- 
+
+        # ALIGNMENT FIX: Count ALL empty rows up to the user's selected start index.
+        # This perfectly syncs the frontend openpyxl index with the backend Calamine index
+        # regardless of how many empty rows exist between headers and data.
+        calamine_row_offset = 0
+        calamine_col_offset = 0
+        
+        if file_path.lower().endswith(".xlsx"):
+            try:
+                wb_check = openpyxl.load_workbook(file_path, read_only=True, data_only=True)
+                ws_check = wb_check["Skor"] if "Skor" in wb_check.sheetnames else wb_check.active
+                
+                empty_rows_count = 0
+                min_col = 9999
+                
+                # Check up to data_start_idx to count every empty row Calamine might drop
+                for r_idx, row in enumerate(ws_check.iter_rows(min_row=1, max_row=data_start_idx + 1, values_only=True)):
+                    row_has_data = False
+                    for c_idx, cell in enumerate(row):
+                        if cell is not None and str(cell).strip() != "":
+                            row_has_data = True
+                            if c_idx < min_col:
+                                min_col = c_idx
+                    
+                    if not row_has_data:
+                        empty_rows_count += 1
+                
+                calamine_row_offset = empty_rows_count
+                calamine_col_offset = min_col if min_col != 9999 else 0
+                wb_check.close()
+            except Exception as e:
+                print(f"Warning calculating offset: {e}")
+
         # Read .xlsb/.xlsx using 'calamine'
         df = pl.read_excel(
             file_path,
             sheet_name="Skor",
             engine="calamine",
+            has_header=False # Direct argument, not inside dict
         )
- 
+        print(f"1. Initial read: {df.height} rows (Empty rows stripped: {calamine_row_offset}, Col Offset: {calamine_col_offset})", flush=True)
+
         # Structure Cleaning:
         # Slice: Cap width to prevent reading infinite empty Excel columns
-        max_col = min(df.width, 262) 
-        # Also skip the very first index column (0)
-        df = df[:, 1:max_col]
+        max_col = min(df.width, 263) 
+        df = df[:, :max_col] # DO NOT drop columns manually anymore; Calamine offset handles it safely
 
-        # Validation check
-        # expect the first row (now at index 1) to be the headers
-        current_headers = df.row(1)
-        
-        # Define the exact expected order for the first 5 columns
-        expected_order = [
-            'Provinsi', 
-            'Kabupaten/ Kota', 
-            'Kecamatan', 
-            'Kode Wilayah Administrasi Desa', 
-            'Desa'
-        ]
+        # Sync the absolute UI index with Calamine's stripped index
+        adjusted_data_start = max(0, data_start_idx - calamine_row_offset)
 
-        # Check the first 5 columns
-        found_order = [str(h).strip() for h in current_headers[:5]]
-        
-        if found_order != expected_order:
-            for i, (exp, fnd) in enumerate(zip(expected_order, found_order)):
-                if exp != fnd:
-                    # Returns concise error: "Header Mismatch (Col 1): Expected 'Provinsi' vs 'ACEH'"
-                    raise Exception(f"Header Mismatch (Col {i+1}): Expected '{exp}' vs '{fnd}'")
-            
-            # Fallback for length mismatches
-            raise Exception(f"Header Mismatch: Expected {len(expected_order)} columns, found {len(found_order)}")
+        # Slice Rows (Data Start)
+        # Assume data_start_idx is the 0-based index from the file where actual data begins.
+        # Example: Header at 3, Data at 4.
+        # df[4] is the first data row.
+        if adjusted_data_start < df.height:
+            df = df.slice(adjusted_data_start, None)
+            print(f"2. After row slice (UI start={data_start_idx}, Adjusted={adjusted_data_start}): {df.height} rows", flush=True)
+        else:
+             raise Exception(f"Data start index {data_start_idx} is out of bounds")
 
-        # Where the data actually is
-        df = df.slice(3, None)
-        
-        # Validation check column after 'Desa' (Index 5)
-        # ensure this column is NOT a number
-        if df.width > 5:
-            col_after_desa = df[:, 5]
+        # Apply Column Mapping
+        target_to_cols = {}
+        for m in confirmed_mapping:
+            if m.get('is_confirmed'):
+                t = m['standard']
+                if t not in target_to_cols:
+                    target_to_cols[t] = []
 
-            # 1. Strict Dtype Check (Catch if Polars explicitly sees numbers)
-            if col_after_desa.dtype in [pl.Int8, pl.Int16, pl.Int32, pl.Int64, pl.Float32, pl.Float64]:
-                 raise Exception("Format Error: The column after 'Desa' is numeric (Dtype). It should be text.")
-            
-            # 2. Content Check (Catch "2025" hidden inside a String column)
-            # - "MAJU" becomes Null (Safe)
-            # - "2025" becomes 2025.0 (Detected)
-            numeric_hits = col_after_desa.cast(pl.Float64, strict=False).is_not_null().sum()
-            
-            if numeric_hits > 0:
-                 raise Exception(f"Error: column after 'Desa' contains numbers (found {numeric_hits} numeric values). It should be text status.")
- 
+                # Adjust absolute UI index to relative Calamine index
+                cal_idx = m['col_index'] - calamine_col_offset
+                if cal_idx >= 0:
+                    target_to_cols[t].append(cal_idx)
+
+        selection_exprs = []
+        for target_name, indices in target_to_cols.items():
+            if not indices:
+                continue
+                
+            chosen_idx = indices[0]
+
+            # Resolve duplicates by checking if the dataframe column contains numbers
+            if len(indices) > 1:
+                for idx in indices:
+                    if idx < df.width:
+                        col_name = df.columns[idx]
+                        # Cast to Int8 (strict=False turns text/invalid data to null). 
+                        # If it has valid numbers, it is the correct score column.
+                        numeric_count = df[col_name].cast(pl.Int8, strict=False).is_not_null().sum()
+                        if numeric_count > 0:
+                            chosen_idx = idx
+                            break 
+
+            if 0 <= chosen_idx < df.width:
+                original_name = df.columns[chosen_idx]
+                selection_exprs.append(pl.col(original_name).alias(target_name))
+
+        if not selection_exprs:
+            raise Exception("No columns were confirmed for mapping.")
+
+        df = df.select(selection_exprs)
+        print(f"3. After column mapping: {df.height} rows", flush=True)
+        if ID_COL in df.columns:
+            print(f" -> Sample data in ID_COL: {df[ID_COL].head(3).to_list()}", flush=True)
+
         # Filter: Remove columns that are entirely Empty or Null
         df = df.select([
             col for col in df 
             if not (col.is_null().all() or (col.dtype == pl.String and (col == "").all()))
         ])
- 
+        print(f"4. After dropping empty cols: {df.height} rows", flush=True)
+
+        # VALIDATION: Status ID (Strict)
+        if "Status ID" in df.columns:
+            valid_statuses = ["BERKEMBANG", "MAJU", "MANDIRI", "SANGAT TERTINGGAL", "TERTINGGAL"]
+            
+            # Check for invalid values
+            # is_in returns boolean series. ~ negates it.
+            invalid_rows = df.filter(
+                ~pl.col("Status ID").str.to_uppercase().is_in(valid_statuses) 
+                & pl.col("Status ID").is_not_null() 
+                & (pl.col("Status ID") != "")
+            )
+            
+            if invalid_rows.height > 0:
+                bad_vals = invalid_rows["Status ID"].unique().to_list()
+                raise Exception(f"Invalid 'Status ID' found: {bad_vals}. Allowed: {valid_statuses}")
+
         # Filter: Keep only rows where at least one column looks like an ID
         # Pattern: 10 digits (Standard Indonesian Region Code)
-        pattern = r"[0-9]{10}"
-        df = df.filter(
-            pl.any_horizontal(
-                pl.all().cast(pl.String).str.contains(pattern)
+        if ID_COL in df.columns:
+            pattern = r"[0-9]{10}"
+            match_count = df.filter(pl.col(ID_COL).cast(pl.String).str.contains(pattern)).height
+            print(f"5. Rows matching exactly 10 digits: {match_count}", flush=True)
+            
+            df = df.filter(
+                pl.col(ID_COL).cast(pl.String).str.contains(pattern)
             )
-        )
- 
-        # Schema: Apply standard headers from headers.txt
-        limit = min(len(df.columns), len(stage_upload_header))
-        df = df[:, :limit]
-        df.columns = stage_upload_header[:limit]
- 
-        # OPTIMIZATION
+            print(f"6. After ID filter: {df.height} rows", flush=True)
+
+        # OPTIMIZATION Type Casting (Optimized)
         # Identify Text Columns (same as middleware)
         TEXT_COLUMNS = {
             "Provinsi", "Kabupaten/ Kota", "Kecamatan", 
             "Kode Wilayah Administrasi Desa", "Desa", "Status ID"
         }
- 
-        # Identify Score Columns
-        score_cols = [c for c in df.columns if c not in TEXT_COLUMNS]
- 
-        # Cast Score Columns to Int8 (TINYINT)
-        # strict=False converts non-numeric garbage to Null
-        if score_cols:
-            df = df.with_columns(
-                [pl.col(c).cast(pl.Int8, strict=False) for c in score_cols]
-            )
- 
-        # Cast Identity Columns to String (Ensure IDs are not read as numbers)
-        ident_cols = [c for c in df.columns if c in TEXT_COLUMNS]
-        if ident_cols:
-             df = df.with_columns(
-                [pl.col(c).cast(pl.String) for c in ident_cols]
-            )
-        # OPTIMIZATION END
- 
+
+        # Cast, if non TEXT_COLUMNS return int8 (TINYINT)
+        exprs = []
+        for col in df.columns:
+            if col in TEXT_COLUMNS:
+                exprs.append(pl.col(col).cast(pl.String))
+            else:
+                exprs.append(pl.col(col).cast(pl.Int8, strict=False))
+        
+        df = df.with_columns(exprs)
+
         # Save Staged Data (Parquet will now store these as Integers)
         final_parquet_path = os.path.join(STAGING_FOLDER, f"{staging_id}.parquet")
         df.write_parquet(final_parquet_path)
- 
-        # --- Database Merge Logic (DuckDB) ---
+
+        # Uncomment for the debug to activate. what this debug does is to check what's inside
+        # the excel files
+        # print(f"\n--- DEBUG LOG FOR {filename} ---", flush=True)
+        # print(f"Total rows remaining after Polars cleaning: {df.height}", flush=True)
+        # 
+        # if ID_COL in df.columns:
+        #     sample_ids = df[ID_COL].head(20).to_list()
+        #     print(f"Sample IDs (First 20): {sample_ids}", flush=True)
+        # else:
+        #     print(f"CRITICAL WARNING: Column '{ID_COL}' is MISSING!", flush=True)
+        # print("--------------------------------\n", flush=True)
+
+        # Compare with DB (CDC Logic - Identical to previous)
         con, db_path = helpers_get_db_connection(year)
-        helpers_init_db(con, df.columns)
- 
+        helpers_init_db(con, df.columns) # Ensure tables exist
+        helpers_sync_db_schema(con, year) # Check headers.json vs DB
+
         # Identify Incoming Data
         con.execute(f"CREATE OR REPLACE TEMP TABLE incoming AS SELECT * FROM read_parquet('{final_parquet_path}')")
         # Current Active State
         con.execute("CREATE OR REPLACE TEMP TABLE current_state AS SELECT * FROM master_data WHERE valid_to IS NULL")
- 
+
         # Rows to ADD (ID in Incoming, Not in Current)
         added_count = con.execute(f"""
             SELECT COUNT(*) FROM incoming i 
             WHERE i."{ID_COL}" NOT IN (SELECT "{ID_COL}" FROM current_state)
         """).fetchone()[0]
- 
+
         # Rows to REMOVE (ID in Current, Not in Incoming) - FULL SYNC OPTION
         removed_count = con.execute(f"""
             SELECT COUNT(*) FROM current_state c
             WHERE c."{ID_COL}" NOT IN (SELECT "{ID_COL}" FROM incoming)
         """).fetchone()[0]
- 
+
         # Rows to UPDATE (ID Match, Content Differs)
         other_cols = [h for h in df.columns if h != ID_COL]
         # Handle single column case or empty other_cols
         if not other_cols:
             changed_count = 0
         else:
-            check_conditions = " OR ".join([f'(c."{h}" IS DISTINCT FROM i."{h}")' for h in other_cols])
+            check_conditions = " OR ".join(['(c."{col}" IS DISTINCT FROM i."{col}")'.format(col=h.replace('"', '""')) for h in other_cols])
             changed_count = con.execute(f"""
                 SELECT COUNT(*) FROM current_state c
                 JOIN incoming i ON c."{ID_COL}" = i."{ID_COL}"
                 WHERE {check_conditions}
             """).fetchone()[0]
- 
+
         con.close()
- 
+
         return {
             "status": "staged",
             "staging_id": staging_id,
@@ -308,6 +669,10 @@ def helpers_internal_process_staging_file(year: str, file_path: str, filename: s
         raise e
 
 def helpers_get_db_connection(year: str):
+    """
+    Returns DuckDB connection and path for the given year.
+    Validates year format (must be 20XX).
+    """
     clean_year = os.path.basename(year)
 
     if not re.match(r'^20\d{2}$', clean_year):
@@ -316,33 +681,33 @@ def helpers_get_db_connection(year: str):
     db_path = os.path.join(DB_FOLDER, f"data_{clean_year}.duckdb")
     con = duckdb.connect(db_path)
     return con, db_path
- 
+
 def helpers_get_cache_path(year: str):
-    """Returns the absolute path for the cache file for a specific year."""
+    """
+    Returns the absolute path to the unique_cache JSON file for a specific year.
+    """
     get_cache_path_clean_year = os.path.basename(year)
     return os.path.join(CONFIG_DIR, f"unique_cache_{get_cache_path_clean_year}.json")
- 
+
 def helpers_init_db(con: duckdb.DuckDBPyConnection, headers: list[str]):
     """
     SCD Type 2 Schema:
- 
-    Architecture:
-    - valid_from: Timestamp when this row became active.
-    - valid_to: Timestamp when this row was replaced/deleted (NULL = Currently Active).
-    - commit_id: Groups changes by upload transaction.
-    - Metadata/Identity columns -> VARCHAR
-    - Score columns -> TINYINT (1 byte integer)
+
+    Initializes SCD Type 2 schema for master_data and commits tables.
+    - Creates tables if they don't exist
+    - Uses TINYINT for score columns, VARCHAR for text/metadata
+    - Adds index on ID_COL
     """
     # Construct column definitions for SQL (e.g., "Col1" VARCHAR, "Col2" VARCHAR...)
     # Note: Wrap headers in double quotes to handle spaces or special chars in column names.
- 
+
     # define columns that MUST remain text/string
     TEXT_COLUMNS = {
         "valid_from", "valid_to", "commit_id", "source_file",
         "Provinsi", "Kabupaten/ Kota", "Kecamatan", 
         "Kode Wilayah Administrasi Desa", "Desa", "Status ID"
     }
- 
+
     cols_def = []
     for h in headers:
         if h in TEXT_COLUMNS:
@@ -350,9 +715,9 @@ def helpers_init_db(con: duckdb.DuckDBPyConnection, headers: list[str]):
         else:
             # OPTIMIZATION: Use TINYINT for 1-5 scores
             cols_def.append(f'"{h}" TINYINT')
- 
+
     cols_optimized = ", ".join(cols_def)
- 
+
     # Create the MAIN table (Latest Snapshot)
     # Includes metadata: 'last_updated' and 'source_file'
     con.execute(f"""
@@ -364,10 +729,10 @@ def helpers_init_db(con: duckdb.DuckDBPyConnection, headers: list[str]):
             {cols_optimized}
         )
     """)
- 
+
     # Index for speed
     con.execute(f"CREATE INDEX IF NOT EXISTS idx_id ON master_data (\"{ID_COL}\")")
- 
+
     # Create the HISTORY table (Audit Log)
     # Identical structure but includes 'archived_at' to track when the record was replaced.
     con.execute("""
@@ -378,44 +743,49 @@ def helpers_init_db(con: duckdb.DuckDBPyConnection, headers: list[str]):
             summary VARCHAR
         )
     """)
- 
-def helpers_build_dynamic_query(con, base_query, request_params):
+
+def helpers_build_dynamic_query(con, base_query, request_params, base_values=None):
     """
-    Dynamically adds WHERE or AND clauses based on URL parameters.
-    Ignores system params like 'limit', 'translate', 'year'.
+    Builds parameterized WHERE clause from query params.
+    Supports:
+    - ids (semicolon/newline separated) → IN (?)
+    - column ILIKE ? for any valid column
+    - Prepends base_values (e.g. for time-travel ?version)
+    Returns:
+        tuple[str, list]: (final_query_with_where, values_list_for_execution)
     """
     # Get valid column names from the 'master_data' table to prevent SQL injection
     valid_cols = [r[0] for r in con.execute("DESCRIBE master_data").fetchall()]
- 
+
     filters = []
-    values = []
- 
+    values = base_values[:] if base_values else []
+
     # Iterate over all query parameters
     # A. SPECIAL FILTER: ID List (Comma Separated)
     if "ids" in request_params and request_params["ids"]:
         raw_ids = request_params["ids"]
- 
+
         # STRICT RULE: Split by SEMICOLON (;) or Newline. NO COMMAS.
         filtered_ids = re.split(r'[;\n\r]+', raw_ids)
- 
+
         # Strip each token and remove empty strings in one pass
         id_list = [x.strip() for x in filtered_ids if x.strip()]
- 
+
         if id_list:
             # Create placeholders (?, ?, ?)
             placeholders = ", ".join(["?"] * len(id_list))
             filters.append(f'"{ID_COL}" IN ({placeholders})')
             values.extend(id_list)
- 
+
     # B. STANDARD FILTERS
-    ignored_keys = ["ids", "version", "limit", "translate", "staging_id", "filename"]
+    ignored_keys = ["ids", "version", "limit", "translate", "staging_id", "filename", "sort_by", "sort_dir"]
     for key, val in request_params.items():
         # Map URL friendly names if necessary, or use direct keys
         # Assume frontend sends specific column names like "Provinsi"
         if key in valid_cols and key not in ignored_keys and val:
             filters.append(f'"{key}" ILIKE ?')
             values.append(f"%{val}%")
- 
+
     # Smart Append
     if filters:
         filter_str = " AND ".join(filters)
@@ -424,13 +794,13 @@ def helpers_build_dynamic_query(con, base_query, request_params):
             base_query += f" AND {filter_str}"
         else:
             base_query += f" WHERE {filter_str}"
- 
+
     return base_query, values
- 
+
 def helpers_get_or_create_intervensi_kegiatan(items: list[str]):
     """
-    Loads intervensi_kegiatan. If missing, creates a default file 
-    using the ITEM names as keys.
+    Loads or creates intervensi_kegiatan.json.
+    If file doesn't exist, generates default templates based on rekomendasi.json (when available).
     """
     # Try Load
     if os.path.exists(INTERVENTION_FILE):
@@ -438,10 +808,10 @@ def helpers_get_or_create_intervensi_kegiatan(items: list[str]):
             with open(INTERVENTION_FILE, "r", encoding="utf-8") as f:
                 return json.load(f)
         except: pass # Fallback if corrupt
- 
+
     # Create Defaults (using rekomendasi.json logic if available, else generic)
     defaults = {}
- 
+
     # Try to load existing rekomendasis to pre-seed
     recs = {}
     rec_path = os.path.join(CONFIG_DIR, "rekomendasi.json")
@@ -449,7 +819,7 @@ def helpers_get_or_create_intervensi_kegiatan(items: list[str]):
         try:
             with open(rec_path, "r", encoding="utf-8") as f: recs = json.load(f)
         except: pass
- 
+
     for item in items:
         # If we have specific logic in rekomendasi.json, map it. 
         # Otherwise create a generic placeholder.
@@ -458,6 +828,7 @@ def helpers_get_or_create_intervensi_kegiatan(items: list[str]):
         else:
             # Generic Fallback Template that is WRONG. 
             # YOU NEED TO EDIT THE TEMPLATE
+            # this below is when rekomendasi.json isn't filled
             defaults[item] = {
                 "1": f"Perlu peningkatan {item} (Sangat Kurang)",
                 "2": f"Perlu peningkatan {item} (Kurang)",
@@ -465,21 +836,22 @@ def helpers_get_or_create_intervensi_kegiatan(items: list[str]):
                 "4": f"Perlu peningkatan {item} (Baik)",
                 "5": None
             }
- 
+
     # Save to Disk
     try:
         with open(INTERVENTION_FILE, "w", encoding="utf-8") as f:
             json.dump(defaults, f, indent=4, ensure_ascii=False)
     except Exception as e:
         print(f"⚠️ Could not save intervensi_kegiatan: {e}")
- 
+
     return defaults
 
 # reusable dashboard calculate
 def helpers_calculate_dashboard_stats(df_data, structure, ordered_db_cols, templates):
     """
-    Core logic to calculate dashboard statistics(based on table_structure.csv) from a Polars DataFrame.
-    Shared between Dashboard UI and Excel Export.
+    Calculates dashboard statistics (average score, count per score level, and intervention narrative)
+    for each row in table_structure.csv using the provided DataFrame.
+    Shared logic used by both UI rendering and Excel export.
     """
     calculated_rows = []
 
@@ -542,11 +914,10 @@ def helpers_calculate_dashboard_stats(df_data, structure, ordered_db_cols, templ
 # the logic for rendering moved here, reason so no one can inspect the logic on <script>
 def helpers_render_dashboard_html(calculated_rows: list[dict]) -> str:
     """
-    Generates the full HTML Table (Thead + Tbody) server-side.
-    with hooks for JS interaction.
-    Replicates the 'Row Span' logic previously done in JavaScript.
-    - Adds 'data-col-idx' to ALL cells (required for Column Freeze).
-    - Adds 'resizer' div to Headers (required for Column Resize).
+    Server-side HTML renderer for the dashboard table.
+    - Builds full <thead> + <tbody> with proper rowspans for merged columns (NO, DIMENSI, SUB DIMENSI, INDIKATOR)
+    - Escapes content to prevent XSS
+    - Adds data-col-idx and resizer elements for frontend features (freeze, resize)
     """
     if not calculated_rows:
         return "<tbody><tr><td colspan='17' class='text-center p-4'>No Data</td></tr></tbody>"
@@ -586,7 +957,7 @@ def helpers_render_dashboard_html(calculated_rows: list[dict]) -> str:
     """
 
     # --- CALCULATE ROW SPANS (Ported from JS) ---
-    # We pre-calculate spans to know when to output <td rowspan="X"> or skip
+    # pre-calculate spans to know when to output <td rowspan="X"> or skip
     n_rows = len(calculated_rows)
     row_spans = [{"NO": 0, "DIMENSI": 0, "SUB DIMENSI": 0, "INDIKATOR": 0} for _ in range(n_rows)]
     merge_keys = ["NO", "DIMENSI", "SUB DIMENSI", "INDIKATOR"]
@@ -639,7 +1010,7 @@ def helpers_render_dashboard_html(calculated_rows: list[dict]) -> str:
             cls = f"{css_class} {'merged-cell' if is_merged else ''}".strip()
             
             # Default padding is 6px, but 'col-no' has !important padding:0 in CSS
-            # We add vertical-align: top to everything.
+            # add vertical-align: top to everything.
             style = "vertical-align: top;"
             
             # Only add whitespace wrap if it's NOT the NO column (which is centered/tight)

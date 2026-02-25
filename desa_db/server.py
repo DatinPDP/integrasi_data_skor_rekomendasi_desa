@@ -13,7 +13,7 @@ from datetime import datetime, timedelta
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
- 
+
 import duckdb
 import polars as pl
 from fastapi import FastAPI, UploadFile, File, Form, Query, Request, Depends, BackgroundTasks, HTTPException, status
@@ -31,11 +31,11 @@ from auth import (
     auth_get_users_db,
     ACCESS_TOKEN_EXPIRE_MINUTES
 )
- 
+
 # /root
 #   /root
 #   /.config/rekomendasi.json
-#   /.config/headers.txt
+#   /.config/headers.json
 #   /.config/intervensi_kegiatan.json
 #   /.config/table_structure.csv
 #   /desa_db/server.py
@@ -44,7 +44,7 @@ from auth import (
 #   /front_end/templates/admin.html
 #   /front_end/templates/user.html
 #   /front_end/templates/login.html
- 
+
 app = FastAPI(
     docs_url=None, 
     redoc_url=None, 
@@ -54,33 +54,32 @@ app = FastAPI(
 # ==========================================
 # MIDDLEWARE SETUP
 # ==========================================
- 
+
 # GZIP COMPRESSION (Solves the 100MB issue)
 # minimum_size=1000 means responses smaller than 1kb won't be compressed.
 app.add_middleware(GZipMiddleware, minimum_size=1000)
- 
+
 # CORS
 # CHECK: REMOVE ON PROD;Allow Frontend (8001) to talk to Backend (8000)
 # on PROD
 # ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:8001,http://localhost:8000").split(",")
-app.add_middleware(
-    CORSMiddleware,
-    # MUST list specific ports. Wildcard "*" will BLOCK cookies.
-    allow_origins=[
-        "http://localhost:8001",
-        "http://127.0.0.1:8001",
-        "http://localhost:8000",
-        "http://127.0.0.1:8000"
-    ],
-    # on PROD
-    # allow_origins=ALLOWED_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-    # Allow JS to read this specific header
-    expose_headers=["X-Total-Count"]
-)
-
+# app.add_middleware(
+#     CORSMiddleware,
+#     # MUST list specific ports. Wildcard "*" will BLOCK cookies.
+#     allow_origins=[
+#         "http://localhost:8001",
+#         "http://127.0.0.1:8001",
+#         "http://localhost:8000",
+#         "http://127.0.0.1:8000"
+#     ],
+#     # on PROD
+#     # allow_origins=ALLOWED_ORIGINS,
+#     allow_credentials=True,
+#     allow_methods=["*"],
+#     allow_headers=["*"],
+#     # Allow JS to read this specific header
+#     expose_headers=["X-Total-Count"]
+# )
 
 # ==========================================
 # Configuration & Constants
@@ -92,6 +91,8 @@ try:
         make_json_response,
         helpers_get_db_connection,
         helpers_init_db,
+        helpers_read_excel_preview,
+        helpers_generate_header_mapping,
         helpers_internal_process_staging_file,
         helpers_build_dynamic_query,
         helpers_get_cache_path,
@@ -106,14 +107,15 @@ try:
 except ImportError:
     # Fallback for different context import
     from desa_db.middleware import apply_rekomendasis, make_json_response, helpers_get_db_connection
+    from desa_db.middleware import helpers_read_excel_preview, helpers_generate_header_mapping
     from desa_db.middleware import helpers_init_db, helpers_internal_process_staging_file
     from desa_db.middleware import helpers_build_dynamic_query, helpers_get_cache_path
     from desa_db.middleware import ID_COL, BASE_DIR as MW_BASE_DIR, CONFIG_DIR
- 
+
 # ==========================================
 # PATH CONFIGURATION (ABSOLUTE PATHS)
 # ==========================================
- 
+
 # Get the directory where server.py is located (e.g., C:/.../desa_db)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 # Temp folder for uploads
@@ -123,22 +125,26 @@ STAGING_FOLDER = os.path.join(BASE_DIR, "staging")
 # Resolves to: /.../front_end/templates
 ROOT_DIR = os.path.abspath(os.path.join(BASE_DIR, ".."))
 TEMPLATE_DIR = os.path.join(ROOT_DIR, "front_end", "templates")
- 
+
 # Ensure directories exist
 os.makedirs(STAGING_FOLDER, exist_ok=True)
 os.makedirs(CONFIG_DIR, exist_ok=True)
 os.makedirs(TEMPLATE_DIR, exist_ok=True)
 os.makedirs(ROOT_DIR, exist_ok=True)
- 
+
 # ==========================================
 # Login, logout, 404, Endpoints
 # ==========================================
 class LoginRequest(BaseModel):
+    """Login credentials model."""
     username: str
     password: str
 
 @app.post("/api/login")
 async def login(creds: LoginRequest, response: JSONResponse = None):
+    """
+    Authenticates user and returns JWT in HttpOnly cookie.
+    """
     users_db = auth_get_users_db()
     user = users_db.get(creds.username)
 
@@ -158,7 +164,7 @@ async def login(creds: LoginRequest, response: JSONResponse = None):
         key="session_token", 
         value=access_token, 
         httponly=True,   # JavaScript cannot read this (Security +)
-        max_age=86400,   # 1 day
+        max_age=21600,   # 6 hours
         samesite="lax", 
         secure=True      
     )
@@ -166,6 +172,9 @@ async def login(creds: LoginRequest, response: JSONResponse = None):
 
 @app.post("/api/logout")
 async def logout():
+    """
+    Clears the session_token HttpOnly cookie.
+    """
     resp = JSONResponse(content={"message": "Logged out"})
     resp.delete_cookie(
         key="session_token", 
@@ -178,12 +187,18 @@ async def logout():
 # 404 handler
 @app.exception_handler(404)
 async def custom_404_handler(request, exc):
+    """
+    Returns custom 404.html page instead of JSON error.
+    """
     # Returns the HTML page instead of JSON {"detail": "Not Found"}
     return FileResponse(os.path.join(TEMPLATE_DIR, "404.html"), status_code=404)
 
 # LOGIN PAGE (Public)
 @app.get("/login", response_class=HTMLResponse)
 async def get_login_page():
+    """
+    Serves the login page (public).
+    """
     return FileResponse(os.path.join(TEMPLATE_DIR, "login.html"))
 
 # ADMIN PAGE (Protected)
@@ -191,8 +206,8 @@ async def get_login_page():
 async def get_admin_page(request: Request):
     """
     Server-Side Protection:
-    Checks if the 'session_token' cookie exists. 
-    If not, redirects to /login immediately.
+    Serves admin dashboard page.
+    Redirects to /login if no session_token cookie is present.
     """
     token = request.cookies.get("session_token")
     
@@ -207,22 +222,58 @@ async def get_admin_page(request: Request):
 # ROOT REDIRECT
 @app.get("/")
 async def root_redirect():
+    """
+    Redirects root path to /admin.
+    """
     return RedirectResponse(url="/admin")
 
 # ==========================================
 # API Endpoints
 # ==========================================
+
+# Class for Endpoints
+# Resumable Uploads Endpoints
+class UploadInit(BaseModel):
+    """Request model for initializing resumable upload."""
+    filename: str
+    file_uid: str
+    total_size: int
+    total_hash: str
+class UploadFinalize(BaseModel):
+    """Request model for finalizing resumable upload."""
+    upload_id: str
+    filename: str
+    total_hash: str
+
+# Preview Excel Endpoints
+class PreviewRequest(BaseModel):
+    """Request model for Excel preview."""
+    temp_id: str
+    filename: str
+class HeaderAnalysisRequest(BaseModel):
+    """Request model for header mapping analysis."""
+    temp_id: str
+    filename: str
+    header_row_index: int
+class ProcessRequest(BaseModel):
+    """Request model for final mapped processing step."""
+    temp_id: str
+    filename: str
+    header_row_index: int
+    data_start_index: int
+    confirmed_mapping: list # List of dicts
+
 # Table Structure Endpoints
 @app.get("/config/table_structure", dependencies=[Depends(auth_get_current_user)])
 def endpoint_get_table_structure():
     """
-    Returns the table_structure.csv as JSON for the frontend dashboard.
+    Returns table_structure.csv as JSON for the frontend dashboard.
     """
     csv_path = os.path.join(CONFIG_DIR, "table_structure.csv")
- 
+
     if not os.path.exists(csv_path):
         return JSONResponse(status_code=404, content={"error": "Config file not found"})
- 
+
     try:
         # Use standard csv library for safety, handle encoding errors
         with open(csv_path, "r", encoding="utf-8-sig", errors="replace") as f:
@@ -233,31 +284,20 @@ def endpoint_get_table_structure():
             # Default to semicolon if sniffer fails
             try: dialect = sniffer.sniff(sample, delimiters=";")
             except: dialect = None
- 
+
             reader = csv.DictReader(f, delimiter=dialect.delimiter if dialect else ";")
             data = list(reader)
- 
+
         return JSONResponse(content=data)
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
- 
-# Resumable Uploads Endpoints
-class UploadInit(BaseModel):
-    filename: str
-    file_uid: str
-    total_size: int
-    total_hash: str
- 
-class UploadFinalize(BaseModel):
-    upload_id: str
-    filename: str
-    total_hash: str
- 
+
 # Resumable Uploads Endpoints
 @app.post("/upload/init/{year}", dependencies=[Depends(auth_require_admin)])
 async def endpoint_post_upload_init(year: str, payload: UploadInit):
     """
-    Checks if an upload was interrupted and returns the offset to resume from.
+    Initializes resumable upload.
+    Checks for existing partial upload and returns current offset.
     """
     # File: server.py (endpoint_post_upload_init)
     # Vulnerability: payload.file_uid is used directly in os.path.join.
@@ -268,11 +308,11 @@ async def endpoint_post_upload_init(year: str, payload: UploadInit):
 
     # Use file_uid (hash+size) to track partial uploads
     temp_file_path = os.path.join(STAGING_FOLDER, f"partial_{payload.file_uid}.tmp")
- 
+
     received_bytes = 0
     if os.path.exists(temp_file_path):
         received_bytes = os.path.getsize(temp_file_path)
- 
+
         # If file is complete, verify hash immediately
         if received_bytes == payload.total_size:
             with open(temp_file_path, "rb") as f:
@@ -283,9 +323,9 @@ async def endpoint_post_upload_init(year: str, payload: UploadInit):
                 # Corrupt/Different file? Restart.
                 os.remove(temp_file_path)
                 received_bytes = 0
- 
+
     return {"status": "ready", "upload_id": payload.file_uid, "received_bytes": received_bytes}
- 
+
 # Resumable Uploads Endpoints
 @app.post("/upload/chunk/{year}", dependencies=[Depends(auth_require_admin)])
 async def endpoint_post_upload_chunk(
@@ -296,102 +336,138 @@ async def endpoint_post_upload_chunk(
     chunk_hash: str = Form(...)
 ):
     """
-    Appends a binary chunk to the temp file.
-    Validates the chunk's integrity via MD5 before writing.
+    Receives one chunk of resumable upload.
+    MD5 validation + append with explicit f.seek(offset).
+    Returns:
+        dict: {"status": "ok", "received": int}
     """
+
     temp_file_path = os.path.join(STAGING_FOLDER, f"partial_{upload_id}.tmp")
- 
+
     # Read chunk content
     content = await chunk.read()
- 
+
     # Integrity Check (Chunk Hash)
     server_chunk_hash = hashlib.md5(content).hexdigest()
     if server_chunk_hash != chunk_hash:
         return JSONResponse(status_code=400, content={"error": "Chunk Corruption detected (Hash Mismatch)"})
- 
+
     # Append to file
     # 'ab' = Append Binary. We trust the 'offset' provided by client matches file size
     # In a stricter system, we'd check os.path.getsize(temp_file_path) == offset
     with open(temp_file_path, "ab") as f:
         # Seek is redundant in 'ab' mode usually, but ensures safety if file implementation varies
-        # f.seek(offset) 
+        f.seek(offset) 
         f.write(content)
- 
+
     return {"status": "ok", "received": len(content)}
- 
+
 # Resumable Uploads Endpoints
 @app.post("/upload/finalize/{year}", dependencies=[Depends(auth_require_admin)])
 async def endpoint_post_upload_finalize(year: str, payload: UploadFinalize):
     """
-    Triggered when all chunks are sent. 
-    1. Validates Total File Hash.
-    2. Runs the heavy Parser/Diff logic.
+    Finalizes resumable upload after all chunks are received.
+    Validates full file MD5 hash, renames to stable temp file, and returns temp_id.
     """
     temp_file_path = os.path.join(STAGING_FOLDER, f"partial_{payload.upload_id}.tmp")
- 
+
     if not os.path.exists(temp_file_path):
          return JSONResponse(status_code=404, content={"error": "Upload not found"})
- 
+
     # Validate Total Integrity
     # Note: On very slow CPUs/Large files, this might take a second.
     with open(temp_file_path, "rb") as f:
         final_hash = hashlib.md5(f.read()).hexdigest()
- 
+
     if final_hash != payload.total_hash:
         return JSONResponse(status_code=400, content={"error": "Final File Corruption (MD5 Mismatch)"})
- 
-    # Process (The Heavy Lifting)
-    # Generate a unique staging ID for the DB logic
+
+    # Rename to a stable temp file for the next steps
     staging_id = str(uuid.uuid4())
- 
+    # Determine extension
+    _, ext = os.path.splitext(payload.filename)
+    if not ext: ext = ".xlsb"
+    
+    safe_temp_path = os.path.join(STAGING_FOLDER, f"raw_{staging_id}{ext}")
+    os.rename(temp_file_path, safe_temp_path)
+
+    # Return ID for the frontend to call /preview
+    return {
+        "status": "uploaded_raw", 
+        "temp_id": staging_id, 
+        "filename": payload.filename,
+        "path_ref": safe_temp_path 
+    }
+
+# Preview Endpoint
+@app.post("/upload/preview/{year}", dependencies=[Depends(auth_require_admin)])
+async def endpoint_post_upload_preview(year: str, payload: PreviewRequest):
+    """
+    Returns first 25 rows of the uploaded Excel file for preview and header selection.
+    """
+    # Reconstruct path based on temp_id
+    _, ext = os.path.splitext(payload.filename)
+    file_path = os.path.join(STAGING_FOLDER, f"raw_{payload.temp_id}{ext}")
+    
+    if not os.path.exists(file_path):
+        return JSONResponse(status_code=404, content={"error": "Temp file expired or missing"})
+        
     try:
-        # Call the Helper
-        result = helpers_internal_process_staging_file(year, temp_file_path, payload.filename, staging_id)
- 
-        # Cleanup partial file upon success
-        os.remove(temp_file_path)
- 
+        rows = helpers_read_excel_preview(file_path)
+        return {"rows": rows}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+# Get Header Suggestions
+@app.post("/upload/analyze-headers/{year}", dependencies=[Depends(auth_require_admin)])
+async def endpoint_post_analyze_headers(year: str, payload: HeaderAnalysisRequest):
+    """
+    Analyzes the selected header row and returns suggested column mapping
+    (first 6 columns by index + fuzzy matching for the rest).
+    """
+    _, ext = os.path.splitext(payload.filename)
+    file_path = os.path.join(STAGING_FOLDER, f"raw_{payload.temp_id}{ext}")
+    
+    try:
+        mapping = helpers_generate_header_mapping(file_path, payload.header_row_index)
+        return {"mapping": mapping}
+    except Exception as e:
+        traceback.print_exc()
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+# Execute Processing with Map
+@app.post("/upload/process-mapped/{year}", dependencies=[Depends(auth_require_admin)])
+async def endpoint_post_process_mapped(year: str, payload: ProcessRequest):
+    """
+    Processes the uploaded file using the user-confirmed column mapping.
+    Runs full ETL + validation + CDC diff calculation.
+    Returns staging result (added/removed/changed counts).
+    """
+    _, ext = os.path.splitext(payload.filename)
+    file_path = os.path.join(STAGING_FOLDER, f"raw_{payload.temp_id}{ext}")
+    
+    try:
+        # Create a new staging ID for the Parquet result
+        staging_id = str(uuid.uuid4())
+        
+        result = helpers_internal_process_staging_file(
+            year, 
+            file_path, 
+            payload.filename, 
+            staging_id,
+            payload.header_row_index,
+            payload.data_start_index,
+            payload.confirmed_mapping
+        )
+        
+        # Cleanup Raw File now
+        if os.path.exists(file_path): os.remove(file_path)
+        
         return result
     except Exception as e:
         traceback.print_exc()
         return JSONResponse(status_code=500, content={"error": str(e)})
- 
-# STAGE: Upload -> Analyze Diff -> Return Stats
-@app.post("/stage/{year}", dependencies=[Depends(auth_require_admin)])
-async def endpoint_post_stage_upload(
-    year: str,
-    file: UploadFile = File(...)
-    ):
-    """
-    Ingests an Excel (.xlsb) file, cleans it, and performs a "Change Data Capture" (CDC) update.
- 
-    Workflow:
-    1. Read Excel via Polars.
-    2. clean structural garbage (headers/empty cols).
-    3. Compare new data against existing DB data.
-    4. Archive changed rows to 'history'.
-    5. Upsert (Update/Insert) new rows to 'master_data'.
-    """
- 
-    # Security: Sanitize filename
-    staging_id = str(uuid.uuid4())
-    # Preserve extension so Calamine knows if it's xlsx or xlsb
-    _, ext = os.path.splitext(file.filename)
-    if ext.lower() not in ['.xlsb', '.xlsx']:
-        ext = ".xlsb" # Force default or raise error
-    temp_path = os.path.join(STAGING_FOLDER, f"temp_legacy_{staging_id}{ext}")
- 
-    try:
-        with open(temp_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
- 
-        return helpers_internal_process_staging_file(year, temp_path, file.filename, staging_id)
-    except Exception as e:
-        traceback.print_exc()
-        return JSONResponse(status_code=500, content={"error": str(e)})
-    finally:
-        if os.path.exists(temp_path): os.remove(temp_path)
- 
+
 # COMMIT: Apply the Staged Changes
 @app.post("/commit/{year}", dependencies=[Depends(auth_get_current_user)])
 async def endpoint_post_commit_stage(
@@ -400,43 +476,47 @@ async def endpoint_post_commit_stage(
     filename: str = Query(...)
     ):
     """
-    Commits staged upload to SCD Type 2 master_data table.
- 
-    Performs:
-    - Expire removed records (IDs missing in new data)
-    - Expire changed records (same ID, different values in any non-key column)
-    - Insert new & updated versions (valid_from=now, valid_to=NULL)
- 
-    Uses single transaction + IS DISTINCT FROM for change detection.
-    Cleans up staging file on success.
+    Commits staged Parquet into SCD Type 2 master_data.
+    
+    Uses fully parameterized queries:
+    - valid_to = ? for expire removed/changed
+    - INSERT ... VALUES (?, ?, ?, ?) for new rows + commit log
+    - Single transaction + cleanup
+    Returns:
+        dict: {"status": "success", "message": str} on success
+        or JSONResponse 404/500 on error
     """
+
+    if not re.match(r'^[a-zA-Z0-9_-]+$', staging_id):
+        return JSONResponse(status_code=400, content={"error": "Invalid staging ID"})
+
     temp_path = os.path.join(STAGING_FOLDER, f"{staging_id}.parquet")
     if not os.path.exists(temp_path):
         return JSONResponse(status_code=404, content={"error": "Staging session expired. Please upload again."})
- 
+
     con, _ = helpers_get_db_connection(year)
     try:
         con.execute("BEGIN TRANSACTION")
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
- 
+
         con.execute(f"CREATE OR REPLACE TEMP TABLE incoming AS SELECT * FROM read_parquet('{temp_path}')")
- 
+
         # Close REMOVED rows (Set valid_to = now)
         con.execute(f"""
             UPDATE master_data SET valid_to = '{now}'
             WHERE valid_to IS NULL 
             AND "{ID_COL}" NOT IN (SELECT "{ID_COL}" FROM incoming)
         """)
- 
+
         # Close UPDATED rows (Set valid_to = now)
         # detect changes via IS DISTINCT FROM for all non-ID columns
         valid_cols = [r[0] for r in con.execute("DESCRIBE incoming").fetchall()]
         other_cols = [h for h in valid_cols if h != ID_COL]
- 
+
         if other_cols:
             # Changed 'm' to 'master_data' to match the table name in the UPDATE statement
-            check_cond = " OR ".join([f'(master_data."{h}" IS DISTINCT FROM i."{h}")' for h in other_cols])
- 
+            check_cond = " OR ".join(['(master_data."{col}" IS DISTINCT FROM i."{col}")'.format(col=h.replace('"', '""')) for h in other_cols])
+
             con.execute(f"""
                 UPDATE master_data SET valid_to = '{now}'
                 FROM incoming i
@@ -444,25 +524,25 @@ async def endpoint_post_commit_stage(
                 AND master_data.valid_to IS NULL
                 AND ({check_cond})
             """)
- 
+
         # Insert NEW and UPDATED versions (Set valid_from = now, valid_to = NULL)
         # Insert New IDs
         con.execute(f"""
             INSERT INTO master_data 
-            SELECT '{now}', NULL, '{staging_id}', '{filename}', i.* FROM incoming i
+            SELECT '{now}', NULL, '{staging_id}', ?, i.* FROM incoming i
             WHERE i."{ID_COL}" NOT IN (
                 SELECT "{ID_COL}" FROM master_data WHERE valid_to IS NULL
             )
-        """)
- 
+        """, [filename])
+
         # Log Commit
         summary = "Update"
-        con.execute(f"INSERT INTO commits VALUES ('{staging_id}', '{now}', '{filename}', '{summary}')")
- 
+        con.execute("INSERT INTO commits VALUES (?, ?, ?, ?)", [staging_id, now, filename, summary])
+
         con.execute("COMMIT")
- 
+
         return {"status": "success", "message": "Database updated successfully."}
- 
+
     except Exception as e:
         con.execute("ROLLBACK")
         traceback.print_exc()
@@ -470,13 +550,13 @@ async def endpoint_post_commit_stage(
     finally:
         con.close()
         if os.path.exists(temp_path): os.remove(temp_path)
- 
+
 # QUERY: Supports Time Travel via 'version' (Timestamp)
 @app.get("/query/{year}", dependencies=[Depends(auth_get_current_user)])
 def endpoint_get_query_data(
     year: str,
     request: Request,
-    limit: int = 10000,
+    limit: int = 1000,
     offset: int = 0,
     filter_col: str = None,
     filter_val: str = None,
@@ -484,20 +564,18 @@ def endpoint_get_query_data(
     version: str = None
     ):
     """
-    OPTIMIZED QUERY ENDPOINT:
-    Retrieves a subset of the master data for a specific year with support for historical versioning.
- 
-    Key Features:
-    1. **Time Travel (SCD Type 2)**: 
-       - If `version` is provided, fetches the state of the data exactly as it was at that timestamp.
-       - If `version` is NULL, fetches the current active data (`valid_to IS NULL`).
-    2. **Dynamic Filtering**: Automatically converts URL parameters into SQL `WHERE` clauses 
-        (e.g., `?Provinsi=X` becomes `WHERE "Provinsi" ILIKE '%X%'`).
-    3. **Data Translation**: Optionally converts numeric scores (e.g., 1-5) into human-readable
-        text recommendations if `translate=True`.
-    4. **Performance**: Bypasses standard Pydantic serialization by streaming the Polars DataFrame
-        directly to JSON (optimized for Gzip compression).
+    Main data query endpoint with time-travel (SCD Type 2) support.
+
+    Features:
+    - Historical snapshot via ?version= timestamp
+    - Dynamic filtering from URL params (ILIKE)
+    - Optional score → text translation
+    - Optimized Polars → JSON streaming + X-Total-Count header
+    - Sorting and pagination
+    Returns:
+        Response: make_json_response (Polars → JSON) with header X-Total-Count
     """
+
     con, _ = helpers_get_db_connection(year)
     try:
         # Ensure database is initialized before querying
@@ -505,23 +583,27 @@ def endpoint_get_query_data(
             con.execute("SELECT 1 FROM master_data")
         except:
             return JSONResponse(status_code=404, content={"error": "Table not found."})
- 
+
         # --- TIME TRAVEL LOGIC ---
         # If version is provided (Timestamp), look for rows active AT that time.
         # If version is NULL, look for rows currently active (valid_to IS NULL).
+        params_dict = dict(request.query_params)
+        version = params_dict.get("version")
+        base_values = []
+
         if version:
             # Snapshot Mode: Active at time T
-            time_filter = f"valid_from <= '{version}' AND (valid_to > '{version}' OR valid_to IS NULL)"
+            time_filter = "valid_from <= ? AND (valid_to > ? OR valid_to IS NULL)"
+            base_values = [version, version]
         else:
             # HEAD Mode
             time_filter = "valid_to IS NULL"
- 
+
         base_query = f"SELECT * EXCLUDE (valid_from, valid_to, commit_id) FROM master_data WHERE {time_filter}"
- 
+
         # Dynamic Filters
-        params_dict = dict(request.query_params)
-        final_query, values = helpers_build_dynamic_query(con, base_query, params_dict)
- 
+        final_query, values = helpers_build_dynamic_query(con, base_query, params_dict, base_values)
+
         # GET TRUE TOTAL COUNT (Before Limit/Offset)
         # wrap the final query to count rows that match filters
         count_sql = f"SELECT COUNT(*) FROM ({final_query})"
@@ -552,10 +634,10 @@ def endpoint_get_query_data(
 
         # Append Sort + Pagination
         final_query += f" {order_clause} LIMIT {limit} OFFSET {offset}"
- 
+
         res = con.execute(final_query, values).pl()
         if translate: res = apply_rekomendasis(res)
- 
+
         # Sanitize NaNs
         records = res.to_dicts()
         clean = [{k: (None if isinstance(v, float) and math.isnan(v) else v) for k,v in r.items()} for r in records]
@@ -567,27 +649,25 @@ def endpoint_get_query_data(
         response = make_json_response(res) 
         response.headers["X-Total-Count"] = str(total_rows)
         return response
- 
+
     except Exception as e:
         traceback.print_exc()
         return JSONResponse(status_code=500, content={"error": str(e)})
     finally:
         con.close()
- 
+
 # VERSIONS LIST
 @app.get("/history/versions/{year}", dependencies=[Depends(auth_get_current_user)])
 def endpoint_get_history_versions(year: str):
     """
-    Returns metadata for initialization:
-    1. List of versions (commits)
-    2. Hierarchy tree (Prov -> Kab -> Kec) built live from DuckDB
+    Returns commit history and live province → kabupaten → kecamatan hierarchy tree.
     """
     con, _ = helpers_get_db_connection(year)
     response_data = {
         "versions": [],
         "hierarchy": {}
     }
- 
+
     try:
         # Fetch Versions
         try:
@@ -596,7 +676,7 @@ def endpoint_get_history_versions(year: str):
         except duckdb.CatalogException:
             # Table might not exist yet if fresh install
             pass
- 
+
         # Fetch Hierarchy (Live Distinct Query)
         try:
             # Check if master_data exists first
@@ -609,20 +689,20 @@ def endpoint_get_history_versions(year: str):
                     ORDER BY "Provinsi", "Kabupaten/ Kota", "Kecamatan"
                 """
                 rows = con.execute(query).fetchall()
- 
+
                 # Build Tree
                 tree = {}
                 for prov, kab, kec in rows:
                     if prov not in tree: tree[prov] = {}
                     if kab not in tree[prov]: tree[prov][kab] = []
                     if kec not in tree[prov][kab]: tree[prov][kab].append(kec)
- 
+
                 response_data["hierarchy"] = tree
         except Exception as e:
             print(f"Hierarchy Error: {e}")
- 
+
         return response_data
- 
+
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
     finally:
@@ -632,9 +712,11 @@ def endpoint_get_history_versions(year: str):
 @app.get("/download/excel/{year}", dependencies=[Depends(auth_get_current_user)])
 def endpoint_get_download_server_excel(year: str, request: Request):
     """
-    Generates a 2-Sheet Excel file (Grid Data + Dashboard Stats)
-    Generates Excel Export matching Frontend styles.
-    applying ALL current filters and sorting from the frontend.
+    Two-sheet Excel export using parameterized queries for filters and version.
+    Sheet 1: full grid data
+    Sheet 2: dashboard stats with merged headers and rowspans.
+    Returns:
+        StreamingResponse: .xlsx file (media_type application/vnd.openxmlformats-officedocument.spreadsheetml.sheet)
     """
     con, _ = helpers_get_db_connection(year)
     
@@ -647,12 +729,17 @@ def endpoint_get_download_server_excel(year: str, request: Request):
 
         # Time Travel Filter
         version = params_dict.get("version")
-        time_filter = f"valid_from <= '{version}' AND (valid_to > '{version}' OR valid_to IS NULL)" if version else "valid_to IS NULL"
+        base_values = []
+        if version:
+            time_filter = "valid_from <= ? AND (valid_to > ? OR valid_to IS NULL)"
+            base_values = [version, version]
+        else:
+            time_filter = "valid_to IS NULL"
         
         base_query = f"SELECT * EXCLUDE (valid_from, valid_to, commit_id, source_file) FROM master_data WHERE {time_filter}"
         
         # Apply Filters (Provinsi, Kab, Kec, etc.)
-        final_query, values = helpers_build_dynamic_query(con, base_query, params_dict)
+        final_query, values = helpers_build_dynamic_query(con, base_query, params_dict, base_values)
 
         # Apply Sort (AG Grid State)
         sort_by = params_dict.get("sort_by")
@@ -859,42 +946,44 @@ def endpoint_get_download_server_excel(year: str, request: Request):
         return JSONResponse(status_code=500, content={"error": str(e)})
     finally:
         con.close()
- 
+
 # ==========================================
 # CALCULATION & DASHBOARD LOGIC
 # ==========================================
- 
+
 # CALCULATION
 @app.post("/dashboard/calculate/{year}", dependencies=[Depends(auth_get_current_user)])
 async def endpoint_post_calculate_dashboard(year: str, request: Request):
     """
-    1. Applies SAME filters as /query endpoint to get filtered DB subset
-    2. Loads table_structure.csv
-    3. Calculates stats on filtered data
-    4. Returns dashboard rows with calculations
+    Calculates dashboard statistics on filtered data and returns
+    fully rendered HTML table (with proper rowspans) for the frontend.
+    Returns:
+        HTMLResponse: fully rendered <table> HTML (thead + tbody with rowspans)
     """
     con, _ = helpers_get_db_connection(year)
- 
+
     try:
         # === Filter DB first (same as /query endpoint) ===
         params_dict = dict(request.query_params)
- 
+
         # Build base query with time filter
         version = params_dict.get("version")
+        base_values = []
         if version:
-            time_filter = f"valid_from <= '{version}' AND (valid_to > '{version}' OR valid_to IS NULL)"
+            time_filter = "valid_from <= ? AND (valid_to > ? OR valid_to IS NULL)"
+            base_values = [version, version]
         else:
             time_filter = "valid_to IS NULL"
- 
+
         base_query = f"SELECT * FROM master_data WHERE {time_filter}"
- 
+
         # Apply location/id filters (reuse existing helper)
-        filtered_query, values = helpers_build_dynamic_query(con, base_query, params_dict)
- 
+        filtered_query, values = helpers_build_dynamic_query(con, base_query, params_dict, base_values)
+
         # Execute query to get filtered dataset
         df_filtered = con.execute(filtered_query, values).pl()
         # === End of filtering ===
- 
+
         # Load CSV Structure
         csv_path = os.path.join(CONFIG_DIR, "table_structure.csv")
         if not os.path.exists(csv_path):
@@ -908,7 +997,7 @@ async def endpoint_post_calculate_dashboard(year: str, request: Request):
             except: dialect = None
             reader = csv.DictReader(f, delimiter=dialect.delimiter if dialect else ";")
             structure = list(reader)
- 
+
         # Get Ordered Metric Columns from DB
         try:
             # DESCRIBE returns columns in creation order
@@ -921,19 +1010,19 @@ async def endpoint_post_calculate_dashboard(year: str, request: Request):
                 "Provinsi", "Kabupaten/ Kota", "Kecamatan",
                 "Kode Wilayah Administrasi Desa", "Desa", "Status ID"
             }
- 
+
             # This list preserves the order of metric columns in the DB
             ordered_db_cols = [r[0] for r in db_cols_info if r[0] not in metadata_cols]
         except:
             return HTMLResponse(content="Error: DB not initialized", status_code=500)
- 
+
         # Load/Init Templates
         item_names = [row.get("ITEM", "") for row in structure if row.get("ITEM")]
         templates = helpers_get_or_create_intervensi_kegiatan(item_names)
- 
+
         # Calculate Per Row (Using helpers)
         calculated_rows = helpers_calculate_dashboard_stats(df_filtered, structure, ordered_db_cols, templates)
- 
+
         # RENDER HTML (NEW HELPER)
         html_table = helpers_render_dashboard_html(calculated_rows)
 
@@ -942,13 +1031,13 @@ async def endpoint_post_calculate_dashboard(year: str, request: Request):
         # If your frontend expects formatted strings (e.g. "1,024"), convert here or handle in JS.
         # Current frontend code handles raw numbers fine.
         return HTMLResponse(content=html_table)
- 
+
     except Exception as e:
         traceback.print_exc()
         return HTMLResponse(content=f"Server Error: {str(e)}", status_code=500)
     finally:
         con.close()
- 
+
 # DELETE: Soft Delete (Expire) specific IDs
 @app.post("/delete/{year}", dependencies=[Depends(auth_require_admin)])
 async def endpoint_post_delete_ids(
@@ -960,8 +1049,10 @@ async def endpoint_post_delete_ids(
     ):
     """
     Soft-deletes records by setting valid_to = NOW().
-    They will no longer appear in 'Live' views but remain in history.
-    Includes whitespace cleaning to ensure IDs match.
+    Accepts semicolon or newline-separated list of IDs.
+    Returns:
+        dict: {"status": "success", "deleted_count": int, "deleted_ids": list} or {"status": "warning", "message": str}
+        or JSONResponse 400/500 on error
     """
     con, _ = helpers_get_db_connection(year)
     try:
@@ -969,14 +1060,14 @@ async def endpoint_post_delete_ids(
         raw_ids = re.split(r'[;\n\r]+', ids)
         # Ensure we are searching for clean, stripped strings
         id_list = [x.strip() for x in raw_ids if x.strip()]
- 
+
         if not id_list:
             return JSONResponse(status_code=400, content={"error": "No valid IDs provided"})
- 
+
         # Execute Soft Delete
         con.execute("BEGIN TRANSACTION")
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
- 
+
         # Vulnerability 1: Soft Delete (server.py) The ids list is pasted directly into the query string using an f-string.
         #     Code: id_sql_list = ", ".join([f"'{x}'" for x in id_list])
         #     Attack: If a user sends an ID like 100' OR '1'='1, the query becomes WHERE ID IN ('100' OR '1'='1'), potentially deleting all records.
@@ -1001,13 +1092,13 @@ async def endpoint_post_delete_ids(
         # Execute and fetch the IDs that were actually updated
         deleted_rows = con.execute(query, [now]).fetchall()
         changes = len(deleted_rows)
- 
+
         if changes > 0:
             # Log the Commit (using uuid for consistency)
             commit_id = str(uuid.uuid4())
-            con.execute(f"INSERT INTO commits VALUES ('{commit_id}', '{now}', 'Manual Delete', '{summary} ({changes} rows)')")
+            con.execute("INSERT INTO commits VALUES (?, ?, 'Manual Delete', ?)", [commit_id, now, f"{summary} ({changes} rows)"])
             con.execute("COMMIT")
- 
+
             print(current_user," changes ", commit_id)
             return {
                 "status": "success", 
@@ -1022,39 +1113,38 @@ async def endpoint_post_delete_ids(
                 "status": "warning", 
                 "message": "No active records found. Check if ID has hidden spaces or is already deleted."
             }
- 
+
     except Exception as e:
         con.execute("ROLLBACK")
         traceback.print_exc()
         return JSONResponse(status_code=500, content={"error": str(e)})
     finally:
         con.close()
- 
+
 # Check diff version sidebar
 @app.get("/history/details/{year}", dependencies=[Depends(auth_get_current_user)])
 def endpoint_get_history_details(year: str, version: str = Query(...)):
     """
-    Calculates the 'Git Diff' for a specific commit version.
-    1. Finds rows that EXPIRED at this timestamp (Old State).
-    2. Finds rows that STARTED at this timestamp (New State).
-    3. Compares them to determine: ADDED, DELETED, or MODIFIED.
+    Git-style diff for a commit (valid_from = ? / valid_to = ?).
+    Returns:
+        JSONResponse: {"changes": list[dict]} with type ADD/MOD/DEL/INFO
     """
     con, _ = helpers_get_db_connection(year)
     try:
         # Fetch Old State (Rows valid_to = version)
         old_rows_df = con.execute(f"SELECT * FROM master_data WHERE valid_to = ?", [version]).pl()
- 
+
         # Fetch New State (Rows valid_from = version)
         new_rows_df = con.execute(f"SELECT * FROM master_data WHERE valid_from = ?", [version]).pl()
- 
+
         # Convert to Dictionary { ID: {row_data} }
         # Uses ID_COL from middleware (Kode Wilayah Administrasi Desa)
         old_map = {str(row[ID_COL]): row for row in old_rows_df.to_dicts()}
         new_map = {str(row[ID_COL]): row for row in new_rows_df.to_dicts()}
- 
+
         changes = []
         ignored_cols = ["valid_from", "valid_to", "commit_id", "source_file"]
- 
+
         # A. Detect MODIFIED and ADDED
         for uid, new_row in new_map.items():
             if uid in old_map:
@@ -1064,7 +1154,7 @@ def endpoint_get_history_details(year: str, version: str = Query(...)):
                 for k, v in new_row.items():
                     if k not in ignored_cols and old_row.get(k) != v:
                         diffs.append(k)
- 
+
                 if diffs:
                     changes.append({
                         "type": "MOD", 
@@ -1078,7 +1168,7 @@ def endpoint_get_history_details(year: str, version: str = Query(...)):
                     "id": uid, 
                     "desc": "New Record Added"
                 })
- 
+
         # B. Detect DELETED (In Old but NOT in New)
         for uid in old_map:
             if uid not in new_map:
@@ -1087,21 +1177,21 @@ def endpoint_get_history_details(year: str, version: str = Query(...)):
                     "id": uid, 
                     "desc": f"Dropped (Valid To: {version})"
                 })
- 
+
         # Safety: Limit to first 9999 changes to prevent UI crash on massive uploads
         if len(changes) > 9999:
             remaining = len(changes) - 9999
             changes = changes[:9999]
             changes.append({"type": "INFO", "id": "...", "desc": f"...and {remaining} more changes"})
- 
+
         return JSONResponse(content={"changes": changes})
- 
+
     except Exception as e:
         traceback.print_exc()
         return JSONResponse(status_code=500, content={"error": str(e)})
     finally:
         con.close()
- 
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

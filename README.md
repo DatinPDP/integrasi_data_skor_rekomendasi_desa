@@ -4,7 +4,7 @@ All configuration files are stored in the `.config/` directory:
 ```
 /root
 /.config/auth_users.json
-/.config/headers.txt
+/.config/headers.json
 /.config/intervensi_kegiatan.json
 /.config/rekomendasi.json
 /.config/table_structure.csv
@@ -39,7 +39,8 @@ python run_system.py
 ```
 # Add user
 ```
-python add_user.py <user> <password>
+python add_user.py <username> <password> <role>
+python add_user.py admin MySecretPass123 admin
 ```
 it will be saved in .config/
 

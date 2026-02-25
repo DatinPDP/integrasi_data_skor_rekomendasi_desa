@@ -1,6 +1,16 @@
 services:
+  backup:
+      image: alpine:latest
+      volumes:
+        - ./desa_db/dbs:/app/desa_db/dbs:ro # Read-Only access to live DBs
+        - ./backups:/app/backups            # Save backups to root/backups
+        - ./backup.sh:/backup.sh:ro         # Inject the script
+      # Make script executable, set cron to run daily at 02:00 AM, start cron daemon
+      command: /bin/sh -c "echo '0 2 * * * /bin/sh /backup.sh' > /etc/crontabs/root && crond -f -d 8"
+      restart: always
   backend:
     build: .
+    image: integrasi_data_skor_rekomendasi_desa
     command: python desa_db/server.py
     restart: always
     volumes:
@@ -11,7 +21,7 @@ services:
       - .env
 
   frontend:
-    build: .
+    image: integrasi_data_skor_rekomendasi_desa
     command: python front_end/router.py
     restart: always
     environment:
@@ -21,6 +31,8 @@ services:
       - ./.config:/app/.config
     env_file:
       - .env
+    depends_on:
+      - backend
 
   nginx:
     image: nginx:alpine
