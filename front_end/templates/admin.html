@@ -1585,7 +1585,7 @@
             :disabled="upload_SelHeaderRow === null || upload_SelDataRow === null"
             class="px-6 py-2 bg-slate-500 text-white rounded font-bold hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
           >
-            Next: Verifikasi Header >
+            Lanjut: Verifikasi Header >
           </button>
         </div>
       </div>
@@ -1636,6 +1636,33 @@
               @click="action_ToggleAllMaps(false)"
               class="text-[10px] font-bold px-3 py-1 bg-red-100 text-red-700 rounded border border-red-200 hover:bg-red-200"
             >Deny All</button>
+          </div>
+        </div>
+
+        <div
+          x-show="upload_MissingHeaders.length > 0"
+          class="bg-red-50 dark:bg-slate-800 border-b border-red-200 dark:border-red-900/50 p-3 flex-shrink-0"
+        >
+          <div class="flex items-start gap-2">
+            <span class="text-red-500 mt-0.5 text-sm">⚠️</span>
+            <div class="flex-1">
+              <h4 class="text-xs font-bold text-red-700 dark:text-red-400 mb-1">
+                <span x-text="upload_MissingHeaders.length"></span> Missing Standard Column(s):
+              </h4>
+              <p class="text-[10px] text-red-600 dark:text-red-300/80 mb-2 leading-tight">
+                Kolom standar dari database di bawah ini tidak ditemukan di file Excel.
+                Sistem akan membiarkan kolom tersebut kosong (Null/Default) jika proses dilanjutkan.
+              </p>
+              <div class="flex flex-wrap gap-1.5 max-h-20 overflow-y-auto custom-scrollbar pr-2">
+                <template x-for="mh in upload_MissingHeaders" :key="mh">
+                  <span
+                    class="bg-white dark:bg-slate-900 border border-red-200 dark:border-red-800 text-red-600
+                          dark:text-red-400 px-2 py-0.5 rounded text-[9px] font-mono whitespace-nowrap shadow-sm"
+                    x-text="mh"
+                  ></span>
+                </template>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -1849,6 +1876,7 @@
           upload_SelDataRow: null,
           upload_SelRowHover: null,
           upload_HeaderMapping: [],
+          upload_MissingHeaders: [],
           upload_SortIssuesFirst: true,
 
           // --- REUSABLE HELPERS ---
@@ -2111,8 +2139,8 @@
           initializeAgGridConfig() {
             const gridOptions = {
               rowModelType: 'infinite',
-              cacheBlockSize: 100,
-              infiniteInitialRowCount: 100,
+              cacheBlockSize: 1000,
+              infiniteInitialRowCount: 1000,
               columnDefs: [],
               defaultColDef: {
                 sortable: true,
@@ -2318,6 +2346,7 @@
               if (data.error) throw new Error(data.error);
 
               this.upload_HeaderMapping = data.mapping;
+              this.upload_MissingHeaders = data.missing_headers || [];
               this.ui_Step = 'mapping'; // Go to next modal
               this.ui_UploadStatusMessage = "";
             } catch (e) {
@@ -2553,7 +2582,7 @@
             if (!this.stagingData_Object) return;
             this.ui_UploadStatusMessage = "Saving...";
             let p = new URLSearchParams({
-              staging_id: this.stagingData_Object.staging_id,
+              temp_id: this.stagingData_Object.temp_id,
               filename: this.stagingData_Object.filename
             });
             try {

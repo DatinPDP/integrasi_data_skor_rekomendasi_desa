@@ -68,9 +68,6 @@ os.makedirs(EXPORT_FOLDER, exist_ok=True)
 # Point to ../.config/rekomendasi.json relative to this file
 os.makedirs(DB_FOLDER, exist_ok=True)
 
-# Duckdb memory limit, can be defined on .env
-DUCKDB_MEMORY_LIMIT = os.getenv("DUCKDB_MEMORY_LIMIT") or helpers_get_dynamic_duckdb_memory_limit()
-
 # ==========================================
 # LOGIC LOADER (Existing)
 # ==========================================
@@ -240,7 +237,9 @@ def helpers_generate_header_mapping(file_path: str, header_row_idx: int):
     - .xlsx: streams only the header row with openpyxl
     - Skips empty columns
     Returns:
-        list[dict]: mapping entries with keys: standard, file_header, col_index, is_confirmed, match_type, score
+        list[dict]: mapping entries with keys:  standard, file_header, col_index, is_confirmed,
+                                                match_type, score, found_standards, missing_headers
+
     """
 
     # Load Standard Headers
@@ -395,7 +394,11 @@ def helpers_generate_header_mapping(file_path: str, header_row_idx: int):
             "score": round(highest_ratio, 2)
         })
 
-    return mapping
+    # Compute missing headers (excluding the first 6 fixed columns)
+    found_standards = {m["standard"] for m in mapping if m["standard"] != "(No Match)"}
+    missing_headers = [h for h in remaining_standards if h not in found_standards]
+
+    return mapping, missing_headers
 
 # PROCESSOR to rebould db based on headers.json
 def helpers_sync_db_schema(con: duckdb.DuckDBPyConnection, year: str):
@@ -717,7 +720,6 @@ def helpers_get_dynamic_duckdb_memory_limit() -> str:
     Strategy:
     - Read total system RAM from /proc/meminfo (works on Linux/Docker)
     - Use 20% of total RAM, floored at 128MB, capped at 512MB
-    - For your dataset (~25MB raw), 128MB is already 5x headroom
     """
     try:
         with open("/proc/meminfo", "r") as f:
@@ -730,7 +732,10 @@ def helpers_get_dynamic_duckdb_memory_limit() -> str:
                     return f"{clamped_mb}MB"
     except:
         pass
-    return "256MB"  # safe fallback
+    return "512MB"  # safe fallback
+
+# Duckdb memory limit & management
+DUCKDB_MEMORY_LIMIT = helpers_get_dynamic_duckdb_memory_limit()
 
 def helpers_get_db_connection(year: str):
     """

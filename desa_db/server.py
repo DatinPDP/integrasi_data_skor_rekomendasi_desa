@@ -468,14 +468,15 @@ async def endpoint_post_upload_preview(year: str, payload: PreviewRequest):
 async def endpoint_post_analyze_headers(year: str, payload: HeaderAnalysisRequest):
     """
     Analyzes the selected header row and returns suggested column mapping
-    (first 6 columns by index + fuzzy matching for the rest).
+    (first 6 columns by index + fuzzy matching for the rest) and missing headers.
     """
     _, ext = os.path.splitext(payload.filename)
     file_path = os.path.join(TEMP_FOLDER, f"raw_{payload.temp_id}{ext}")
     
     try:
-        mapping = helpers_generate_header_mapping(file_path, payload.header_row_index)
-        return {"mapping": mapping}
+        mapping, missing_headers = helpers_generate_header_mapping(file_path, payload.header_row_index)
+        return {"mapping": mapping, "missing_headers": missing_headers}
+
     except Exception as e:
         traceback.print_exc()
         return JSONResponse(status_code=500, content={"error": str(e)})
@@ -605,7 +606,7 @@ async def endpoint_post_commit_stage(
 def endpoint_get_query_data(
     year: str,
     request: Request,
-    limit: int = 100,
+    limit: int = 1000,
     offset: int = 0,
     filter_col: str = None,
     filter_val: str = None,

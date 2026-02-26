@@ -20,8 +20,6 @@ create .env file
 copy and paste this below
 ```
 APP_SECRET_KEY=
-DUCKDB_MEMORY_LIMIT=256MB
-
 ```
 
 generate APP_SECRET_KEY with command below:
@@ -35,6 +33,7 @@ on windows wsl is recommended
 ```
 docker compose up -d --build
 ```
+the behaviour at start will always try to make excel files ready to download from db
 
 # Add user
 ```
@@ -63,19 +62,7 @@ python desa_db/server.py
 python run_system.py
 ```
 
-### (deprecated) nodejs requirements
-```
-npm install ag-grid-react ag-grid-community xlsx
-npm install -D tailwindcss postcss autoprefixer
-npm install spark-md5
-```
-### (deprecated) run frontend nextjs
-```
-cd js_front_end
-npm run dev
-```
-
 ### (deprecated) Run mock frontend
 ```bash
-streamlit run tests/test_serverSheets.py
+streamlit run tests/serverSheets_test.py
 ```
