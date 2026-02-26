@@ -28,6 +28,14 @@ openssl rand -hex 32
 ```
 and put into .env
 
+compile tailwind css v4 from input.css to output.css
+```
+npm init -y
+npm install tailwindcss @tailwindcss/cli
+
+npx @tailwindcss/cli -i ./front_end/static/css/input.css -o ./front_end/static/css/output.css --watch
+```
+
 you need to install docker & docker-compose if you haven't
 on windows wsl is recommended
 ```

@@ -713,30 +713,6 @@ def helpers_internal_process_temp_file(
     except Exception as e:
         raise e
 
-def helpers_get_dynamic_duckdb_memory_limit() -> str:
-    """
-    Sets DuckDB memory limit dynamically based on available system RAM.
-    
-    Strategy:
-    - Read total system RAM from /proc/meminfo (works on Linux/Docker)
-    - Use 20% of total RAM, floored at 128MB, capped at 512MB
-    """
-    try:
-        with open("/proc/meminfo", "r") as f:
-            for line in f:
-                if line.startswith("MemTotal:"):
-                    total_kb = int(line.split()[1])
-                    total_mb = total_kb // 1024
-                    dynamic_mb = int(total_mb * 0.20)
-                    clamped_mb = max(128, min(dynamic_mb, 512))
-                    return f"{clamped_mb}MB"
-    except:
-        pass
-    return "512MB"  # safe fallback
-
-# Duckdb memory limit & management
-DUCKDB_MEMORY_LIMIT = helpers_get_dynamic_duckdb_memory_limit()
-
 def helpers_get_db_connection(year: str):
     """
     Returns DuckDB connection and path for the given year.
@@ -749,7 +725,7 @@ def helpers_get_db_connection(year: str):
 
     db_path = os.path.join(DB_FOLDER, f"data_{clean_year}.duckdb")
     con = duckdb.connect(db_path)
-    con.execute(f"SET memory_limit='{DUCKDB_MEMORY_LIMIT}'")
+
     return con, db_path
 
 def helpers_get_cache_path(year: str):
@@ -1293,7 +1269,7 @@ def helpers_render_dashboard_html(calculated_rows: list[dict]) -> str:
             <th colspan="5">PELAKSANA</th>
         </tr>
         <tr>
-            <th class="col-score relative" data-col-idx="5">Rata<div class="resizer"></div></th>
+            <th class="col-score relative" data-col-idx="5">Rata-Rata<div class="resizer"></div></th>
             <th class="col-score relative" data-col-idx="6">1<div class="resizer"></div></th>
             <th class="col-score relative" data-col-idx="7">2<div class="resizer"></div></th>
             <th class="col-score relative" data-col-idx="8">3<div class="resizer"></div></th>

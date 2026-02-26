@@ -19,6 +19,7 @@ services:
       - ./desa_db/dbs:/app/desa_db/dbs
       - ./desa_db/temp:/app/desa_db/temp
       - ./exports:/app/exports
+      - ./front_end:/app/front_end
     env_file:
       - .env
 
@@ -31,6 +32,7 @@ services:
       - API_BASE_URL=http://backend-integrasi_data_skor_rekomendasi_desa:8000 
     volumes:
       - ./.config:/app/.config
+      - ./front_end:/app/front_end
     env_file:
       - .env
     depends_on:
@@ -43,6 +45,7 @@ services:
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - ./exports:/app/exports:ro
+      - ./front_end/static:/app/front_end/static:ro
     depends_on:
       - backend-integrasi_data_skor_rekomendasi_desa
       - frontend-integrasi_data_skor_rekomendasi_desa

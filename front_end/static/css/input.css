@@ -1,0 +1,115 @@
+/* static/css/input.css */
+@import "tailwindcss";
+
+/* Enable class-based dark mode.
+   This replaces: tailwind.config = { darkMode: 'class' } 
+*/
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* --- Custom Scrollbar --- */
+/* Webkit (Chrome/Edge/Safari) */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #f1f1f1; }
+::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+
+/* Dark Mode Scrollbar */
+@variant dark {
+  ::-webkit-scrollbar-track { background: #0f172a; } /* slate-900 */
+  ::-webkit-scrollbar-thumb { background: #475569; border: 1px solid #0f172a; } /* slate-600 */
+  ::-webkit-scrollbar-thumb:hover { background: #64748b; } /* slate-500 */
+  ::-webkit-scrollbar-corner { background: #0f172a; }
+}
+
+/* --- Modal Styling --- */
+
+/* Modal Styling */
+.modal-overlay {
+  background-color: rgba(0,0,0,0.5);
+  backdrop-filter: blur(2px);
+}
+/* Mapping List */
+.map-list-container {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+.map-item {
+  display: grid;
+  grid-template-columns: 300px 1fr 100px;
+  gap: 10px;
+  align-items: center;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 8px 0;
+}
+
+@variant dark {
+  .map-item { border-bottom-color: #334155; }
+}
+
+/* Step 2 Upload window Text Wrap Fix */
+.map-text-wrap {
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.2;
+}
+
+/* ===========================
+   AG GRID & TABLE OVERRIDES
+   =========================== */
+.ag-theme-alpine {
+  --ag-font-size: 13px;
+  --ag-header-height: 32px;
+  --ag-row-height: 32px;
+}
+
+@variant dark {
+  .ag-theme-alpine {
+    --ag-background-color: #1e293b;
+    --ag-foreground-color: #cbd5e1;
+    --ag-border-color: #334155;
+    --ag-header-background-color: #0f172a;
+    --ag-row-hover-color: #334155;
+  }
+}
+
+/* Dashboard Custom Table */
+@layer components {
+  .dashboard-container {
+    @apply overflow-auto h-full border border-gray-300 bg-white relative dark:bg-slate-900 dark:border-slate-700;
+  }
+  .dash-table {
+    @apply border-collapse w-max min-w-full text-[13px] table-fixed p-1 font-mono;
+  }
+  /* Sticky Headers */
+  .dash-table thead th {
+    @apply bg-gray-100 text-slate-800 font-semibold border border-gray-300 p-1 sticky z-10 text-center align-middle h-8 dark:bg-slate-900 dark:text-slate-200 dark:border-slate-600;
+  }
+  .dash-table thead tr:first-child th { top: 0; z-index: 11; }
+  .dash-table thead tr:nth-child(2) th { top: 32px; z-index: 11; border-top: none; }
+  
+  .dash-table td {
+    @apply border border-gray-300 p-0 pl-1 align-top text-slate-700 dark:border-slate-600 dark:text-slate-300;
+  }
+  .dash-table input {
+    @apply w-full h-full border-none p-1 bg-transparent text-center outline-none focus:bg-blue-50 dark:focus:bg-slate-700;
+  }
+  
+  /* Column Width Utilities */
+  .col-no { width: 40px; min-width: 40px; }
+  .col-dimensi { width: 40px; max-width: 100px; }
+  .col-sub_dimensi { width: 40px; max-width: 200px; }
+  .col-indikator { width: 40px; max-width: 200px; }
+  .col-item { width: 300px; min-width: 150px; }
+  .col-score { width: 60px; min-width: 60px; }
+  .col-intervensi { width: 500px; min-width: 300px; }
+  .col-pusat { width: 200px; min-width: 150px; }
+  .col-prov { width: 200px; min-width: 150px; }
+  .col-kab { width: 200px; min-width: 150px; }
+  .col-desa { width: 200px; min-width: 150px; }
+  .col-lain { width: 200px; min-width: 150px; }
+
+  .resizer {
+    @apply absolute right-0 top-0 h-full w-[5px] bg-transparent cursor-col-resize select-none z-[100] hover:bg-blue-500;
+  }
+  .sticky-col { position: sticky; }
+}

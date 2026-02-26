@@ -21,6 +21,7 @@ import duckdb
 import polars as pl
 from fastapi import FastAPI, UploadFile, File, Form, Query, Request, Depends, BackgroundTasks, HTTPException, status
 from fastapi.responses import JSONResponse, FileResponse, HTMLResponse, RedirectResponse, StreamingResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from starlette.exceptions import HTTPException as StarletteHTTPException # For 404 handler
@@ -176,6 +177,11 @@ os.makedirs(ROOT_DIR, exist_ok=True)
 # Pre-compiled exports directory
 EXPORT_FOLDER = os.path.abspath(os.path.join(BASE_DIR, "../exports"))
 os.makedirs(EXPORT_FOLDER, exist_ok=True)
+
+# Static tailwind css folder
+STATIC_DIR = os.path.join(ROOT_DIR, "front_end", "static")
+os.makedirs(STATIC_DIR, exist_ok=True)
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 # ==========================================
 # Login, logout, 404, Endpoints

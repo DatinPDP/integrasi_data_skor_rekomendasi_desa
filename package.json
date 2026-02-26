@@ -1,0 +1,28 @@
+{
+  "dependencies": {
+    "@tailwindcss/cli": "^4.2.1",
+    "tailwindcss": "^4.2.1"
+  },
+  "name": "_serverlocal",
+  "version": "1.0.0",
+  "description": "All configuration files are stored in the `.config/` directory:",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/anbe-on/integrasi_data_skor_rekomendasi_desa.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/anbe-on/integrasi_data_skor_rekomendasi_desa/issues"
+  },
+  "homepage": "https://github.com/anbe-on/integrasi_data_skor_rekomendasi_desa#readme"
+}

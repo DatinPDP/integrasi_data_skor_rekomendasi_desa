@@ -2153,9 +2153,7 @@
               },
               pagination: false,
               rowBuffer: 20,
-              rowSelection: 'multiple',
               animateRows: false,
-              suppressRowClickSelection: true,
               debounceVerticalScrollbar: true,
               enableCellTextSelection: true,
               ensureDomOrder: true
@@ -2221,7 +2219,7 @@
 
                 try {
                   // Only show loading if it's a primary load, otherwise it flickers too much
-                  if (offset === 0) this.agGridApiInstance.showLoadingOverlay();
+                  if (offset === 0) this.agGridApiInstance.setGridOption('loading', true);
 
                   const reqUrl = `${this.apiBaseUrl}/query/${this.targetYear}?${urlParams}`;
                   let res = await fetch(reqUrl, {credentials: 'include'});
@@ -2265,10 +2263,12 @@
 
                     params.successCallback(data, totalCount);
 
+                    // Turn off loading overlay
+                    this.agGridApiInstance.setGridOption('loading', false);
+                    
                     if (totalCount === 0) {
-                      this.agGridApiInstance.showNoRowsOverlay();
-                    } else {
-                      this.agGridApiInstance.hideOverlay();
+                      // Optionally keep this if AG grid requires explicit trigger on infinite scroll
+                      if (this.agGridApiInstance.showNoRowsOverlay) this.agGridApiInstance.showNoRowsOverlay();
                     }
                   } else {
                     console.error("❌ [AG-Grid] Data is not an array:", data);
@@ -2276,7 +2276,8 @@
                   }
                 } catch (e) {
                   console.error("❌ [AG-Grid] Error in getRows:", e);
-                  this.agGridApiInstance.showNoRowsOverlay(); // Or show error
+                  this.agGridApiInstance.setGridOption('loading', false);
+                  if (this.agGridApiInstance.showNoRowsOverlay) this.agGridApiInstance.showNoRowsOverlay();
                   params.failCallback();
                 }
               }
