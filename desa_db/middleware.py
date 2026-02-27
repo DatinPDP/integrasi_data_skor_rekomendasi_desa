@@ -147,11 +147,11 @@ def helpers_read_excel_preview(file_path: str, limit_rows: int = 25):
     Reads first N rows of 'Skor' sheet for frontend preview.
     - .xlsx: openpyxl streaming (read_only=True) for low memory
     - .xlsb/.xlsx fallback: Polars calamine
-    - Caps at 263 columns
+    - Caps at 400 columns
     - Converts None → ""
     - Returns pure list-of-lists
     Returns:
-        list[list[str]]: rows as list of lists (max limit_rows rows, 263 cols)
+        list[list[str]]: rows as list of lists (max limit_rows rows, 400 cols)
     """
     rows = []
 
@@ -175,7 +175,7 @@ def helpers_read_excel_preview(file_path: str, limit_rows: int = 25):
                     clean_row = [str(cell) if cell is not None else "" for cell in row]
                     
                     # Check if row has data
-                    rows.append(clean_row[:263])
+                    rows.append(clean_row[:400])
 
             finally:
                 wb.close()
@@ -195,7 +195,7 @@ def helpers_read_excel_preview(file_path: str, limit_rows: int = 25):
             df = df.head(limit_rows)
 
             # Limit width (similar to existing logic)
-            max_col = min(df.width, 263)
+            max_col = min(df.width, 400)
             df = df[:, :max_col]
             
             # Replace nulls with empty string for JSON safety
@@ -227,19 +227,28 @@ def helpers_normalize_text(text: str):
 def helpers_generate_header_mapping(file_path: str, header_row_idx: int):
     """
     Generates column mapping from uploaded Excel against headers.json.
-
+    
     Logic:
+    - Loads standards and aliases from headers.json
+    - .xlsx: streams only header row with openpyxl (read_only=True)
+    - .xlsb: full read with calamine + row extraction
+    - Caps at 400 columns
     - Detects first non-empty column → start_col (dynamic alignment)
     - First 6 columns: forced index mapping + auto-confirm
-    - Remaining columns: alias_exact (from headers.json "aliases") or fuzzy SequenceMatcher
-      - > 85% → auto-confirm
-      - < 40% → "(No Match)"
-    - .xlsx: streams only the header row with openpyxl
-    - Skips empty columns
+    - Remaining columns: two-pass matching (skips empty headers)
+      - Pass 1: alias_exact (exact match on standard or aliases)
+      - Pass 2: fuzzy SequenceMatcher on leftovers
+        - > 85% → auto-confirm
+        - < 40% → "(No Match)"
+    - Tracks assigned_standards to prevent duplicates
+    - Computes missing_headers (unmapped standards after first 6)
+    
     Returns:
-        list[dict]: mapping entries with keys:  standard, file_header, col_index, is_confirmed,
-                                                match_type, score, found_standards, missing_headers
-
+        tuple[list[dict], list[str]]: (
+            mapping: list of dicts with keys: standard, file_header,
+                     col_index, is_confirmed, match_type, score,
+            missing_headers: list of unmapped standard names
+        )
     """
 
     # Load Standard Headers
@@ -266,7 +275,7 @@ def helpers_generate_header_mapping(file_path: str, header_row_idx: int):
         # Iterate until we hit the row (efficient skipping)
         for i, row in enumerate(ws.iter_rows(min_row=target_excel_row, max_row=target_excel_row, values_only=True)):
             clean_row = [str(cell) if cell is not None else "" for cell in row]
-            file_headers_raw = clean_row[:263]
+            file_headers_raw = clean_row[:400]
             break
         
         wb.close()
@@ -282,7 +291,7 @@ def helpers_generate_header_mapping(file_path: str, header_row_idx: int):
             engine="calamine",
             has_header=False
         )
-        max_col = min(df.width, 263)
+        max_col = min(df.width, 400)
         df = df[:, :max_col]
 
         if header_row_idx >= df.height:
@@ -304,6 +313,9 @@ def helpers_generate_header_mapping(file_path: str, header_row_idx: int):
             start_col = i
             break
 
+    # Set to track already assigned header
+    assigned_standards = set()
+
     # Map Special First 6 using the actual start column
     for i in range(min(6, len(file_headers_raw) - start_col)):
         if start_col + i >= len(file_headers_raw):
@@ -319,14 +331,15 @@ def helpers_generate_header_mapping(file_path: str, header_row_idx: int):
             "is_confirmed": True, 
             "match_type": "index_forced"
         })
+        assigned_standards.add(std_val)
 
-    # --- LOGIC: REMAINING COLUMNS (Fuzzy Name Match) ---
-    # Create a lookup for normalized standard headers
-    # use a list of tuples to keep order: [(norm, original), ...]
-    norm_standards = [(helpers_normalize_text(h), h) for h in remaining_standards]
-    
+    # --- TWO PASS MATCHING ALGORITHM ---
+    mapping_dict = {}
+
     # Resume fuzzy mapping after the first 6
     fuzzy_start_idx = start_col + 6
+
+    # PASS 1: EXACT & ALIAS MATCHES ONLY
     for i in range(fuzzy_start_idx, len(file_headers_raw)):
         file_val = str(file_headers_raw[i]).strip()
 
@@ -341,34 +354,62 @@ def helpers_generate_header_mapping(file_path: str, header_row_idx: int):
 
         norm_file = helpers_normalize_text(file_val)
         best_match = None
-        highest_ratio = 0.0
-        is_match = False
-        match_type = "fuzzy"
 
         # Match based on headers.json and it's aliases
-        for item in headers_data[6:]: 
+        for item in headers_data[6:]:
             original_std = item["standard"]
-            valid_names = [helpers_normalize_text(a) for a in item.get("aliases", [])]
-            valid_names.append(helpers_normalize_text(original_std)) 
+            
+            # Skip if this standard header has already been mapped to an earlier column
+            if original_std in assigned_standards:
+                continue
+
+            valid_names = [helpers_normalize_text(a) for a in item.get("aliases", []) if a.strip()]
+            valid_names.append(helpers_normalize_text(original_std))
 
             if norm_file in valid_names:
                 best_match = original_std
-                highest_ratio = 1.0
-                is_match = True
-                match_type = "alias_exact"
                 break
 
-        if not best_match:
-            # Find best match in remaining standards
-            for norm_std, orig_std in norm_standards:
-                # Exact match (normalized)
-                if norm_std == norm_file:
-                    best_match = orig_std
-                    highest_ratio = 1.0
-                    is_match = True
-                    match_type = "fuzzy_exact"
-                    break
+        if best_match:
+            assigned_standards.add(best_match)
+            mapping_dict[i] = {
+                "standard": best_match,
+                "file_header": file_val,
+                "col_index": i,
+                "is_confirmed": True,
+                "match_type": "alias_exact",
+                "score": 1.0
+            }
+        else:
+            # Leave for Pass 2
+            mapping_dict[i] = {
+                "standard": None,
+                "file_header": file_val,
+                "col_index": i,
+                "is_confirmed": False,
+                "match_type": "fuzzy",
+                "score": 0.0
+            }
+
+    # PASS 2: FUZZY MATCH THE LEFTOVERS
+    norm_standards = [(helpers_normalize_text(h), h) for h in remaining_standards]
+    
+    for i in range(fuzzy_start_idx, len(file_headers_raw)):
+        if i not in mapping_dict:
+            continue
             
+        if mapping_dict[i]["standard"] is None:
+            file_val = mapping_dict[i]["file_header"]
+            norm_file = helpers_normalize_text(file_val)
+            
+            best_match = None
+            highest_ratio = 0.0
+            
+            for norm_std, orig_std in norm_standards:
+                # Skip if already mapped
+                if orig_std in assigned_standards:
+                    continue
+
                 # Fuzzy match (Levenshtein) using python's difflib
                 ratio = SequenceMatcher(None, norm_std, norm_file).ratio()
                 if ratio > highest_ratio:
@@ -378,21 +419,17 @@ def helpers_generate_header_mapping(file_path: str, header_row_idx: int):
             # If the best match is less than 40%, it's likely garbage.
             if highest_ratio < 0.4:
                 best_match = None
-
-            # Threshold for "Auto Confirm" (e.g., 85% similarity)
-            # "Apakah ..." vs "Apakah ...?" usually > 0.95
-            # Display all, BUT auto-confirm only if > 85%
-            is_match = highest_ratio > 0.85
-        
-        # If no match found above 0, just leave standard empty or guess best
-        mapping.append({
-            "standard": best_match if best_match else "(No Match)",
-            "file_header": file_val,
-            "col_index": i,
-            "is_confirmed": is_match,
-            "match_type": match_type,
-            "score": round(highest_ratio, 2)
-        })
+            # Lock the standard header so it cannot be assigned again
+            if best_match:
+                assigned_standards.add(best_match)
+            mapping_dict[i]["standard"] = best_match if best_match else "(No Match)"
+            mapping_dict[i]["score"] = round(highest_ratio, 2)
+            mapping_dict[i]["is_confirmed"] = highest_ratio > 0.85
+            
+    # Rebuild mapping array in left-to-right order
+    for i in range(fuzzy_start_idx, len(file_headers_raw)):
+        if i in mapping_dict:
+            mapping.append(mapping_dict[i])
 
     # Compute missing headers (excluding the first 6 fixed columns)
     found_standards = {m["standard"] for m in mapping if m["standard"] != "(No Match)"}
@@ -525,7 +562,7 @@ def helpers_internal_process_temp_file(
 
         # Structure Cleaning:
         # Slice: Cap width to prevent reading infinite empty Excel columns
-        max_col = min(df.width, 263) 
+        max_col = min(df.width, 400) 
         df = df[:, :max_col] # DO NOT drop columns manually anymore; Calamine offset handles it safely
 
         # Sync the absolute UI index with Calamine's stripped index
