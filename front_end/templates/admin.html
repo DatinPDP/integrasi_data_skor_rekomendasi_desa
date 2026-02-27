@@ -1493,7 +1493,7 @@
           class="p-2 border-b dark:border-slate-700 flex justify-between items-center bg-gray-50 dark:bg-slate-800 px-4"
         >
           <div class="flex items-center gap-4">
-            <span class="text-xs text-gray-500 italic">Hanya "Confirmed" kolom yang akan dipilih.</span>
+            <span class="text-xs text-gray-500 italic">Hanya "Confirmed" kolom yang akan dipilih. Header dicari dari kiri ke kanan oleh server</span>
 
             <label
               class="flex items-center gap-1.5 text-[11px] font-bold text-amber-600 dark:text-amber-500 cursor-pointer
@@ -1671,6 +1671,16 @@
                   x-text="upload_HeaderMapping.length"
                 ></span> Total
               </span>
+
+              <span class="border-l border-gray-200 dark:border-slate-600"></span>
+              
+              <span :class="upload_MissingHeaders.length > 0 ? 'text-red-500 font-bold' : 'text-emerald-600 dark:text-emerald-400'">
+                <span
+                  class="font-bold text-sm"
+                  x-text="upload_MissingHeaders.length"
+                ></span> Header Missing
+              </span>
+
             </div>
 
             <button
