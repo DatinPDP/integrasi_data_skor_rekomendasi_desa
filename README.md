@@ -28,12 +28,32 @@ openssl rand -hex 32
 ```
 and put into .env
 
-compile tailwind css v4 from input.css to output.css
+compile tailwind css v3 from input.css to output.css
 ```
-npm init -y
-npm install tailwindcss @tailwindcss/cli
+cd front_end/
+npm install -D tailwindcss@3 postcss autoprefixer
+npx tailwindcss init
+```
 
-npx @tailwindcss/cli -i ./front_end/static/css/input.css -o ./front_end/static/css/output.css --watch
+on tailwind.config.js paste this below
+```
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  darkMode: 'class',
+  // Use **/*.html to scan all folders in the project for HTML files
+  content: ["./**/*.html", "./static/**/*.js"], 
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+}
+
+```
+
+then compile it
+
+```
+npx tailwindcss -i ./static/css/input.css -o ./static/css/output.css --watch
 ```
 
 you need to install docker & docker-compose if you haven't
