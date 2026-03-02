@@ -1,0 +1,165 @@
+{
+    "Persentase Desa dengan Sistem Pembuangan Air Limbah Rumah Tangga yang Baik mendukung Ketahanan Iklim": 
+    [
+      "ii. Keberfungsian jamban",
+      "i. Ketersediaan Septic Tank (Pilihan: Komunal / Individual)",
+      "ii. Keberfungsian Septic Tank",
+      "Pembuangan Air Limbah Cair Rumah Tangga"
+    ],
+
+    "Persentase Desa dengan Utilias Air Minum yang Baik mendukung ketahanan Iklim": 
+    [
+      "Ketersediaan Air Minum untuk warga desa",
+      "Kemudahan akses Air Minum untuk warga di desa",
+      "Bagaimana Kualitas Air Minum di Desa (Tidak untuk Berbau Berwarna & Berasa)"
+    ],
+
+    "Persentase Desa dengan Kondisi Akses Jalan yang Baik Mendukung ketahanan iklim": 
+    [
+      "Jenis Permukaan Jalan sebagian besar di desa",
+      "Kualitas sebagian besar jalan di Desa",
+      "Ketersediaan penerangan di jalan-jalan utama di desa",
+      "Operasional desa dalam penyediaan penerangan di jalan-jalan utama di desa"
+    ],
+
+    "Persentase Desa dengan Akses Listrik yang Baik mendukung ketahanan iklim": 
+    [
+      "Ketersediaan pelayanan listrik untuk rumah di desa?",
+      "Berapa Lama Durasi layanan Listrik di Desa?",
+      "SKOR IKU pemanfaatan Energi Baru Terbarukan di desa"
+    ],
+
+    "Persentase Desa dengan Layanan Telekomunikasi yang Baik mendukung ketahanan Iklim": 
+    [
+      "Ketersediaan Akses Telepon di sebagian besar wilayah Desa",
+      "Ketersediaan Akses Internet di sebagian besar wilayah Desa"
+    ],
+
+    "Persentase Desa dengan Fasilitas Pendukung Ekonomi yang Baik mendukung ketahanan Iklim": 
+    [
+      "Ketersediaan Pendidikan Non-formal/ Pusat Keterampilan/ Kursus",
+      "Keterlibatan Pendidikan Non-formal/ Pusat Keterampilan/ Kursus",
+      "Ketersediaan Pasar di Desa",
+      "Kemudahan akses menuju pasar di Desa",
+      "Ketersediaan Toko/ Pertokoan di Desa",
+      "Kemudahan akses menuju toko/ pertokoan di Desa",
+      "Ketersediaan Kedai/ Rumah Makan di Desa",
+      "Kemudahan akses menuju Kedai/ Rumah Makan di Desa",
+      "Ketersediaan Penginapan di Desa",
+      "Kemudahan akses menuju Penginapan di Desa",
+      "Ketersediaan Layanan Pos dan/ Logistik di Desa",
+      "Kemudahan akses menuju Layanan Pos dan Logistik di Desa",
+      "Apakah terdapat BUM Desa/ BUM Desa Bersama di Desa?",
+      "Apakah BUM Desa/ BUM Desa Bersama tersebut sudah berbadan hukum?",
+      "Hari Operasional BUM Desa/ BUM Desa Bersama",
+      "Ketersediaan Lembaga Ekonomi lainnya di Desa (selain BUM Desa/ BUM Desa bersama): ",
+      "i. Ketersediaan KUD",
+      "ii. Ketersediaan UMKM",
+      "Ketersediaan layanan perbankan di desa",
+      "i. Hari operasional layanan perbankan",
+      "i. Terdapat Layanan Fasilitas Kredit Berupa KUR",
+      "ii. Terdapat Layanan Fasilitas Kredit Berupa KKP-E ",
+      "iii. Terdapat Layanan Fasilitas Kredit Berupa KUK ",
+      "Status Layanan Fasilitas Kredit"
+    ],
+
+    "Persentase Desa dengan Sistem Pengelolaan Sampah yang Baik mendukung Ketahanan Iklim": 
+    [
+      "Tempat pembuangan sampah di Desa",
+      "Dilakukan pengolahan sampah di desa",
+      "Dilakukan pemanfaatan sampah di desa"
+    ],
+
+    "Persentase Desa dengan Kearifan Lingkungan yang Baik mendukung Ketahanan iklim": 
+    [
+      "Apakah terdapat upaya menjaga/ mempertahankan/ melestarikan kearifan lingkungan berupa atraksi alam/ sumberdaya alam/ keindahan alam yang ada di desa",
+      "Apakah terdapat peraturan/ regulasi yang mengatur terkait pelestarian lingkungan di Desa?",
+      "Apakah terdapat kegiatan pelestarian lingkungan berbasis kearifan lokal di bidang lingkungan di Desa (seperti Awik-awik)?",
+      "Apakah terdapat pemanfaatan Energi Baru Terbarukan di desa? (tenaga surya/angin/mikrohidro/biogas/biomassa/pasang surut/arus laut)"
+    ],
+
+    "Persentase Desa dengan Frekuensi Gotong Royong yang Baik mendukung Ketahanan iklim": 
+    [
+      "Apakah terdapat kearifan budaya/ sosial yang ada/ menjadi ciri khas desa?",
+      "Apakah kearifan budaya/ sosial tersebut masih dipertahankan/ dilestarikan?",
+      "Apakah terdapat kegiatan gotong royong di Desa?",
+      "Frekuensi Kegiatan Gotong Royong di desa",
+      "Keterlibatan warga dalam kegiatan gotong royong"
+    ],
+
+    "Persentase Desa yang Sarana Kesehatan dan Fasilitas Kesehatan meningkat mendukung Kemandirian Desa": 
+    [
+      "Kemudahan akses menuju Sarana Kesehatan"
+    ],
+
+    "Persentase Desa yang  Aktivitas Layanan Kesehatan, Layanan Tenaga Kesehatan, dan Jaminan Kesehatan Nasional meningkat mendukung Kemandirian Desa": 
+    [
+      "Ketersediaan Fasilitas Kesehatan Pustu/ Poskesdes/ Polindes di Desa",
+      "Kemudahan akses menuju Fasilitas Kesehatan Pustu/ Poskesdes/ Polindes",
+      "Ketersediaan Fasilitas Posyandu di Desa",
+      "Terdapat Aktivitas Posyandu",
+      "Kemudahan akses menuju Fasilitas Posyandu",
+      "Apakah tersedia layanan dokter di desa?",
+      "Berapa lama/ hari ketersediaan layanan dokter di desa?",
+      "Penyedia layanan dokter di desa berasal dari?",
+      "Terdapat Penyedia Transportasi penunjang menuju layanan Dokter",
+      "Apakah Tersedia layanan Bidan di Desa?",
+      "Berapa lama/ hari ketersediaan layanan Bidan di desa?",
+      "Penyedia layanan Bidan di desa berasal dari?",
+      "Terdapat Penyedia Transportasi penunjang menuju layanan Bidan",
+      "Apakah Tersedia layanan Tenaga Kesehatan di Desa?",
+      "Berapa lama/ hari ketersediaan layanan Tenaga Kesehatan di desa?",
+      "Penyedia layanan Tenaga Kesehatan di desa berasal dari?",
+      "Terdapat Penyedia Transportasi penunjang menuju layanan Nakes",
+      "Persentase keanggotaan BPJS",
+      "Apakah terdapat kegiatan sosialisasi dan/ atau advokasi terkait program jaminan kesehatan nasional di desa?"
+    ],
+
+    "Persentase Desa yang ketersediaan layanan pendidikan dasarnya meningkat mendukung kemandirian desa": 
+    [
+      "Ketersediaan PAUD/ TK/ Sederajat di Desa"
+    ],
+
+    "Persentase Desa yang Angka Partisipasi Murni (APM)-nya meningkat mendukung kemandirian desa": 
+    [
+      "Ketersediaan PAUD/ TK/ Sederajat di Desa"
+    ],
+
+    "Persentase (%) desa yang mendapatkan layanan kesehatan dasar": 
+    [
+      "Kemudahan akses menuju Sarana Kesehatan",
+      "Ketersediaan Fasilitas Kesehatan Pustu/ Poskesdes/ Polindes di Desa",
+      "Kemudahan akses menuju Fasilitas Kesehatan Pustu/ Poskesdes/ Polindes",
+      "Ketersediaan Fasilitas Posyandu di Desa",
+      "Terdapat Aktivitas Posyandu",
+      "Kemudahan akses menuju Fasilitas Posyandu",
+      "Apakah tersedia layanan dokter di desa?",
+      "Berapa lama/ hari ketersediaan layanan dokter di desa?",
+      "Penyedia layanan dokter di desa berasal dari?",
+      "Terdapat Penyedia Transportasi penunjang menuju layanan Dokter",
+      "Apakah Tersedia layanan Bidan di Desa?",
+      "Berapa lama/ hari ketersediaan layanan Bidan di desa?",
+      "Penyedia layanan Bidan di desa berasal dari?",
+      "Terdapat Penyedia Transportasi penunjang menuju layanan Bidan",
+      "Apakah Tersedia layanan Tenaga Kesehatan di Desa?",
+      "Berapa lama/ hari ketersediaan layanan Tenaga Kesehatan di desa?",
+      "Penyedia layanan Tenaga Kesehatan di desa berasal dari?",
+      "Terdapat Penyedia Transportasi penunjang menuju layanan Nakes",
+      "Persentase keanggotaan BPJS"
+    ],
+
+    "Persentase (%) desa yang mendapatkan layanan pendidikan dasar": 
+    [
+      "Ketersediaan PAUD/ TK/ Sederajat di Desa",
+      "Kemudahan Akses menuju PAUD/ TK/ Sederajat terdekat di Desa",
+      "Angka Partisipasi Murni (APM) anak usia 3 - 6 tahun yang bersekolah PAUD/ TK/ Sederajat di desa"
+    ],
+
+    "Persentase (%) desa yang menerapkan layanan berbasis digital": 
+    [
+      "Apakah sudah dilaksanakan publikasi informasi pelayanan kepada masyarakat desa?",
+      "Apakah sudah dilaksanakan pelayanan administrasi untuk masyarakat desa?",
+      "Apakah sudah dilaksanakan pelayanan pengaduan untuk masyarakat desa?",
+      "Apakah sudah dilaksanakan pelayanan lainnya untuk masyarakat desa?"
+    ]
+}

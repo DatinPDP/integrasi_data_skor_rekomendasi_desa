@@ -9,10 +9,19 @@
     <meta charset="UTF-8">
     <title>Admin Dashboard</title>
 
-    <link href="./static/css/output.css" rel="stylesheet">
+    <link
+      href="./static/css/output.css"
+      rel="stylesheet"
+    >
 
-    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"
+    ></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+    ></script>
     <script src="https://cdn.jsdelivr.net/npm/ag-grid-community/dist/ag-grid-community.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/spark-md5@3.0.2/spark-md5.min.js"></script>
 
@@ -246,6 +255,51 @@
                 ></rect>
               </svg>
               <span>Rekomendasi ID</span>
+            </button>
+
+            <button
+              @click="ui_SwitchViewMode('iku')"
+              :class="viewModeState === 'iku' ?
+              'bg-slate-500 text-white shadow-sm' 
+              : 'text-slate-500 hover:text-slate-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-slate-700'"
+              class="px-3 py-1 rounded text-[11px] font-bold transition-all flex items-center gap-1.5"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="w-3.5 h-3.5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect
+                  x="3"
+                  y="3"
+                  width="7"
+                  height="9"
+                ></rect>
+                <rect
+                  x="14"
+                  y="3"
+                  width="7"
+                  height="5"
+                ></rect>
+                <rect
+                  x="14"
+                  y="12"
+                  width="7"
+                  height="9"
+                ></rect>
+                <rect
+                  x="3"
+                  y="16"
+                  width="7"
+                  height="5"
+                ></rect>
+              </svg>
+              <span>Dashboard IKU</span>
             </button>
 
           </div>
@@ -1057,7 +1111,7 @@
                   </label>
                   <select
                     x-model="filter_SelProv"
-                    @change="filter_SelKab=''; filter_SelKec=''; fetch_MainGridData_FromAPI()"
+                    @change="filter_SelKab=''; filter_SelKec=''; action_FilterChanged()"
                     class="sidebar_select_prov
                   w-full border p-1.5 rounded text-xs bg-white focus:border-blue-500
                   outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
@@ -1081,7 +1135,7 @@
                   </label>
                   <select
                     x-model="filter_SelKab"
-                    @change="filter_SelKec=''; fetch_MainGridData_FromAPI()"
+                    @change="filter_SelKec=''; action_FilterChanged()"
                     class="sidebar_select_kab
                     w-full border p-1.5 rounded text-xs bg-white
                     focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
@@ -1107,7 +1161,7 @@
                   </label>
                   <select
                     x-model="filter_SelKec"
-                    @change="fetch_MainGridData_FromAPI"
+                    @change="action_FilterChanged()"
                     class="sidebar_select_kec
                     w-full border p-1.5 rounded text-xs bg-white
                     focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
@@ -1147,7 +1201,7 @@
                   ></textarea>
                 </div>
                 <button
-                  @click="fetch_MainGridData_FromAPI"
+                  @click="action_FilterChanged()"
                   class="sidebar_btn_apply_filter
                   w-full bg-slate-500 text-white py-2 rounded text-xs
                   font-bold hover:bg-slate-800 transition shadow-sm dark:bg-slate-600 dark:hover:bg-slate-500"
@@ -1173,12 +1227,12 @@
 
         <div
           x-show="viewModeState === 'dashboard'"
-          class="view_container_dashboard flex-1 p-4 overflow-hidden relative"
+          class="view_container_rekomendasi_id flex-1 p-4 overflow-hidden relative"
           style="display: none;"
         >
           <div class="dashboard_table_wrapper dashboard-container shadow-md rounded">
             <table
-              id="dashboard_table_element"
+              id="rekomendasi_id_table_element"
               class="dash-table"
             >
               <thead>
@@ -1189,7 +1243,27 @@
           </div>
         </div>
 
+        <div
+          x-show="viewModeState === 'iku'"
+          class="view_container_iku flex-1 p-4 overflow-hidden relative"
+          style="display: none;"
+        >
+          <div class="dashboard_table_wrapper dashboard-container shadow-md rounded">
+            <table
+              id="iku_table_element"
+              class="dash-table text-left"
+            >
+              <thead>
+              </thead>
+              <tbody>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
       </div>
+
+    </div>
     </div>
 
     <div
@@ -1369,15 +1443,14 @@
       class="floating_window_main_data_selector modal-overlay fixed inset-0 z-[200] flex items-center justify-center"
       style="display:none;"
     >
-      <div
-        class="floating_window_header_and_dataframe_selector bg-white dark:bg-slate-800 w-[95%] h-[90%] rounded-lg
-              shadow-2xl flex flex-col overflow-hidden"
-      >
+      <div class="floating_window_header_and_dataframe_selector bg-white dark:bg-slate-800 w-[95%] h-[90%] rounded-lg
+              shadow-2xl flex flex-col overflow-hidden">
 
         <div class="p-4 border-b dark:border-slate-700 flex justify-between items-center bg-gray-50 dark:bg-slate-900">
           <div>
             <h3 class="font-bold text-lg text-slate-700 dark:text-slate-200">Step 1: Pemilihan Data</h3>
-            <p class="text-xs text-slate-500">Klik Pertama (Biru) untuk Row Header. Klik Ke Dua (Hijau) untuk Row "Set Data Start"</p>
+            <p class="text-xs text-slate-500">Klik Pertama (Biru) untuk Row Header. Klik Ke Dua (Hijau) untuk Row "Set
+              Data Start"</p>
           </div>
           <button
             @click="ui_Step = 0"
@@ -1493,13 +1566,12 @@
           class="p-2 border-b dark:border-slate-700 flex justify-between items-center bg-gray-50 dark:bg-slate-800 px-4"
         >
           <div class="flex items-center gap-4">
-            <span class="text-xs text-gray-500 italic">Hanya "Confirmed" kolom yang akan dipilih. Header dicari dari kiri ke kanan oleh server</span>
+            <span class="text-xs text-gray-500 italic">Hanya "Confirmed" kolom yang akan dipilih. Header dicari dari
+              kiri ke kanan oleh server</span>
 
-            <label
-              class="flex items-center gap-1.5 text-[11px] font-bold text-amber-600 dark:text-amber-500 cursor-pointer
+            <label class="flex items-center gap-1.5 text-[11px] font-bold text-amber-600 dark:text-amber-500 cursor-pointer
                     bg-amber-50 dark:bg-amber-900/20 px-2 py-1 rounded border border-amber-200 dark:border-amber-800
-                    transition-colors hover:bg-amber-100 dark:hover:bg-amber-900/40"
-            >
+                    transition-colors hover:bg-amber-100 dark:hover:bg-amber-900/40">
               <input
                 type="checkbox"
                 x-model="upload_SortIssuesFirst"
@@ -1536,7 +1608,10 @@
                 Sistem akan membiarkan kolom tersebut kosong (Null/Default) jika proses dilanjutkan.
               </p>
               <div class="flex flex-wrap gap-1.5 max-h-20 overflow-y-auto custom-scrollbar pr-2">
-                <template x-for="mh in upload_MissingHeaders" :key="mh">
+                <template
+                  x-for="mh in upload_MissingHeaders"
+                  :key="mh"
+                >
                   <span
                     class="bg-white dark:bg-slate-900 border border-red-200 dark:border-red-800 text-red-600
                           dark:text-red-400 px-2 py-0.5 rounded text-[9px] font-mono whitespace-nowrap shadow-sm"
@@ -1549,10 +1624,8 @@
         </div>
 
         <div class="flex-1 overflow-y-auto custom-scrollbar bg-white dark:bg-slate-900">
-          <div
-            class="sticky top-0 bg-gray-100 dark:bg-slate-800 z-10 grid grid-cols-[30%_1fr_100px] gap-4 px-4 py-3 border-b
-                  dark:border-slate-700 text-xs font-bold text-gray-500 uppercase shadow-sm"
-          >
+          <div class="sticky top-0 bg-gray-100 dark:bg-slate-800 z-10 grid grid-cols-[30%_1fr_100px] gap-4 px-4 py-3 border-b
+                  dark:border-slate-700 text-xs font-bold text-gray-500 uppercase shadow-sm">
             <div>Standard Header (DB)</div>
             <div>File Header (Excel)</div>
             <div class="text-center">Action</div>
@@ -1583,10 +1656,8 @@
               </div>
 
               <div class="flex flex-col gap-1 overflow-hidden">
-                <span
-                  class="text-xs font-mono text-slate-600 dark:text-slate-300 map-text-wrap bg-gray-50 dark:bg-slate-800 p-1
-                        rounded border border-gray-100 dark:border-slate-700 flex items-start gap-1"
-                >
+                <span class="text-xs font-mono text-slate-600 dark:text-slate-300 map-text-wrap bg-gray-50 dark:bg-slate-800 p-1
+                        rounded border border-gray-100 dark:border-slate-700 flex items-start gap-1">
                   <span
                     class="text-gray-400 font-bold shrink-0 select-none"
                     x-text="'Col ' + (map.col_index + 1) + ':'"
@@ -1594,10 +1665,8 @@
                   <span x-text="map.file_header || '(Empty)'"></span>
                 </span>
 
-                <div
-                  class="mt-1 bg-amber-50/50 dark:bg-slate-800/80 p-1.5 rounded border border-amber-100 dark:border-slate-600
-                        flex items-start gap-2"
-                >
+                <div class="mt-1 bg-amber-50/50 dark:bg-slate-800/80 p-1.5 rounded border border-amber-100 dark:border-slate-600
+                        flex items-start gap-2">
                   <span class="text-[9px] font-bold text-amber-600 dark:text-amber-500 mt-0.5 shrink-0">DATA:</span>
                   <span
                     class="text-[11px] font-mono text-slate-700 dark:text-slate-300 truncate"
@@ -1673,8 +1742,10 @@
               </span>
 
               <span class="border-l border-gray-200 dark:border-slate-600"></span>
-              
-              <span :class="upload_MissingHeaders.length > 0 ? 'text-red-500 font-bold' : 'text-emerald-600 dark:text-emerald-400'">
+
+              <span
+                :class="upload_MissingHeaders.length > 0 ? 'text-red-500 font-bold' : 'text-emerald-600 dark:text-emerald-400'"
+              >
                 <span
                   class="font-bold text-sm"
                   x-text="upload_MissingHeaders.length"
@@ -1849,8 +1920,10 @@
               }
             }
 
-            // APPLY TO DASHBOARD HTML TABLE
-            const table = document.getElementById('dashboard_table_element');
+            // DYNAMICALLY SELECT ACTIVE TABLE
+            const activeTableId = this.viewModeState === 'iku' ? 'iku_table_element' : 'rekomendasi_id_table_element';
+            const table = document.getElementById(activeTableId);
+
             if (table) {
               // Reset all sticky styles first
               table.querySelectorAll('.sticky-col').forEach(el => {
@@ -1992,6 +2065,8 @@
             this.viewModeState = mode;
             if (mode === 'dashboard') {
               this.fetchDashboardConfigAndRenderTable();
+            } else if (mode === 'iku') {
+              this.fetchIkuConfigAndRenderTable();
             } else {
               // Refresh grid layout if switching back
               setTimeout(() => {
@@ -2157,7 +2232,7 @@
 
                     // Turn off loading overlay
                     this.agGridApiInstance.setGridOption('loading', false);
-                    
+
                     if (totalCount === 0) {
                       // Optionally keep this if AG grid requires explicit trigger on infinite scroll
                       if (this.agGridApiInstance.showNoRowsOverlay) this.agGridApiInstance.showNoRowsOverlay();
@@ -2202,7 +2277,7 @@
           // DASHBOARD TABLE LOGIC
           // ============================================
           async fetchDashboardConfigAndRenderTable() {
-            await this.calculate_DashboardStats_FromAPI();
+            await this.calculate_Dashboard_Rekomendasi_ID();
           },
 
           // ============================================
@@ -2503,9 +2578,9 @@
           // ============================================
           // ACTIONS: CALCULATION
           // ============================================
-          async calculate_DashboardStats_FromAPI() {
+          async calculate_Dashboard_Rekomendasi_ID() {
             // Prepare UI
-            const container = document.getElementById('dashboard_table_element');
+            const container = document.getElementById('rekomendasi_id_table_element');
             // Clear existing and show loading
             container.innerHTML = '<tbody><tr><td class="text-center p-4">Calculating & Rendering on Server...</td></tr></tbody>';
 
@@ -2549,7 +2624,10 @@
           // This replaces util_AddColumnResizer. 
           // It doesn't CREATE divs (Server did that), it just activates them.
           ui_InitResizers() {
-            const table = document.getElementById('dashboard_table_element');
+            const activeTableId = this.viewModeState === 'iku' ? 'iku_table_element' : 'rekomendasi_id_table_element';
+            const table = document.getElementById(activeTableId);
+            if (!table) return;
+
             const resizers = table.querySelectorAll('.resizer');
 
             resizers.forEach(resizer => {
@@ -2587,10 +2665,75 @@
             });
           },
 
+          // Special Case filter for IKU
+          async fetchIkuConfigAndRenderTable() {
+            const container = document.getElementById('iku_table_element');
+            container.innerHTML = '<tbody><tr><td class="text-center p-4">Calculating IKU on Server...</td></tr></tbody>';
+
+            let params = new URLSearchParams();
+            if (this.filter_SelectedVersion) params.append("version", this.filter_SelectedVersion);
+            if (this.filter_SelProv) params.append("Provinsi", this.filter_SelProv);
+            if (this.filter_SelKab) params.append("Kabupaten/ Kota", this.filter_SelKab);
+            if (this.filter_SelKec) params.append("Kecamatan", this.filter_SelKec);
+            if (this.filter_NameSearch) params.append("Kode Wilayah Administrasi Desa", this.filter_NameSearch);
+            if (this.filter_IdListInput.trim()) params.append("ids", this.filter_IdListInput.replace(/\n/g, ";"));
+
+            try {
+              let res = await fetch(`${this.apiBaseUrl}/dashboard/iku/${this.targetYear}?${params.toString()}`, {
+                method: "POST",
+                credentials: 'include'
+              });
+
+              if (!res.ok) throw new Error("Server Calculation Failed");
+
+              let htmlContent = await res.text();
+              container.innerHTML = htmlContent;
+
+              this.ui_InitResizers();
+              this.$nextTick(() => {
+                this.ui_ApplyFreeze();
+                
+                // FIX STICKY ROW 2 HEIGHT DYNAMICALLY
+                const activeTableId = this.viewModeState === 'iku' ? 'iku_table_element' : 'dashboard_table_element';
+                const table = document.getElementById(activeTableId);
+                if (table) {
+                    const firstRow = table.querySelector('thead tr:first-child');
+                    const secondRowCells = table.querySelectorAll('thead tr:nth-child(2) th');
+                    if (firstRow && secondRowCells.length > 0) {
+                        const firstRowHeight = firstRow.getBoundingClientRect().height;
+                        secondRowCells.forEach(cell => {
+                            cell.style.top = `${firstRowHeight - 1}px`; // -1px overlap prevents gaps
+                        });
+                    }
+                }
+              });
+
+            } catch (e) {
+              console.error(e);
+              container.innerHTML = `<tbody><tr><td class="text-red-500 p-4">Error: ${e.message}</td></tr></tbody>`;
+            }
+          },
+
           // Explicit Action for Button Click (Force Switch)
           async action_CalculateDashboardStats() {
-            this.ui_SwitchViewMode('dashboard');
-            await this.calculate_DashboardStats_FromAPI();
+            if (this.viewModeState === 'grid') {
+              this.ui_SwitchViewMode('dashboard');
+            } else if (this.viewModeState === 'dashboard') {
+              await this.calculate_Dashboard_Rekomendasi_ID();
+            } else if (this.viewModeState === 'iku') {
+              await this.fetchIkuConfigAndRenderTable();
+            }
+          },
+
+          // Universal trigger to update whichever view is currently active
+          action_FilterChanged() {
+            this.fetch_MainGridData_FromAPI();
+            
+            if (this.viewModeState === 'dashboard') {
+                this.calculate_Dashboard_Rekomendasi_ID();
+            } else if (this.viewModeState === 'iku') {
+                this.fetchIkuConfigAndRenderTable();
+            }
           },
 
           // ============================================

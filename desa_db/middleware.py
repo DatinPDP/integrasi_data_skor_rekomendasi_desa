@@ -24,7 +24,7 @@ from openpyxl.utils import get_column_letter
 # /root
 #   /root
 #   /.config/headers.json
-#   /.config/intervensi_kegiatan.json
+#   /.config/intervensi_kegiatan_mapping.json
 #   /.config/rekomendasi.json
 #   /.config/table_structure.csv
 #   /desa_db/server.py
@@ -51,8 +51,8 @@ os.makedirs(TEMP_FOLDER, exist_ok=True)
 # Config Files
 JSON_PATH = os.path.join(CONFIG_DIR, "rekomendasi.json")
 
-# intervensi_kegiatan files
-INTERVENTION_FILE = os.path.join(CONFIG_DIR, "intervensi_kegiatan.json")
+# intervensi_kegiatan_mapping files
+INTERVENTION_FILE = os.path.join(CONFIG_DIR, "intervensi_kegiatan_mapping.json")
 
 # Header File: inside .config/headers.json (sibling of desa_db)
 HEADER_FILE = os.path.join(CONFIG_DIR, "headers.json")
@@ -880,16 +880,16 @@ def helpers_build_dynamic_query(con, base_query, request_params, base_values=Non
 
     return base_query, values
 
-def helpers_generate_excel_workbook(con, df_grid: pl.DataFrame, do_translate: bool) -> Workbook:
+def helpers_generate_excel_workbook(con, df_grid: pl.DataFrame, do_translate: bool, params_dict: dict = None) -> Workbook:
     """
-    Builds a complete two-sheet Excel Workbook from the provided DataFrame.
+    Builds a complete three-sheet Excel Workbook from the provided DataFrame.
     
     Sheet 1: "Grid Data"
     - Full rows from df_grid
     - If do_translate=True: applies apply_rekomendasis() (scores → text)
     - Simple header + data + basic bold/fill styling
     
-    Sheet 2: "Dashboard Calc"
+    Sheet 2: "Dashboard Rekomendasi"
     - Loads table_structure.csv
     - Determines metric column order from master_data schema
     - Loads intervention templates
@@ -899,6 +899,16 @@ def helpers_generate_excel_workbook(con, df_grid: pl.DataFrame, do_translate: bo
         • Column widths optimized for readability
         • Rowspans for NO / DIMENSI / SUB DIMENSI / INDIKATOR
         • Borders, alignment, and styling
+    
+    Sheet 3: "Dashboard IKU"
+    - Loads table_structure_IKU.csv and iku_mapping.json
+    - Determines grouping level from params_dict (Provinsi → Kabupaten → Kecamatan → Desa)
+    - Maps CSV headers: parents (merged colspans) + subs (statuses, rata-rata, total, capaian)
+    - Computes per-parent IKU scores: averages over mapped children columns
+    - Aggregates by group: JLH DESA, averages, status counts (≥4 threshold)
+    - Adds TOTAL row with sums/averages
+    - Appends grouped data rows
+    - Applies borders, number formats (#,##0 for int; #,##0.00 for float)
     
     Returns:
         openpyxl.workbook.workbook.Workbook: fully built workbook (not saved)
@@ -943,8 +953,8 @@ def helpers_generate_excel_workbook(con, df_grid: pl.DataFrame, do_translate: bo
     del grid_dicts  # free after writing to workbook
     gc.collect()
 
-    # --- SHEET 2: DASHBOARD STATS ---
-    ws2 = wb.create_sheet("Dashboard Calc")
+    # --- SHEET 2: DASHBOARD REKOMENDASI ---
+    ws2 = wb.create_sheet("Dashboard Rekomendasi")
 
     # A. LOAD CONFIG & TEMPLATES
     csv_path = os.path.join(CONFIG_DIR, "table_structure.csv")
@@ -1079,6 +1089,196 @@ def helpers_generate_excel_workbook(con, df_grid: pl.DataFrame, do_translate: bo
                 merge_tracker[col_idx]["val"] = val
                 merge_tracker[col_idx]["start"] = current_excel_row
 
+    # --- SHEET 3: DASHBOARD IKU ---
+    ws3 = wb.create_sheet("Dashboard IKU")
+    iku_csv_path = os.path.join(CONFIG_DIR, "table_structure_IKU.csv")
+    iku_mapping_path = os.path.join(CONFIG_DIR, "iku_mapping.json")
+
+    if os.path.exists(iku_csv_path) and os.path.exists(iku_mapping_path):
+        with open(iku_mapping_path, "r", encoding="utf-8") as f:
+            iku_mapping = json.load(f)
+
+        with open(iku_csv_path, "r", encoding="utf-8-sig", errors="replace") as f:
+            reader = csv.reader(f, delimiter=';')
+            rows = list(reader)
+
+        if len(rows) >= 2:
+            row1 = rows[0]
+            row2 = rows[1]
+            params_dict = params_dict or {}
+
+            prov = params_dict.get("Provinsi", "")
+            kab = params_dict.get("Kabupaten/ Kota", "")
+            kec = params_dict.get("Kecamatan", "")
+
+            if not prov: group_col = "Provinsi"
+            elif not kab: group_col = "Kabupaten/ Kota"
+            elif not kec: group_col = "Kecamatan"
+            else: group_col = "Desa"
+            
+            wilayah_header = group_col.upper()
+            write_row1 = [wilayah_header if v == "WILAYAH" else v for v in row1]
+            
+            ws3.append(write_row1)
+            ws3.append(row2)
+            
+            # Merge Row 1 headers horizontally
+            current_val = write_row1[0]
+            start_col = 1
+            for col_idx in range(2, len(write_row1) + 1):
+                v = write_row1[col_idx - 1]
+                if v != "" and v != current_val:
+                    if col_idx - 1 > start_col:
+                        ws3.merge_cells(start_row=1, start_column=start_col, end_row=1, end_column=col_idx-1)
+                    current_val = v
+                    start_col = col_idx
+            if len(write_row1) > start_col:
+                ws3.merge_cells(start_row=1, start_column=start_col, end_row=1, end_column=len(write_row1))
+            
+            # Merge Top-Left columns vertically
+            for col_idx, v in enumerate(row1):
+                if v in ["WILAYAH", "JLH DESA"]:
+                    ws3.merge_cells(start_row=1, start_column=col_idx+1, end_row=2, end_column=col_idx+1)
+            
+            for r in [1, 2]:
+                for cell in ws3[r]:
+                    cell.font = header_font
+                    cell.fill = header_fill
+                    cell.border = thin_border
+                    cell.alignment = align_center
+
+            valid_statuses = {"mandiri", "maju", "berkembang", "tertinggal", "sangat tertinggal"}
+            col_idx_to_metric = {}
+            parent_metrics = []
+            parent_to_statuses = {}
+            current_parent = ""
+
+            for idx, p_val in enumerate(row1):
+                if p_val.strip() != "":
+                    current_parent = p_val.strip()
+                    if current_parent not in parent_to_statuses:
+                        parent_to_statuses[current_parent] = []
+                    
+                if idx >= 2:
+                    sub_val = row2[idx].strip().lower()
+                    col_idx_to_metric[idx] = {"parent": current_parent, "sub": sub_val}
+                    if current_parent not in parent_metrics:
+                        parent_metrics.append(current_parent)
+                        
+                    if sub_val in valid_statuses:
+                        if sub_val not in parent_to_statuses[current_parent]:
+                            parent_to_statuses[current_parent].append(sub_val)
+
+            df_filtered = df_grid
+            if df_filtered.height > 0 and group_col in df_filtered.columns:
+                exprs = []
+                for parent in parent_metrics:
+                    children = iku_mapping.get(parent, [])
+                    valid_children = [c.strip() for c in children if c.strip() in df_filtered.columns]
+                    
+                    if valid_children:
+                        num_children = len(valid_children)
+                        sum_expr = pl.sum_horizontal([pl.col(c).cast(pl.Float64, strict=False).fill_null(0) for c in valid_children])
+                        exprs.append((sum_expr / num_children).alias(f"__iku_score_{parent}"))
+                    else:
+                        exprs.append(pl.lit(None).alias(f"__iku_score_{parent}"))
+                
+                if exprs:
+                    df_filtered = df_filtered.with_columns(exprs)
+
+                has_status = "Status ID" in df_filtered.columns
+                agg_exprs = [pl.len().alias("JLH DESA")]
+                for parent in parent_metrics:
+                    agg_exprs.append(pl.col(f"__iku_score_{parent}").mean().alias(f"__iku_avg_{parent}"))
+                    
+                    if has_status:
+                        for status in parent_to_statuses.get(parent, []):
+                            safe_status = status.replace(" ", "_")
+                            cond = (pl.col("Status ID") == status.upper()) & (pl.col(f"__iku_score_{parent}").fill_null(0) >= 4)
+                            agg_exprs.append(cond.cast(pl.Int32).sum().alias(f"__iku_{safe_status}_{parent}"))
+                    else:
+                        for status in parent_to_statuses.get(parent, []):
+                            safe_status = status.replace(" ", "_")
+                            agg_exprs.append(pl.lit(0).alias(f"__iku_{safe_status}_{parent}"))
+
+                df_grouped = df_filtered.group_by(group_col).agg(agg_exprs).sort(group_col)
+
+                total_jlh_desa = df_grouped["JLH DESA"].sum()
+                totals = {"JLH DESA": total_jlh_desa}
+                for parent in parent_metrics:
+                    totals[f"__iku_avg_{parent}"] = df_grouped[f"__iku_avg_{parent}"].sum()
+                    for status in parent_to_statuses.get(parent, []):
+                        safe_status = status.replace(" ", "_")
+                        totals[f"__iku_{safe_status}_{parent}"] = df_grouped[f"__iku_{safe_status}_{parent}"].sum()
+
+                total_row = ["TOTAL", total_jlh_desa]
+                for idx in range(2, len(row2)):
+                    metric_info = col_idx_to_metric.get(idx)
+                    val_to_show = "-"
+                    if metric_info:
+                        parent = metric_info["parent"]
+                        sub = metric_info["sub"]
+                        t_total = sum(totals.get(f"__iku_{s.replace(' ', '_')}_{parent}", 0) for s in parent_to_statuses.get(parent, []))
+                        
+                        if sub == "rata-rata":
+                            avg_val = totals.get(f"__iku_avg_{parent}")
+                            if avg_val is not None: val_to_show = round(float(avg_val), 2)
+                        elif sub in valid_statuses:
+                            val_to_show = totals.get(f"__iku_{sub.replace(' ', '_')}_{parent}", 0)
+                        elif sub == "total":
+                            val_to_show = t_total
+                        elif "capaian" in sub:
+                            val_to_show = f"{(t_total / total_jlh_desa) * 100:.1f}%" if total_jlh_desa > 0 else "0.0%"
+                    total_row.append(val_to_show)
+
+                ws3.append(total_row)
+                
+                # Apply bold to TOTAL row and Number Format thousands
+                for col_idx, cell in enumerate(ws3[3], 1):
+                    cell.font = Font(bold=True)
+                    cell.border = thin_border
+                    if isinstance(cell.value, int):
+                        cell.number_format = '#,##0'
+                    elif isinstance(cell.value, float):
+                        cell.number_format = '#,##0.00'
+
+                # Render Body Rows
+                for row_data in df_grouped.to_dicts():
+                    data_row = [row_data.get(group_col, "Unknown"), row_data.get("JLH DESA", 0)]
+                    for idx in range(2, len(row2)):
+                        metric_info = col_idx_to_metric.get(idx)
+                        val_to_show = "-"
+                        if metric_info:
+                            parent = metric_info["parent"]
+                            sub = metric_info["sub"]
+                            t_total = sum(row_data.get(f"__iku_{s.replace(' ', '_')}_{parent}", 0) for s in parent_to_statuses.get(parent, []))
+                            
+                            if sub == "rata-rata":
+                                avg_val = row_data.get(f"__iku_avg_{parent}")
+                                if avg_val is not None: val_to_show = round(float(avg_val), 2)
+                            elif sub in valid_statuses:
+                                val_to_show = row_data.get(f"__iku_{sub.replace(' ', '_')}_{parent}", 0)
+                            elif sub == "total":
+                                val_to_show = t_total
+                            elif "capaian" in sub:
+                                jlh_desa = row_data.get("JLH DESA", 0)
+                                val_to_show = f"{(t_total / jlh_desa) * 100:.1f}%" if jlh_desa > 0 else "0.0%"
+                        data_row.append(val_to_show)
+                    
+                    ws3.append(data_row)
+                    
+                # Format Data Rows
+                for r in range(4, ws3.max_row + 1):
+                    for cell in ws3[r]:
+                        cell.border = thin_border
+                        if isinstance(cell.value, int):
+                            cell.number_format = '#,##0'
+                        elif isinstance(cell.value, float):
+                            cell.number_format = '#,##0.00'
+
+            ws3.column_dimensions['A'].width = 35
+            ws3.column_dimensions['B'].width = 15
+
     return wb
 
 def helpers_background_task_generate_pre_render_excel(year: str):
@@ -1118,7 +1318,7 @@ def helpers_background_task_generate_pre_render_excel(year: str):
         print(f"[{datetime.now()}]  Data fetched ({df_grid.height} rows). Building Excel... (This may take several minutes)", flush=True)
 
         # Call the new clean helper
-        wb_trans = helpers_generate_excel_workbook(con, df_grid, do_translate=True)
+        wb_trans = helpers_generate_excel_workbook(con, df_grid, do_translate=True, params_dict={})
         file_path_trans = os.path.join(EXPORT_FOLDER, f"Export_Nasional_{year}_text.xlsx")
         temp_trans = f"{file_path_trans}.tmp"
         
@@ -1133,7 +1333,7 @@ def helpers_background_task_generate_pre_render_excel(year: str):
         gc.collect()
 
         # Compile Raw Version
-        wb_raw = helpers_generate_excel_workbook(con, df_grid, do_translate=False)
+        wb_raw = helpers_generate_excel_workbook(con, df_grid, do_translate=False, params_dict={})
         file_path_raw = os.path.join(EXPORT_FOLDER, f"Export_Nasional_{year}_skor.xlsx")
         temp_raw = f"{file_path_raw}.tmp"
         
@@ -1165,7 +1365,7 @@ def helpers_background_task_generate_pre_render_excel(year: str):
 
 def helpers_get_or_create_intervensi_kegiatan(items: list[str]):
     """
-    Loads or creates intervensi_kegiatan.json.
+    Loads or creates intervensi_kegiatan_mapping.json.
     If file doesn't exist, generates default templates based on rekomendasi.json (when available).
     """
     # Try Load
@@ -1405,7 +1605,8 @@ def helpers_render_dashboard_html(calculated_rows: list[dict]) -> str:
         score_keys = ["SKOR Rata-Rata", "SKOR 1", "SKOR 2", "SKOR 3", "SKOR 4", "SKOR 5"]
         for idx, key in enumerate(score_keys, 5):
             val = row.get(key)
-            display = val if val is not None else ""
+            if key == "SKOR Rata-Rata":
+                display = str(val) if val is not None else ""
             html += f'<td class="col-score" data-col-idx="{idx}" style="text-align:center;">{display}</td>'
 
         # 11: INTERVENSI
@@ -1420,6 +1621,338 @@ def helpers_render_dashboard_html(calculated_rows: list[dict]) -> str:
             html += make_td(row.get(key), idx, css_class=pelaksana_css[j])
 
         html += "</tr>"
+
+    html += "</tbody>"
+    return html
+
+# IKU Dashboard rendering
+def helpers_render_iku_dashboard(df_filtered: pl.DataFrame, params_dict: dict) -> str:
+    """
+    Renders HTML table for IKU Dashboard from filtered DataFrame.
+    
+    Logic:
+    - Loads table_structure_IKU.csv (semicolon-delimited) and iku_mapping.json
+    - Determines grouping level from filters (Provinsi → Kabupaten → Kecamatan → Desa)
+    - Maps CSV headers: parents (merged colspans) + subs (statuses, rata-rata, total, capaian)
+    - Computes per-parent IKU scores: averages over mapped children columns
+    - Aggregates by group: JLH DESA, averages, status counts (≥4 threshold)
+    - Adds TOTAL row with sums/averages
+    - Applies heatmaps: green intensity for data, red-green hue for capaian %
+    - Escapes wilayah names
+    - Handles missing columns/files with error rows
+    
+    Returns:
+        str: full <thead> + <tbody> HTML (with data-col-idx, resizers, classes for styling)
+    """
+    iku_csv_path = os.path.join(CONFIG_DIR, "table_structure_IKU.csv")
+    iku_mapping_path = os.path.join(CONFIG_DIR, "iku_mapping.json")
+
+    if not os.path.exists(iku_csv_path):
+        return "<tbody><tr><td class='p-3 text-center'>Error: table_structure_IKU.csv missing</td></tr></tbody>"
+
+    # Load mapping
+    iku_mapping = {}
+    if os.path.exists(iku_mapping_path):
+        with open(iku_mapping_path, "r", encoding="utf-8") as f:
+            iku_mapping = json.load(f)
+
+    with open(iku_csv_path, "r", encoding="utf-8-sig", errors="replace") as f:
+        reader = csv.reader(f, delimiter=';')
+        rows = list(reader)
+
+    if len(rows) < 2:
+        return "<tbody><tr><td class='p-4 text-center'>Error: Invalid table format</td></tr></tbody>"
+
+    row1 = rows[0]
+    row2 = rows[1]
+
+    # Determine grouping hierarchy based on active filters
+    prov = params_dict.get("Provinsi", "")
+    kab = params_dict.get("Kabupaten/ Kota", "")
+    kec = params_dict.get("Kecamatan", "")
+
+    if not prov:
+        group_col = "Provinsi"
+    elif not kab:
+        group_col = "Kabupaten/ Kota"
+    elif not kec:
+        group_col = "Kecamatan"
+    else:
+        group_col = "Desa"
+
+    # Make the table header explicitly show the level you are viewing
+    wilayah_header = group_col.upper()
+
+    # Define valid statuses that can exist in the DB
+    valid_statuses = {"mandiri", "maju", "berkembang", "tertinggal", "sangat tertinggal"}
+
+    # --- MAP CSV HEADERS ---
+    col_idx_to_metric = {}
+    parent_metrics = []
+    parent_to_statuses = {}
+    
+    # Track the current parent to handle merged cells or repeated headers seamlessly
+    current_parent = ""
+    for idx, p_val in enumerate(row1):
+        if p_val.strip() != "":
+            current_parent = p_val.strip()
+            if current_parent not in parent_to_statuses:
+                parent_to_statuses[current_parent] = []
+            
+        if idx >= 2: # Skip WILAYAH and JLH DESA
+            sub_val = row2[idx].strip().lower()
+            col_idx_to_metric[idx] = {
+                "parent": current_parent,
+                "sub": sub_val
+            }
+            if current_parent not in parent_metrics:
+                parent_metrics.append(current_parent)
+                
+            # Track which specific statuses this parent uses for dynamic Totals
+            if sub_val in valid_statuses:
+                if sub_val not in parent_to_statuses[current_parent]:
+                    parent_to_statuses[current_parent].append(sub_val)
+
+    # --- Build HTML Header ---
+    html = "<thead><tr>"
+    
+    colspans = []
+    if row1:
+        current_val = row1[0]
+        count = 1
+        for val in row1[1:]:
+            if val == current_val and val != "":
+                count += 1
+            else:
+                colspans.append((current_val, count))
+                current_val = val
+                count = 1
+        colspans.append((current_val, count))
+
+    # Top level headers
+    col_idx_tracker = 0
+    for val, span in colspans:
+        if val == "WILAYAH":
+            html += (
+                f'<th rowspan="2" class="relative bg-gray-200 dark:bg-slate-700 border dark:border-slate-600 '
+                f'p-2 iku-header-wilayah" data-col-idx="{col_idx_tracker}">'
+                f'<span>{wilayah_header}</span><div class="resizer"></div></th>'
+            )
+            col_idx_tracker += 1
+        elif val == "JLH DESA":
+            html += (
+                f'<th rowspan="2" class="relative bg-gray-200 dark:bg-slate-700 border dark:border-slate-600 '
+                f'p-2 iku-header-jlh" data-col-idx="{col_idx_tracker}">'
+                f'<span>{val}</span><div class="resizer"></div></th>'
+            )
+            col_idx_tracker += 1
+        else:
+            html += (
+                f'<th colspan="{span}" class="text-center relative bg-gray-200 dark:bg-slate-700 border '
+                f'dark:border-slate-600 p-3 iku-header-group" style="width: 300px;min-width: 300px;">'
+                f'<span>{val}</span><div class="resizer"></div></th>'
+            )
+
+    html += "</tr><tr>"
+
+    # Sub level headers (Starting from data-col-idx=2)
+    for idx, val in enumerate(row2):
+        if idx < len(row1) and row1[idx] not in ["WILAYAH", "JLH DESA"]:
+            html += (
+                f'<th class="relative text-center bg-gray-100 dark:bg-slate-800 border dark:border-slate-600 '
+                f'p-3 text-xs iku-header-sub" data-col-idx="{idx}">'
+                f'<span>{val}</span><div class="resizer"></div></th>'
+            )
+
+    html += "</tr></thead><tbody>"
+
+    # --- Build HTML Body ---
+    if df_filtered.height > 0:
+        if group_col in df_filtered.columns:
+            # Calculate Desa-Level Averages for each Parent Metric
+            exprs = []
+            for parent in parent_metrics:
+                children = iku_mapping.get(parent, [])
+                valid_children = [c.strip() for c in children if c.strip() in df_filtered.columns]
+                
+                if valid_children:
+                    num_children = len(valid_children)
+                    # Sum horizontally, treating missing/null as 0
+                    sum_expr = pl.sum_horizontal([pl.col(c).cast(pl.Float64, strict=False).fill_null(0) for c in valid_children])
+                    avg_expr = sum_expr / num_children
+                    exprs.append(avg_expr.alias(f"__iku_score_{parent}"))
+                else:
+                    # If columns don't exist in DB, assign None
+                    exprs.append(pl.lit(None).alias(f"__iku_score_{parent}"))
+            
+            # Apply to dataframe
+            if exprs:
+                df_filtered = df_filtered.with_columns(exprs)
+
+            # STEP 2: Group by Region (Wilayah) and aggregate
+            has_status = "Status ID" in df_filtered.columns
+            agg_exprs = [pl.len().alias("JLH DESA")]
+            for parent in parent_metrics:
+                agg_exprs.append(pl.col(f"__iku_score_{parent}").mean().alias(f"__iku_avg_{parent}"))
+                
+                if has_status:
+                    # Dynamically count ONLY the statuses required by this parent's CSV headers
+                    for status in parent_to_statuses.get(parent, []):
+                        safe_status = status.replace(" ", "_")
+                        cond = (pl.col("Status ID") == status.upper()) & (pl.col(f"__iku_score_{parent}").fill_null(0) >= 4)
+                        agg_exprs.append(cond.cast(pl.Int32).sum().alias(f"__iku_{safe_status}_{parent}"))
+                else:
+                    for status in parent_to_statuses.get(parent, []):
+                        safe_status = status.replace(" ", "_")
+                        agg_exprs.append(pl.lit(0).alias(f"__iku_{safe_status}_{parent}"))
+
+            # Group by hierarchy
+            df_grouped = df_filtered.group_by(group_col).agg(agg_exprs).sort(group_col)
+
+            # Calculate TOTAL Row & Column Maximums for Heatmap
+            total_jlh_desa = df_grouped["JLH DESA"].sum()
+            totals = {"JLH DESA": total_jlh_desa}
+            col_maxes = {}
+
+            for parent in parent_metrics:
+                totals[f"__iku_avg_{parent}"] = df_grouped[f"__iku_avg_{parent}"].sum()
+                col_maxes[f"__iku_avg_{parent}"] = df_grouped[f"__iku_avg_{parent}"].max()
+
+                parent_total_series = pl.Series(name="tmp", values=[0] * df_grouped.height)
+
+                for status in parent_to_statuses.get(parent, []):
+                    safe_status = status.replace(" ", "_")
+                    totals[f"__iku_{safe_status}_{parent}"] = df_grouped[f"__iku_{safe_status}_{parent}"].sum()
+                    col_maxes[f"__iku_{safe_status}_{parent}"] = df_grouped[f"__iku_{safe_status}_{parent}"].max()
+                    
+                    # Accumulate for the parent's TOTAL heatmap
+                    parent_total_series = parent_total_series + df_grouped[f"__iku_{safe_status}_{parent}"]
+                    
+                col_maxes[f"__iku_total_{parent}"] = parent_total_series.max()
+
+            # Inject TOTAL Row HTML (Forced to precisely match header classes, no tailwind text coloring)
+            html += "<tr class='font-extrabold'>"
+            html += (
+                f'<td class="p-3 border dark:border-slate-600 bg-gray-200 dark:bg-slate-700 text-slate-800'
+                f'dark:text-slate-100 iku-cell-wilayah" data-col-idx="0">TOTAL</td>'
+            )
+            html += (
+                f'<td class="p-3 border dark:border-slate-600 bg-gray-200 dark:bg-slate-700 text-center'
+                f'font-mono iku-cell-jlh" data-col-idx="1">{total_jlh_desa:,}</td>'
+            )
+
+            for idx in range(2, len(row2)):
+                metric_info = col_idx_to_metric.get(idx)
+                val_to_show = "-"
+                
+                if metric_info:
+                    parent = metric_info["parent"]
+                    sub = metric_info["sub"]
+                    
+                    # Dynamically sum all valid statuses mapped to THIS parent
+                    t_total = sum(totals.get(f"__iku_{s.replace(' ', '_')}_{parent}", 0) for s in parent_to_statuses.get(parent, []))
+                    
+                    if sub == "rata-rata":
+                        avg_val = totals.get(f"__iku_avg_{parent}")
+                        if avg_val is not None:
+                            val_to_show = f"{avg_val:.2f}"
+                    elif sub in valid_statuses:
+                        safe_sub = sub.replace(" ", "_")
+                        val = totals.get(f"__iku_{safe_sub}_{parent}", 0)
+                        val_to_show = f"{val:,}"
+                    elif sub == "total":
+                        val_to_show = f"{t_total:,}"
+                    elif "capaian" in sub:
+                        if total_jlh_desa > 0:
+                            val_to_show = f"{(t_total / total_jlh_desa) * 100:.1f}%"
+                        else:
+                            val_to_show = "0.0%"
+
+                html += (
+                    f'<td class="p-3 border dark:border-slate-600 bg-gray-200 dark:bg-slate-700 text-center '
+                    f'iku-cell-data text-slate-800 dark:text-slate-100" data-col-idx="{idx}">{val_to_show}</td>'
+                )
+            html += "</tr>"
+            
+            # Inject calculated values into HTML body (With CSS Heatmap logic applied)
+            for row_data in df_grouped.to_dicts():
+                html += "<tr class='hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors'>"
+                wilayah = row_data.get(group_col, "Unknown")
+                jlh_desa = row_data.get("JLH DESA", 0)
+                
+                # Wilayah & Jumlah Desa Columns
+                html += (
+                    f'<td class="p-3 border dark:border-slate-700 font-bold text-slate-700 dark:text-slate-200 '
+                    f'iku-cell-wilayah" data-col-idx="0">{h.escape(str(wilayah))}</td>'
+                )
+                html += (
+                    f'<td class="p-3 border dark:border-slate-700 text-center font-mono iku-cell-jlh" '
+                    f'data-col-idx="1">{jlh_desa:,}</td>'
+                )
+
+                # Map corresponding calculated Data
+                for idx in range(2, len(row2)):
+                    metric_info = col_idx_to_metric.get(idx)
+                    val_to_show = "-"
+                    inline_style = "" # Standard transparent default
+                    
+                    if metric_info:
+                        parent = metric_info["parent"]
+                        sub = metric_info["sub"]
+                        
+                        # Dynamically sum all valid statuses mapped to THIS parent
+                        t_total = sum(row_data.get(f"__iku_{s.replace(' ', '_')}_{parent}", 0) for s in parent_to_statuses.get(parent, []))
+                        
+                        raw_val = 0
+                        max_val = 1
+ 
+                        if sub == "rata-rata":
+                            avg_val = row_data.get(f"__iku_avg_{parent}")
+                            if avg_val is not None:
+                                val_to_show = f"{avg_val:.2f}"
+                                raw_val = avg_val
+                                max_val = col_maxes.get(f"__iku_avg_{parent}", 1)
+                        elif sub in valid_statuses:
+                            safe_sub = sub.replace(" ", "_")
+                            val = row_data.get(f"__iku_{safe_sub}_{parent}", 0)
+                            val_to_show = f"{val:,}"
+                            raw_val = val
+                            max_val = col_maxes.get(f"__iku_{safe_sub}_{parent}", 1)
+                        elif sub == "total":
+                            val_to_show = f"{t_total:,}"
+                            raw_val = t_total
+                            max_val = col_maxes.get(f"__iku_total_{parent}", 1)
+                        
+                        # Apply Background Heatmap Calculation
+                        if "capaian" in sub:
+                            if jlh_desa > 0:
+                                ratio = t_total / jlh_desa
+                                val_to_show = f"{ratio * 100:.1f}%"
+                                # Capaian heatmap: Hue ranges from 0 (Red) to 120 (Green)
+                                hue = int(ratio * 120)
+                                inline_style = f"background-color: hsla({hue}, 70%, 50%, 0.4);"
+                            else:
+                                val_to_show = "0.0%"
+                                inline_style = "background-color: hsla(0, 70%, 50%, 0.4);"
+                        else:
+                            # Standard Data heatmap: Alpha transparency scales green intensity
+                            if max_val and max_val > 0:
+                                intensity = raw_val / max_val
+                                # Cap opacity at 0.55 so text stays readable
+                                inline_style = f"background-color: rgba(34, 197, 94, {min(1.0, max(0.0, intensity)) * 0.55});"
+
+                    html += (
+                        f'<td class="p-3 border dark:border-slate-700 text-center font-semibold text-slate-800 dark:text-slate-100 '
+                        f'iku-cell-data" style="padding-top: 2px; padding-bottom: 2px; {inline_style}" data-col-idx="{idx}">{val_to_show}</td>'
+                    )
+                html += "</tr>"
+        else:
+            html += (
+                f"<tr><td colspan='{len(row2)}' class='text-center p-4 text-red-500'>"
+                f"Kolom '{group_col}' tidak ditemukan di database</td></tr>"
+            )
+    else:
+        html += f"<tr><td colspan='{len(row2)}' class='text-center p-4'>Tidak ada data untuk filter ini</td></tr>"
 
     html += "</tbody>"
     return html

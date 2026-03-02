@@ -78,7 +78,67 @@
   .dash-table input {
     @apply w-full h-full border-none p-1 bg-transparent text-center outline-none focus:bg-blue-50 dark:focus:bg-slate-700;
   }
-  
+
+  /* IKU Dashboard Table Styles */
+  .iku-header-wilayah {
+      min-width: 250px;
+      max-width: 400px;
+      vertical-align: middle;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+  }
+
+  .iku-header-jlh {
+      min-width: 100px;
+      vertical-align: middle;
+  }
+
+  .iku-header-group {
+      vertical-align: middle;
+      white-space: normal;
+      word-wrap: break-word;
+      width: 300px;
+      min-width: 300px;
+  }
+
+  /* Force the text block to wrap even if the table cell is stretched by colspan */
+  .iku-header-group span {
+      display: inline-block;
+      min-width: 300px;
+      width: 300px;
+      white-space: normal;
+      word-wrap: break-word;
+  }
+
+  .iku-header-sub {
+      min-width: 150px;
+      max-width: 250px;
+      vertical-align: middle;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+  }
+
+  .iku-cell-wilayah {
+      vertical-align: top;
+      white-space: pre-wrap;
+      min-width: 250px;
+      max-width: 400px;
+      word-wrap: break-word;
+  }
+
+  .iku-cell-jlh {
+      vertical-align: top;
+      min-width: 100px;
+      text-align: center;
+  }
+
+  .iku-cell-data {
+      vertical-align: top;
+      min-width: 150px;
+      max-width: 250px;
+      text-align: center;
+  }
+
   /* Column Width Utilities */
   .col-no { width: 40px; min-width: 40px; }
   .col-dimensi { width: 40px; max-width: 100px; }

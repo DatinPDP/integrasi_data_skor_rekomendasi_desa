@@ -41,7 +41,7 @@ from auth import (
 #   /root
 #   /.config/rekomendasi.json
 #   /.config/headers.json
-#   /.config/intervensi_kegiatan.json
+#   /.config/intervensi_kegiatan_mapping.json
 #   /.config/table_structure.csv
 #   /desa_db/server.py
 #   /desa_db/middleware.py
@@ -54,6 +54,14 @@ def _excel_worker(year):
     """
     Runs in a separate process - all memory freed on exit
     """
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    EXPORT_FOLDER = os.path.abspath(os.path.join(BASE_DIR, "../exports"))
+    
+    target_file = os.path.join(EXPORT_FOLDER, f"Export_Nasional_{year}_skor.xlsx")
+    if os.path.exists(target_file):
+        print(f"[{year}] Excel skor already exists. Skipping pre-render on startup.")
+        return
+
     from middleware import helpers_background_task_generate_pre_render_excel
     helpers_background_task_generate_pre_render_excel(year)
 
@@ -136,6 +144,7 @@ try:
         helpers_get_or_create_intervensi_kegiatan,
         helpers_calculate_dashboard_stats,
         helpers_render_dashboard_html,
+        helpers_render_iku_dashboard,
         helpers_generate_excel_workbook,
         helpers_background_task_generate_pre_render_excel,
         ID_COL,
@@ -778,6 +787,7 @@ def endpoint_get_download_server_excel(year: str, request: Request):
     
     Sheet 1: Grid Data (full filtered rows)
     Sheet 2: Dashboard Calc (stats + merged headers + rowspans)
+    Sheet 3: "Dashboard IKU"
     
     Returns:
         FileResponse: pre-compiled master file (when available)
@@ -855,8 +865,8 @@ def endpoint_get_download_server_excel(year: str, request: Request):
         # Fetch Data (No Limit)
         df_grid = con.execute(final_query, values).pl()
 
-        # BUILD EXCEL (Using shared helper)
-        wb = helpers_generate_excel_workbook(con, df_grid, do_translate)
+        # BUILD EXCEL (Using shared helper) - Added params_dict
+        wb = helpers_generate_excel_workbook(con, df_grid, do_translate, params_dict)
 
         # RETURN FILE
         output = io.BytesIO()
@@ -882,7 +892,7 @@ def endpoint_get_download_server_excel(year: str, request: Request):
 # CALCULATION & DASHBOARD LOGIC
 # ==========================================
 
-# CALCULATION
+# CALCULATION (Rekomendasi ID)
 @app.post("/dashboard/calculate/{year}", dependencies=[Depends(auth_get_current_user)])
 async def endpoint_post_calculate_dashboard(year: str, request: Request):
     """
@@ -961,6 +971,53 @@ async def endpoint_post_calculate_dashboard(year: str, request: Request):
         # The helper sends raw numbers (Int/Float). 
         # If your frontend expects formatted strings (e.g. "1,024"), convert here or handle in JS.
         # Current frontend code handles raw numbers fine.
+        return HTMLResponse(content=html_table)
+
+    except Exception as e:
+        traceback.print_exc()
+        return HTMLResponse(content=f"Server Error: {str(e)}", status_code=500)
+    finally:
+        con.close()
+
+# CALCULATION (Dashboard IKU)
+@app.post("/dashboard/iku/{year}", dependencies=[Depends(auth_get_current_user)])
+async def endpoint_post_calculate_iku_dashboard(year: str, request: Request):
+    """
+    Calculates and renders the IKU dashboard based on filtered data.
+    
+    Logic:
+    - Applies time-travel (?version) and dynamic location/ID filters
+    - Fetches filtered DataFrame from master_data
+    - Calls helpers_render_iku_dashboard for HTML generation
+    
+    Returns:
+        HTMLResponse: fully rendered <table> HTML (thead + tbody)
+    """
+    con, _ = helpers_get_db_connection(year)
+
+    try:
+        params_dict = dict(request.query_params)
+
+        # Build base query with time filter
+        version = params_dict.get("version")
+        base_values = []
+        if version:
+            time_filter = "valid_from <= ? AND (valid_to > ? OR valid_to IS NULL)"
+            base_values = [version, version]
+        else:
+            time_filter = "valid_to IS NULL"
+
+        base_query = f"SELECT * FROM master_data WHERE {time_filter}"
+
+        # Apply location/id filters
+        filtered_query, values = helpers_build_dynamic_query(con, base_query, params_dict, base_values)
+
+        # Execute query to get filtered dataset
+        df_filtered = con.execute(filtered_query, values).pl()
+
+        # Render HTML using the new IKU helper
+        html_table = helpers_render_iku_dashboard(df_filtered, params_dict)
+
         return HTMLResponse(content=html_table)
 
     except Exception as e:
