@@ -1570,33 +1570,72 @@ def helpers_render_dashboard_html(calculated_rows: list[dict]) -> str:
     
     # --- BUILD HEADER (Static Structure based on your CSV layout) ---
     #add 'data-col-idx' and the 'resizer' div.
-    html = """
-    <thead>
-        <tr>
-            <th class="col-no relative" rowspan="2" data-col-idx="0"><span>NO</span><div class="resizer"></div></th>
-            <th class="col-dimensi relative" rowspan="2" data-col-idx="1"><span>DIMENSI</span><div class="resizer"></div></th>
-            <th class="col-sub_dimensi relative" rowspan="2" data-col-idx="2"><span>SUB DIMENSI</span><div class="resizer"></div></th>
-            <th class="col-indikator relative" rowspan="2" data-col-idx="3"><span>INDIKATOR</span><div class="resizer"></div></th>
-            <th class="col-item relative" rowspan="2" data-col-idx="4"><span>ITEM</span><div class="resizer"></div></th>
-            <th colspan="6">SKOR</th>
-            <th class="col-intervensi relative" rowspan="2" data-col-idx="11">INTERVENSI<div class="resizer"></div></th>
-            <th colspan="5">PELAKSANA</th>
-        </tr>
-        <tr>
-            <th class="col-score relative" data-col-idx="5">Rata-Rata<div class="resizer"></div></th>
-            <th class="col-score relative" data-col-idx="6">1<div class="resizer"></div></th>
-            <th class="col-score relative" data-col-idx="7">2<div class="resizer"></div></th>
-            <th class="col-score relative" data-col-idx="8">3<div class="resizer"></div></th>
-            <th class="col-score relative" data-col-idx="9">4<div class="resizer"></div></th>
-            <th class="col-score relative" data-col-idx="10">5<div class="resizer"></div></th>
-            <th class="col-pusat relative" data-col-idx="12">PUSAT<div class="resizer"></div></th>
-            <th class="col-prov relative" data-col-idx="13">PROV<div class="resizer"></div></th>
-            <th class="col-kab relative" data-col-idx="14">KAB<div class="resizer"></div></th>
-            <th class="col-desa relative" data-col-idx="15">DESA<div class="resizer"></div></th>
-            <th class="col-lain relative" data-col-idx="16">LAIN<div class="resizer"></div></th>
-        </tr>
-    </thead>
-    <tbody>
+    html = ""
+    html += """
+    <table class="iku-table table-auto w-full text-left text-xs text-slate-700 dark:text-slate-300 border-collapse" 
+        style="table-layout: fixed; width: 100%;">
+        <thead>
+            <tr>
+                <th class="col-no relative" rowspan="2" data-col-idx="0" style="width: 40px; min-width: 40px;">
+                    <span>NO</span><div class="resizer"></div>
+                </th>
+                <th class="col-dimensi relative" rowspan="2" data-col-idx="1" style="width: 40px; max-width: 100px;">
+                    <span>DIMENSI</span><div class="resizer"></div>
+                </th>
+                <th class="col-sub_dimensi relative" rowspan="2" data-col-idx="2" 
+                    style="width: 40px; max-width: 200px;">
+                    <span>SUB DIMENSI</span><div class="resizer"></div>
+                </th>
+                <th class="col-indikator relative" rowspan="2" data-col-idx="3" style="width: 40px; max-width: 200px;">
+                    <span>INDIKATOR</span><div class="resizer"></div>
+                </th>
+                <th class="col-item relative" rowspan="2" data-col-idx="4" style="width: 300px; min-width: 150px;">
+                    <span>ITEM</span><div class="resizer"></div>
+                </th>
+                <th colspan="6">SKOR</th>
+                <th class="col-intervensi relative" rowspan="2" data-col-idx="11" 
+                    style="width: 500px; min-width: 300px;">
+                    INTERVENSI<div class="resizer"></div>
+                </th>
+                <th colspan="5">PELAKSANA</th>
+            </tr>
+            <tr>
+                <th class="col-score relative" data-col-idx="5" style="width: 60px; min-width: 60px;">
+                    Rata-Rata<div class="resizer"></div>
+                </th>
+                <th class="col-score relative" data-col-idx="6" style="width: 60px; min-width: 60px;">
+                    1<div class="resizer"></div>
+                </th>
+                <th class="col-score relative" data-col-idx="7" style="width: 60px; min-width: 60px;">
+                    2<div class="resizer"></div>
+                </th>
+                <th class="col-score relative" data-col-idx="8" style="width: 60px; min-width: 60px;">
+                    3<div class="resizer"></div>
+                </th>
+                <th class="col-score relative" data-col-idx="9" style="width: 60px; min-width: 60px;">
+                    4<div class="resizer"></div>
+                </th>
+                <th class="col-score relative" data-col-idx="10" style="width: 60px; min-width: 60px;">
+                    5<div class="resizer"></div>
+                </th>
+                <th class="col-pusat relative" data-col-idx="12" style="width: 200px; min-width: 150px;">
+                    PUSAT<div class="resizer"></div>
+                </th>
+                <th class="col-prov relative" data-col-idx="13" style="width: 200px; min-width: 150px;">
+                    PROV<div class="resizer"></div>
+                </th>
+                <th class="col-kab relative" data-col-idx="14" style="width: 200px; min-width: 150px;">
+                    KAB<div class="resizer"></div>
+                </th>
+                <th class="col-desa relative" data-col-idx="15" style="width: 200px; min-width: 150px;">
+                    DESA<div class="resizer"></div>
+                </th>
+                <th class="col-lain relative" data-col-idx="16" style="width: 200px; min-width: 150px;">
+                    LAIN<div class="resizer"></div>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
     """
 
     # --- CALCULATE ROW SPANS (Ported from JS) ---
