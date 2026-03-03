@@ -555,10 +555,10 @@ def helpers_internal_process_temp_file(
             has_header=False # Direct argument, not inside dict
         )
         # DEBUG TAG
-        print(
-        f"1. Initial read: {df.height} rows (Empty rows stripped: {calamine_row_offset}, Col Offset: {calamine_col_offset})",
-        flush=True
-        )
+        #print(
+        #f"1. Initial read: {df.height} rows (Empty rows stripped: {calamine_row_offset}, Col Offset: {calamine_col_offset})",
+        #flush=True
+        #)
 
         # Structure Cleaning:
         # Slice: Cap width to prevent reading infinite empty Excel columns
@@ -575,10 +575,10 @@ def helpers_internal_process_temp_file(
         if adjusted_data_start < df.height:
             df = df.slice(adjusted_data_start, None)
             # DEBUG TAG
-            print(
-            f"2. After row slice (UI start={data_start_idx}, Adjusted={adjusted_data_start}): {df.height} rows",
-            flush=True
-            )
+            #print(
+            #f"2. After row slice (UI start={data_start_idx}, Adjusted={adjusted_data_start}): {df.height} rows",
+            #flush=True
+            #)
 
         else:
              raise Exception(f"Data start index {data_start_idx} is out of bounds")
@@ -624,7 +624,7 @@ def helpers_internal_process_temp_file(
 
         df = df.select(selection_exprs)
         # DEBUG TAG
-        print(f"3. After column mapping: {df.height} rows", flush=True)
+        #print(f"3. After column mapping: {df.height} rows", flush=True)
         if ID_COL in df.columns:
             print(f" -> Sample data in ID_COL: {df[ID_COL].head(3).to_list()}", flush=True)
 
@@ -634,7 +634,7 @@ def helpers_internal_process_temp_file(
             if not (col.is_null().all() or (col.dtype == pl.String and (col == "").all()))
         ])
         # DEBUG TAG
-        print(f"4. After dropping empty cols: {df.height} rows", flush=True)
+        #print(f"4. After dropping empty cols: {df.height} rows", flush=True)
 
         # VALIDATION: Status ID (Strict)
         if "Status ID" in df.columns:
@@ -658,13 +658,13 @@ def helpers_internal_process_temp_file(
             pattern = r"[0-9]{10}"
             match_count = df.filter(pl.col(ID_COL).cast(pl.String).str.contains(pattern)).height
             # DEBUG TAG
-            print(f"5. Rows matching exactly 10 digits: {match_count}", flush=True)
+            #print(f"5. Rows matching exactly 10 digits: {match_count}", flush=True)
             
             df = df.filter(
                 pl.col(ID_COL).cast(pl.String).str.contains(pattern)
             )
             # DEBUG TAG
-            print(f"6. After ID filter: {df.height} rows", flush=True)
+            #print(f"6. After ID filter: {df.height} rows", flush=True)
 
         # OPTIMIZATION Type Casting (Optimized)
         # Identify Text Columns (same as middleware)
@@ -1682,8 +1682,15 @@ def helpers_render_dashboard_html(calculated_rows: list[dict]) -> str:
         score_keys = ["SKOR Rata-Rata", "SKOR 1", "SKOR 2", "SKOR 3", "SKOR 4", "SKOR 5"]
         for idx, key in enumerate(score_keys, 5):
             val = row.get(key)
-            if key == "SKOR Rata-Rata":
-                display = str(val) if val is not None else ""
+            # Formats the value correctly for ALL columns, not just Rata-Rata
+            display = ""
+            if val is not None and val != "":
+                # Format numbers with comma as thousand separator
+                if isinstance(val, (int, float)):
+                    display = f"{val:,}"
+                else:
+                    display = str(val)
+
             html += f'<td class="col-score" data-col-idx="{idx}" style="text-align:center;">{display}</td>'
 
         # 11: INTERVENSI
