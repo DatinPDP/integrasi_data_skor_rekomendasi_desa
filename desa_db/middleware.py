@@ -833,6 +833,7 @@ def helpers_build_dynamic_query(con, base_query, request_params, base_values=Non
     Supports:
     - ids (semicolon/newline separated) → IN (?)
     - column ILIKE ? for any valid column
+    - filterModel (AG Grid JSON) for server-side column sorting & filtering
     - Prepends base_values (e.g. for time-travel ?version)
     Returns:
         tuple[str, list]: (final_query_with_where, values_list_for_execution)
@@ -844,7 +845,7 @@ def helpers_build_dynamic_query(con, base_query, request_params, base_values=Non
     values = base_values[:] if base_values else []
 
     # Iterate over all query parameters
-    # A. SPECIAL FILTER: ID List (Comma Separated)
+    # A. SPECIAL FILTER: ID List (Semicolon Separated)
     if "ids" in request_params and request_params["ids"]:
         raw_ids = request_params["ids"]
 
@@ -860,14 +861,81 @@ def helpers_build_dynamic_query(con, base_query, request_params, base_values=Non
             filters.append(f'"{ID_COL}" IN ({placeholders})')
             values.extend(id_list)
 
-    # B. STANDARD FILTERS
-    ignored_keys = ["ids", "version", "limit", "translate", "temp_id", "filename", "sort_by", "sort_dir"]
+    # B. AG GRID DYNAMIC COLUMN FILTERS
+    if "filterModel" in request_params and request_params["filterModel"]:
+        try:
+            filter_model = json.loads(request_params["filterModel"])
+            for col, config in filter_model.items():
+                if col in valid_cols:
+                    f_type = config.get("filterType", "text")
+                    match_type = config.get("type", "contains")
+                    val = config.get("filter")
+                    
+                    if val is not None:
+                        if match_type == "contains":
+                            filters.append(f'"{col}" ILIKE ?')
+                            values.append(f"%{val}%")
+                        elif match_type == "notContains":
+                            filters.append(f'"{col}" NOT ILIKE ?')
+                            values.append(f"%{val}%")
+                        elif match_type == "equals":
+                            if f_type == "number":
+                                filters.append(f'"{col}" = ?')
+                                values.append(val)
+                            else:
+                                filters.append(f'"{col}" ILIKE ?')
+                                values.append(val)
+                        elif match_type == "notEqual":
+                            if f_type == "number":
+                                filters.append(f'"{col}" != ?')
+                                values.append(val)
+                            else:
+                                filters.append(f'"{col}" NOT ILIKE ?')
+                                values.append(val)
+                        elif match_type == "startsWith":
+                            filters.append(f'"{col}" ILIKE ?')
+                            values.append(f"{val}%")
+                        elif match_type == "endsWith":
+                            filters.append(f'"{col}" ILIKE ?')
+                            values.append(f"%{val}")
+                        elif match_type == "greaterThan":
+                            filters.append(f'CAST("{col}" AS DOUBLE) > ?')
+                            values.append(float(val))
+                        elif match_type == "lessThan":
+                            filters.append(f'CAST("{col}" AS DOUBLE) < ?')
+                            values.append(float(val))
+                        elif match_type == "greaterThanOrEqual":
+                            filters.append(f'CAST("{col}" AS DOUBLE) >= ?')
+                            values.append(float(val))
+                        elif match_type == "lessThanOrEqual":
+                            filters.append(f'CAST("{col}" AS DOUBLE) <= ?')
+                            values.append(float(val))
+        except Exception as e:
+            print(f"Filter parsing error: {e}")
+
+    # C. STANDARD FILTERS
+    # Ignore filterModel here so it doesn't trigger the basic matching logic below
+    ignored_keys = ["ids", "version", "limit", "translate", "temp_id", "filename", "sort_by", "sort_dir", "filterModel"]
     for key, val in request_params.items():
         # Map URL friendly names if necessary, or use direct keys
         # Assume frontend sends specific column names like "Provinsi"
         if key in valid_cols and key not in ignored_keys and val:
-            filters.append(f'"{key}" ILIKE ?')
-            values.append(f"%{val}%")
+            # Handle the explicit "NONE" tag (user unchecked everything)
+            if val == "__NONE__":
+                filters.append("1=0")
+                continue
+            
+            # Handle multi-select IN clause
+            if ";" in val:
+                tokens = [x.strip() for x in val.split(";") if x.strip()]
+                if tokens:
+                    placeholders = ", ".join(["?"] * len(tokens))
+                    filters.append(f'"{key}" IN ({placeholders})')
+                    values.extend(tokens)
+            else:
+                # Fallback for standard single-text search
+                filters.append(f'"{key}" ILIKE ?')
+                values.append(f"%{val}%")
 
     # Smart Append
     if filters:
@@ -1107,14 +1175,23 @@ def helpers_generate_excel_workbook(con, df_grid: pl.DataFrame, do_translate: bo
             row2 = rows[1]
             params_dict = params_dict or {}
 
-            prov = params_dict.get("Provinsi", "")
-            kab = params_dict.get("Kabupaten/ Kota", "")
-            kec = params_dict.get("Kecamatan", "")
+            # Determine grouping hierarchy based on override or fallback to active filters
+            group_col = params_dict.get("group_by", "")
 
-            if not prov: group_col = "Provinsi"
-            elif not kab: group_col = "Kabupaten/ Kota"
-            elif not kec: group_col = "Kecamatan"
-            else: group_col = "Desa"
+            if not group_col:
+                prov = params_dict.get("Provinsi", "")
+                kab = params_dict.get("Kabupaten/ Kota", "")
+                kec = params_dict.get("Kecamatan", "")
+
+                # Since empty string now means "All selected/No filter", we check for empty
+                if not kab or kab == "__NONE__":
+                    group_col = "Provinsi"
+                elif not kec or kec == "__NONE__":
+                    group_col = "Kabupaten/ Kota"
+                elif not params_dict.get("Desa"):
+                    group_col = "Kecamatan"
+                else:
+                    group_col = "Desa"
             
             wilayah_header = group_col.upper()
             write_row1 = [wilayah_header if v == "WILAYAH" else v for v in row1]
@@ -1666,19 +1743,23 @@ def helpers_render_iku_dashboard(df_filtered: pl.DataFrame, params_dict: dict) -
     row1 = rows[0]
     row2 = rows[1]
 
-    # Determine grouping hierarchy based on active filters
-    prov = params_dict.get("Provinsi", "")
-    kab = params_dict.get("Kabupaten/ Kota", "")
-    kec = params_dict.get("Kecamatan", "")
+    # Determine grouping hierarchy based on override or fallback to active filters
+    group_col = params_dict.get("group_by", "")
+    
+    if not group_col:
+        prov = params_dict.get("Provinsi", "")
+        kab = params_dict.get("Kabupaten/ Kota", "")
+        kec = params_dict.get("Kecamatan", "")
 
-    if not prov:
-        group_col = "Provinsi"
-    elif not kab:
-        group_col = "Kabupaten/ Kota"
-    elif not kec:
-        group_col = "Kecamatan"
-    else:
-        group_col = "Desa"
+        # Since empty string now means "All selected/No filter", we check for empty
+        if not kab or kab == "__NONE__":
+            group_col = "Provinsi"
+        elif not kec or kec == "__NONE__":
+            group_col = "Kabupaten/ Kota"
+        elif not params_dict.get("Desa"):
+            group_col = "Kecamatan"
+        else:
+            group_col = "Desa"
 
     # Make the table header explicitly show the level you are viewing
     wilayah_header = group_col.upper()

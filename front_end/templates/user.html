@@ -9,10 +9,19 @@
     <meta charset="UTF-8">
     <title>User Dashboard</title>
 
-    <link href="./static/css/output.css" rel="stylesheet">
+    <link
+      href="./static/css/output.css"
+      rel="stylesheet"
+    >
 
-    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"
+    ></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+    ></script>
     <script src="https://cdn.jsdelivr.net/npm/ag-grid-community/dist/ag-grid-community.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/spark-md5@3.0.2/spark-md5.min.js"></script>
 
@@ -245,7 +254,52 @@
                   height="5"
                 ></rect>
               </svg>
-              <span>Dashboard</span>
+              <span>Rekomendasi ID</span>
+            </button>
+
+            <button
+              @click="ui_SwitchViewMode('iku')"
+              :class="viewModeState === 'iku' ?
+              'bg-slate-500 text-white shadow-sm' 
+              : 'text-slate-500 hover:text-slate-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-slate-700'"
+              class="px-3 py-1 rounded text-[11px] font-bold transition-all flex items-center gap-1.5"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="w-3.5 h-3.5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect
+                  x="3"
+                  y="3"
+                  width="7"
+                  height="9"
+                ></rect>
+                <rect
+                  x="14"
+                  y="3"
+                  width="7"
+                  height="5"
+                ></rect>
+                <rect
+                  x="14"
+                  y="12"
+                  width="7"
+                  height="9"
+                ></rect>
+                <rect
+                  x="3"
+                  y="16"
+                  width="7"
+                  height="5"
+                ></rect>
+              </svg>
+              <span>Dashboard IKU</span>
             </button>
 
           </div>
@@ -353,36 +407,75 @@
       <div class="header_right_group flex items-center gap-4">
 
         <div class="flex items-center gap-2">
-          <div
-            x-show="filter_SelProv"
-            x-transition
-            class="flex items-center gap-1 bg-slate-500/10 border border-amber-500/30 px-2 py-1 rounded max-w-[150px]"
-          >
-            <span
-              class="text-xs font-bold text-amber-600 dark:text-amber-400 truncate"
-              x-text="filter_SelProv"
-            ></span>
+          <div x-show="filter_SelProv" class="relative" x-data="{ open: false }" @click.outside="open = false" 
+            x-transition>
+            <button @click="open = !open" 
+              class="flex items-center gap-1 bg-slate-100 border border-slate-300 px-2 py-1 rounded 
+              max-w-[150px] cursor-pointer dark:bg-slate-800 dark:border-slate-600">
+              <span class="text-xs font-bold text-amber-600 dark:text-amber-400 truncate"
+                x-text="filter_SelProv === '__NONE__' ? '0 Provinsi' : filter_SelProv.split(';').length + ' Provinsi'">
+              </span>
+            </button>
+            <div x-show="open" style="display: none;" 
+              class="absolute right-0 top-full mt-1 w-80 bg-white dark:bg-slate-800 border dark:border-slate-600
+              shadow-xl rounded z-50 p-2 max-h-[240px] overflow-y-auto custom-scrollbar">
+              <div class="text-[10px] font-bold text-gray-400 mb-1">Selected Provinsi:</div>
+              <div class="flex flex-wrap gap-1">
+                <template x-for="item in (filter_SelProv === '__NONE__' ? [] : filter_SelProv.split(';'))">
+                  <span class="px-1.5 py-0.5 bg-slate-50 dark:bg-slate-900/50 text-amber-600 dark:text-amber-400 
+                    border border-slate-200 dark:border-slate-700 rounded text-[10px] break-words whitespace-normal"
+                    x-text="item"></span>
+                </template>
+              </div>
+            </div>
           </div>
-          <div
-            x-show="filter_SelKab"
-            x-transition
-            class="flex items-center gap-1 bg-slate-500/10 border border-amber-500/30 px-2 py-1 rounded max-w-[150px]"
-          >
-            <span
-              class="text-xs font-bold text-amber-600 dark:text-amber-400 truncate"
-              x-text="filter_SelKab"
-            ></span>
+
+          <div x-show="filter_SelKab" class="relative" x-data="{ open: false }" @click.outside="open = false" 
+            x-transition>
+            <button @click="open = !open" 
+              class="flex items-center gap-1 bg-slate-100 border border-slate-300 px-2 py-1 rounded 
+              max-w-[150px] cursor-pointer dark:bg-slate-800 dark:border-slate-600">
+              <span class="text-xs font-bold text-amber-600 dark:text-amber-400 truncate"
+                x-text="filter_SelKab === '__NONE__' ? '0 Kabupaten' : filter_SelKab.split(';').length + ' Kabupaten'">
+              </span>
+            </button>
+            <div x-show="open" style="display: none;" 
+              class="absolute right-0 top-full mt-1 w-96 bg-white dark:bg-slate-800 border dark:border-slate-600
+              shadow-xl rounded z-50 p-2 max-h-[240px] overflow-y-auto custom-scrollbar">
+              <div class="text-[10px] font-bold text-gray-400 mb-1">Selected Kabupaten:</div>
+              <div class="flex flex-wrap gap-1">
+                <template x-for="item in (filter_SelKab === '__NONE__' ? [] : filter_SelKab.split(';'))">
+                  <span class="px-1.5 py-0.5 bg-slate-50 dark:bg-slate-900/50 text-amber-600 dark:text-amber-400
+                    border border-slate-200 dark:border-slate-700 rounded text-[10px] break-words whitespace-normal" 
+                    x-text="item"></span>
+                </template>
+              </div>
+            </div>
           </div>
-          <div
-            x-show="filter_SelKec"
-            x-transition
-            class="flex items-center gap-1 bg-slate-500/10 border border-amber-500/30 px-2 py-1 rounded max-w-[150px]"
-          >
-            <span
-              class="text-xs font-bold text-amber-600 dark:text-amber-400 truncate"
-              x-text="filter_SelKec"
-            ></span>
+
+          <div x-show="filter_SelKec" class="relative" x-data="{ open: false }" @click.outside="open = false" 
+            x-transition>
+            <button @click="open = !open" 
+              class="flex items-center gap-1 bg-slate-100 border border-slate-300 px-2 py-1 rounded 
+              max-w-[150px] cursor-pointer dark:bg-slate-800 dark:border-slate-600">
+              <span class="text-xs font-bold text-amber-600 dark:text-amber-400 truncate"
+                x-text="filter_SelKec === '__NONE__' ? '0 Kecamatan' : filter_SelKec.split(';').length + ' Kecamatan'">
+              </span>
+            </button>
+            <div x-show="open" style="display: none;" 
+              class="absolute right-0 top-full mt-1 w-[28rem] bg-white dark:bg-slate-800 border dark:border-slate-600
+              shadow-xl rounded z-50 p-2 max-h-[240px] overflow-y-auto custom-scrollbar">
+              <div class="text-[10px] font-bold text-gray-400 mb-1">Selected Kecamatan:</div>
+              <div class="flex flex-wrap gap-1">
+                <template x-for="item in (filter_SelKec === '__NONE__' ? [] : filter_SelKec.split(';'))">
+                  <span class="px-1.5 py-0.5 bg-slate-50 dark:bg-slate-900/50 text-amber-600 dark:text-amber-400
+                    border border-slate-200 dark:border-slate-700 rounded text-[10px] break-words whitespace-normal" 
+                    x-text="item"></span>
+                </template>
+              </div>
+            </div>
           </div>
+
           <div
             x-show="filter_NameSearch"
             x-transition
@@ -400,6 +493,7 @@
           >
             <span class="text-xs font-bold text-purple-600 dark:text-purple-400">Pasted IDs</span>
           </div>
+
         </div>
 
         <div class="flex items-center gap-4">
@@ -432,7 +526,7 @@
           class="header_btn_theme_toggle w-8 h-8 rounded transition border border-transparent flex items-center justify-center
           hover:bg-gray-100 hover:border-gray-300 text-black
           dark:hover:bg-slate-700 dark:text-slate-400 dark:hover:border-slate-600"
-          title="Toggle Theme"
+          title="Dark/Light mode"
         >
           <svg
             x-show="!isDarkModeEnabled"
@@ -585,12 +679,10 @@
                       class="bi bi-download"
                       viewBox="0 0 16 16"
                     >
-                      <path
-                        d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"
-                      />
-                      <path
-                        d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"
-                      />
+                      <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2
+                        2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5" />
+                      <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1
+                        0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z" />
                     </svg>
                     Download (Dari Server)
                   </button>
@@ -663,7 +755,7 @@
                   </span>
                 </div>
 
-                <div class="grid grid-cols-2 gap-2 mb-3">
+                <div class="grid grid-cols-2 gap-2 mb-3 max-h-24 overflow-y-auto custom-scrollbar pr-1">
                   <template
                     x-for="y in availableYears"
                     :key="y"
@@ -671,9 +763,11 @@
                     <button
                       @click="targetYear = y; action_YearChanged()"
                       class="px-2 py-2 text-xs font-bold rounded border transition-all duration-200 shadow-sm"
-                      :class="targetYear == y ? 
-                      'bg-slate-600 text-white border-slate-600 ring-2 ring-slate-200 ring-offset-1 dark:ring-offset-slate-800 dark:ring-slate-900' : 
-                      'bg-white text-slate-600 border-gray-300 hover:bg-gray-50 hover:border-gray-400 dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800'
+                      :class="targetYear == y ?
+                        'bg-slate-600 text-white border-slate-600 ring-2 ring-slate-200 ring-offset-1 ' +
+                        'dark:ring-offset-slate-800 dark:ring-slate-900' :
+                        'bg-white text-slate-600 border-gray-300 hover:bg-gray-50 hover:border-gray-400 ' +
+                        'dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800'
                       "
                       x-text="y"
                     >
@@ -708,9 +802,8 @@
                             @click="ui_LoadVersion(v.ts)"
                             class="flex-1 py-1 text-[10px] font-bold rounded border transition-colors"
                             :class="filter_SelectedVersion === v.ts ?
-                          'bg-blue-600 text-white border-blue-600' 
-                          : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50
-                          dark:bg-slate-700 dark:text-gray-300 dark:border-slate-600'"
+                            'bg-blue-600 text-white border-blue-600' :
+                            'bg-white text-gray-600 border-gray-300 hover:bg-gray-50 dark:bg-slate-700 dark:text-gray-300 dark:border-slate-600'"
                           >
                             Lihat Data
                           </button>
@@ -759,9 +852,9 @@
                           </div>
 
                           <div
-                            class="flex flex-col border border-blue-200 bg-blue-50 rounded p-1 dark:bg-blue-900/20 dark:border-blue-800"
+                            class="flex flex-col border border-orange-200 bg-orange-50 rounded p-1 dark:bg-orange-900/20 dark:border-orange-800"
                           >
-                            <span class="text-[9px] font-bold text-blue-700 dark:text-blue-400">
+                            <span class="text-[9px] font-bold text-orange-700 dark:text-orange-400">
                               MOD
                             </span>
                             <span
@@ -800,7 +893,7 @@
                                 >[-] DEL</span>
                                 <span
                                   x-show="change.type === 'MOD'"
-                                  class="text-blue-600 font-bold"
+                                  class="text-orange-600 font-bold"
                                 >[~] MOD</span>
                                 <span
                                   x-text="change.id"
@@ -869,91 +962,199 @@
                 class="space-y-3"
               >
                 <div class="sidebar_location_filter_prov_group">
-                  <label class="block text-[12px] font-bold text-gray-500 mb-1 dark:text-gray-400">
-                    PROVINSI
+                  <label class="flex items-center justify-between text-[12px] font-bold text-slate-500 mb-1 
+                    dark:text-slate-400">
+                    <span>PROVINSI</span>
+                    <label class="flex items-center gap-1 cursor-pointer" title="Group IKU by Provinsi">
+                      <input type="radio" x-model="iku_GroupByOverride" value="Provinsi" 
+                        @change="action_FilterChanged()" class="w-3 h-3 text-slate-500 focus:ring-slate-500">
+                      <span class="text-[9px] uppercase tracking-tighter text-slate-600 dark:text-slate-400">
+                        Group IKU
+                      </span>
+                    </label>
                   </label>
-                  <select
-                    x-model="filter_SelProv"
-                    @change="filter_SelKab=''; filter_SelKec=''; fetch_MainGridData_FromAPI()"
-                    class="sidebar_select_prov
-                  w-full border p-1.5 rounded text-xs bg-white focus:border-blue-500
-                  outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
-                  >
-                    <option value="">- All -</option>
-                    <template
-                      x-for="p in Object.keys(meta_HierarchyTree).sort()"
-                      :key="p"
-                    >
-                      <option
-                        :value="p"
-                        x-text="p"
-                      ></option>
-                    </template>
-                  </select>
+                  <div class="relative" x-data="{ open: false, search: '' }" @click.outside="open = false">
+                    <div @click="open = !open" class="w-full border p-1.5 rounded text-xs bg-white cursor-pointer 
+                      flex justify-between items-center dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300">
+                      <span class="truncate font-bold text-slate-600 dark:text-slate-400" 
+                        x-text="(!filter_SelProv) ? 'ALL SELECTED' : (filter_SelProv==='__NONE__' ? '0 Selected' : 
+                        filter_SelProv.split(';').length + ' Selected')">
+                      </span>
+                      <span class="text-slate-400">▼</span>
+                    </div>
+                    <div x-show="open" style="display: none;" class="absolute z-50 w-full mt-1 bg-white border 
+                      rounded shadow-xl dark:bg-slate-800 dark:border-slate-600">
+                      <div class="p-2 border-b dark:border-slate-700">
+                        <input type="text" x-model="search" class="w-full border p-1.5 text-xs rounded outline-none 
+                          focus:border-slate-500 dark:bg-slate-900 dark:border-slate-600 dark:text-slate-200" 
+                          placeholder="Search...">
+                      </div>
+                      <div class="p-2 border-b dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
+                        <label class="flex items-center gap-2 text-xs font-bold cursor-pointer text-slate-700 
+                          dark:text-slate-200">
+                          <input type="checkbox" :checked="!filter_SelProv" 
+                            @change="filter_SelProv = (!filter_SelProv) ? '__NONE__' : ''; filter_SelKab=''; 
+                            filter_SelKec=''; action_FilterChanged()" class="rounded text-slate-500">
+                          Select All
+                        </label>
+                      </div>
+                      <div class="max-h-[240px] overflow-y-auto p-1 space-y-0.5 custom-scrollbar">
+                        <template x-for="opt in util_GetProvOptions().filter(o => 
+                          o.label.toLowerCase().includes(search.toLowerCase())).slice(0, 20)" :key="opt.val">
+                          <label class="flex items-center gap-2 text-xs cursor-pointer hover:bg-slate-100 
+                            dark:hover:bg-slate-700 p-1.5 rounded text-slate-600 dark:text-slate-300">
+                            <input type="checkbox" 
+                              :checked="!filter_SelProv || filter_SelProv.split(';').includes(opt.val)" 
+                              @change="filter_SelProv = util_ToggleMulti(filter_SelProv, util_GetProvOptions(), 
+                              opt.val); filter_SelKab=''; filter_SelKec=''; action_FilterChanged()" 
+                              class="rounded text-slate-500">
+                            <span class="truncate" x-text="opt.label"></span>
+                          </label>
+                        </template>
+                        <div x-show="util_GetProvOptions().filter(o => 
+                          o.label.toLowerCase().includes(search.toLowerCase())).length > 20" 
+                          class="text-[9px] text-center text-slate-400 p-1 mt-1">
+                          Gunakan pencarian untuk sisa list...
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 <div class="sidebar_location_filter_kab_group">
-                  <label class="block text-[12px] font-bold text-gray-500 mb-1 dark:text-gray-400">
-                    KABUPATEN/KOTA
+                  <label class="flex items-center justify-between text-[12px] font-bold text-slate-500 mb-1 
+                    dark:text-slate-400">
+                    <span>KABUPATEN/KOTA</span>
+                    <label class="flex items-center gap-1 cursor-pointer" title="Group IKU by Kabupaten">
+                      <input type="radio" x-model="iku_GroupByOverride" value="Kabupaten/ Kota" 
+                        @change="action_FilterChanged()" class="w-3 h-3 text-slate-500 focus:ring-slate-500">
+                      <span class="text-[9px] uppercase tracking-tighter text-slate-600 dark:text-slate-400">
+                        Group IKU
+                      </span>
+                    </label>
                   </label>
-                  <select
-                    x-model="filter_SelKab"
-                    @change="filter_SelKec=''; fetch_MainGridData_FromAPI()"
-                    class="sidebar_select_kab
-                    w-full border p-1.5 rounded text-xs bg-white
-                    focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
-                    :disabled="!filter_SelProv"
-                    :class="{'bg-gray-100 dark:bg-slate-800': !filter_SelProv}"
-                  >
-                    <option value="">- All -</option>
-                    <template
-                      x-for="k in util_GetKabOptions()"
-                      :key="k"
-                    >
-                      <option
-                        :value="k"
-                        x-text="k"
-                      ></option>
-                    </template>
-                  </select>
+                  <div class="relative" x-data="{ open: false, search: '' }" @click.outside="open = false">
+                    <div @click="open = !open" class="w-full border p-1.5 rounded text-xs bg-white cursor-pointer 
+                      flex justify-between items-center dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300">
+                      <span class="truncate font-bold text-slate-600 dark:text-slate-400" 
+                        x-text="(!filter_SelKab) ? 'ALL SELECTED' : (filter_SelKab==='__NONE__' ? '0 Selected' : 
+                        filter_SelKab.split(';').length + ' Selected')">
+                      </span>
+                      <span class="text-slate-400">▼</span>
+                    </div>
+                    <div x-show="open" style="display: none;" class="absolute z-50 w-full mt-1 bg-white border 
+                      rounded shadow-xl dark:bg-slate-800 dark:border-slate-600">
+                      <div class="p-2 border-b dark:border-slate-700">
+                        <input type="text" x-model="search" class="w-full border p-1.5 text-xs rounded outline-none 
+                          focus:border-slate-500 dark:bg-slate-900 dark:border-slate-600 dark:text-slate-200" 
+                          placeholder="Search...">
+                      </div>
+                      <div class="p-2 border-b dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
+                        <label class="flex items-center gap-2 text-xs font-bold cursor-pointer text-slate-700 
+                          dark:text-slate-200">
+                          <input type="checkbox" :checked="!filter_SelKab" 
+                            @change="filter_SelKab = (!filter_SelKab) ? '__NONE__' : ''; filter_SelKec=''; 
+                            action_FilterChanged()" class="rounded text-slate-500">
+                          Select All
+                        </label>
+                      </div>
+                      <div class="max-h-[240px] overflow-y-auto p-1 space-y-0.5 custom-scrollbar">
+                        <template x-for="opt in util_GetKabOptions().filter(o => 
+                          o.label.toLowerCase().includes(search.toLowerCase())).slice(0, 20)" :key="opt.val">
+                          <label class="flex items-center gap-2 text-xs cursor-pointer hover:bg-slate-100 
+                            dark:hover:bg-slate-700 p-1.5 rounded text-slate-600 dark:text-slate-300">
+                            <input type="checkbox" 
+                              :checked="!filter_SelKab || filter_SelKab.split(';').includes(opt.val)" 
+                              @change="filter_SelKab = util_ToggleMulti(filter_SelKab, util_GetKabOptions(), opt.val); 
+                              filter_SelKec=''; action_FilterChanged()" class="rounded text-slate-500">
+                            <span class="truncate" x-text="opt.label" :title="opt.label"></span>
+                          </label>
+                        </template>
+                        <div x-show="util_GetKabOptions().filter(o => 
+                          o.label.toLowerCase().includes(search.toLowerCase())).length > 20" 
+                          class="text-[9px] text-center text-slate-400 p-1 mt-1">
+                          Gunakan pencarian untuk sisa list...
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 <div class="sidebar_location_filter_kec_group">
-                  <label class="block text-[12px] font-bold text-gray-500 mb-1 dark:text-gray-400">
-                    KECAMATAN
+                  <label class="flex items-center justify-between text-[12px] font-bold text-slate-500 mb-1 
+                    dark:text-slate-400">
+                    <span>KECAMATAN</span>
+                    <label class="flex items-center gap-1 cursor-pointer" title="Group IKU by Kecamatan">
+                      <input type="radio" x-model="iku_GroupByOverride" value="Kecamatan" 
+                        @change="action_FilterChanged()" class="w-3 h-3 text-slate-500 focus:ring-slate-500">
+                      <span class="text-[9px] uppercase tracking-tighter text-slate-600 dark:text-slate-400">
+                        Group IKU
+                      </span>
+                    </label>
                   </label>
-                  <select
-                    x-model="filter_SelKec"
-                    @change="fetch_MainGridData_FromAPI"
-                    class="sidebar_select_kec
-                    w-full border p-1.5 rounded text-xs bg-white
-                    focus:border-blue-500 outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
-                    :disabled="!filter_SelKab"
-                    :class="{'bg-gray-100 dark:bg-slate-800': !filter_SelKab}"
-                  >
-                    <option value="">- All -</option>
-                    <template
-                      x-for="c in util_GetKecOptions()"
-                      :key="c"
-                    >
-                      <option
-                        :value="c"
-                        x-text="c"
-                      ></option>
-                    </template>
-                  </select>
+                  <div class="relative" x-data="{ open: false, search: '' }" @click.outside="open = false">
+                    <div @click="open = !open" class="w-full border p-1.5 rounded text-xs bg-white cursor-pointer 
+                      flex justify-between items-center dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300">
+                      <span class="truncate font-bold text-slate-600 dark:text-slate-400" 
+                        x-text="(!filter_SelKec) ? 'ALL SELECTED' : (filter_SelKec==='__NONE__' ? '0 Selected' : 
+                        filter_SelKec.split(';').length + ' Selected')">
+                      </span>
+                      <span class="text-slate-400">▼</span>
+                    </div>
+                    <div x-show="open" style="display: none;" class="absolute z-50 w-full mt-1 bg-white border 
+                      rounded shadow-xl dark:bg-slate-800 dark:border-slate-600">
+                      <div class="p-2 border-b dark:border-slate-700">
+                        <input type="text" x-model="search" class="w-full border p-1.5 text-xs rounded outline-none 
+                          focus:border-slate-500 dark:bg-slate-900 dark:border-slate-600 dark:text-slate-200" 
+                          placeholder="Search...">
+                      </div>
+                      <div class="p-2 border-b dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
+                        <label class="flex items-center gap-2 text-xs font-bold cursor-pointer text-slate-700 
+                          dark:text-slate-200">
+                          <input type="checkbox" :checked="!filter_SelKec" 
+                            @change="filter_SelKec = (!filter_SelKec) ? '__NONE__' : ''; action_FilterChanged()" 
+                            class="rounded text-slate-500">
+                          Select All
+                        </label>
+                      </div>
+                      <div class="max-h-[240px] overflow-y-auto p-1 space-y-0.5 custom-scrollbar">
+                        <template x-for="opt in util_GetKecOptions().filter(o => 
+                          o.label.toLowerCase().includes(search.toLowerCase())).slice(0, 20)" :key="opt.val">
+                          <label class="flex items-center gap-2 text-xs cursor-pointer hover:bg-slate-100 
+                            dark:hover:bg-slate-700 p-1.5 rounded text-slate-600 dark:text-slate-300">
+                            <input type="checkbox" 
+                              :checked="!filter_SelKec || filter_SelKec.split(';').includes(opt.val)" 
+                              @change="filter_SelKec = util_ToggleMulti(filter_SelKec, util_GetKecOptions(), opt.val); 
+                              action_FilterChanged()" class="rounded text-slate-500">
+                            <span class="truncate" x-text="opt.label" :title="opt.label"></span>
+                          </label>
+                        </template>
+                        <div x-show="util_GetKecOptions().filter(o => 
+                          o.label.toLowerCase().includes(search.toLowerCase())).length > 20" 
+                          class="text-[9px] text-center text-slate-400 p-1 mt-1">
+                          Gunakan pencarian untuk sisa list...
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 <div class="sidebar_location_filter_search_group mb-3">
-                  <input
-                    type="text"
-                    x-model="filter_NameSearch"
-                    class="sidebar_input_search_name
-                    w-full border p-2 rounded text-xs focus:border-blue-500
-                    outline-none dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
-                    placeholder="Cari Nama Desa (HURUF KAPITAL)..."
-                  >
+                  <label class="flex items-center justify-end text-[12px] font-bold text-slate-500 mb-1 
+                    dark:text-slate-400">
+                    <label class="flex items-center gap-1 cursor-pointer" title="Group IKU by Desa">
+                      <input type="radio" x-model="iku_GroupByOverride" value="Desa" @change="action_FilterChanged()" 
+                        class="w-3 h-3 text-slate-500 focus:ring-slate-500">
+                      <span class="text-[9px] uppercase tracking-tighter text-slate-600 dark:text-slate-400">
+                        Group IKU (DESA)
+                      </span>
+                    </label>
+                  </label>
+                  <input type="text" x-model="filter_NameSearch" class="sidebar_input_search_name w-full border p-2 
+                    rounded text-xs focus:border-slate-500 outline-none dark:bg-slate-900 dark:border-slate-600 
+                    dark:text-slate-300" placeholder="Cari Nama Desa (HURUF KAPITAL)...">
                 </div>
+
                 <div class="sidebar_search_ids mb-3">
                   <textarea
                     x-model="filter_IdListInput"
@@ -964,7 +1165,7 @@
                   ></textarea>
                 </div>
                 <button
-                  @click="fetch_MainGridData_FromAPI"
+                  @click="action_FilterChanged()"
                   class="sidebar_btn_apply_filter
                   w-full bg-slate-500 text-white py-2 rounded text-xs
                   font-bold hover:bg-slate-800 transition shadow-sm dark:bg-slate-600 dark:hover:bg-slate-500"
@@ -972,6 +1173,7 @@
                   Filter
                 </button>
               </div>
+
             </div>
           </div>
         </div>
@@ -990,12 +1192,12 @@
 
         <div
           x-show="viewModeState === 'dashboard'"
-          class="view_container_dashboard flex-1 p-4 overflow-hidden relative"
+          class="view_container_rekomendasi_id flex-1 p-4 overflow-hidden relative"
           style="display: none;"
         >
           <div class="dashboard_table_wrapper dashboard-container shadow-md rounded">
             <table
-              id="dashboard_table_element"
+              id="rekomendasi_id_table_element"
               class="dash-table"
             >
               <thead>
@@ -1006,7 +1208,26 @@
           </div>
         </div>
 
+        <div
+          x-show="viewModeState === 'iku'"
+          class="view_container_iku flex-1 p-4 overflow-hidden relative"
+          style="display: none;"
+        >
+          <div class="dashboard_table_wrapper dashboard-container shadow-md rounded">
+            <table
+              id="iku_table_element"
+              class="dash-table text-left"
+            >
+              <thead>
+              </thead>
+              <tbody>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
       </div>
+
     </div>
 
     <div
@@ -1038,7 +1259,6 @@
       }"
       x-init="
           // Listen for legacy Alpine variables from parent
-          $watch('$store.app.setUiStatusMessage', val => val ? showToast(val, 'info') : (toast.show = false));
           $watch('setUiStatusMessage', val => val ? showToast(val, 'info') : (toast.show = false));
           
           // Listen for legacy Alert State
@@ -1054,7 +1274,8 @@
       <div
         x-show="toast.show"
         x-transition.duration.300ms
-        class="fixed top-6 left-1/2 transform -translate-x-1/2 z-[150] px-6 py-3 rounded shadow-xl flex items-center gap-3 border transition-colors duration-300"
+        class="fixed top-6 left-1/2 transform -translate-x-1/2 z-[150] px-6 py-3 rounded shadow-xl flex items-center
+              gap-3 border transition-colors duration-300"
         :class="{
             'bg-slate-800 text-white border-slate-700': toast.type === 'info',
             'bg-red-600 text-white border-red-700': toast.type === 'error',
@@ -1103,7 +1324,8 @@
       >
 
         <div
-          class="bg-white dark:bg-slate-800 rounded-lg shadow-2xl border border-gray-200 dark:border-slate-600 w-[400px] max-w-[90%] p-5 transform transition-all scale-100"
+          class="bg-white dark:bg-slate-800 rounded-lg shadow-2xl border border-gray-200 dark:border-slate-600 w-[400px]
+                max-w-[90%] p-5 transform transition-all scale-100"
           @click.outside="if(modal.type !== 'confirm') modal.show = false"
         >
 
@@ -1152,14 +1374,15 @@
 
           <p
             class="mb-6 pl-1 text-sm text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-wrap"
-            x-text="modal.msg"
+            x-html="modal.msg"
           ></p>
 
           <div class="flex justify-end gap-2">
             <button
               x-show="modal.type === 'confirm'"
               @click="modal.show = false"
-              class="px-4 py-2 text-xs font-bold text-gray-500 hover:text-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700 rounded"
+              class="px-4 py-2 text-xs font-bold text-gray-500 hover:text-gray-700 dark:text-gray-400 hover:bg-gray-100
+                    dark:hover:bg-slate-700 rounded"
             >
               Cancel
             </button>
@@ -1184,12 +1407,16 @@
         // --- DYNAMIC YEAR CALCULATION ---
         const dateNow = new Date();
         const currentActualYear = dateNow.getFullYear();
+        // Always focus/default on the current year
         const defaultSelectedYear = currentActualYear - 1;
-        // Generate available years dynamically
+
+        // Generate available years dynamically starting from 2025 up to current
         const dynamicYears = [];
-        for (let i = 0; i < 4; i++) {
-          dynamicYears.push(String(currentActualYear - i));
+        for (let y = currentActualYear; y >= 2025; y--) {
+          dynamicYears.push(String(y));
         }
+        // Fallback safety if server clock is somehow behind
+        if (dynamicYears.length === 0) dynamicYears.push("2025");
 
         return {
           // --- CONFIGURATION ---
@@ -1223,6 +1450,7 @@
           filter_SelKec: "",
           filter_NameSearch: "",
           filter_IdListInput: "", // For search
+          iku_GroupByOverride: "", // Override for IKU
 
           // --- UI DISPLAY STATS ---
           stats_TotalRows: "0",
@@ -1315,8 +1543,10 @@
               }
             }
 
-            // APPLY TO DASHBOARD HTML TABLE
-            const table = document.getElementById('dashboard_table_element');
+            // DYNAMICALLY SELECT ACTIVE TABLE
+            const activeTableId = this.viewModeState === 'iku' ? 'iku_table_element' : 'rekomendasi_id_table_element';
+            const table = document.getElementById(activeTableId);
+
             if (table) {
               // Reset all sticky styles first
               table.querySelectorAll('.sticky-col').forEach(el => {
@@ -1458,6 +1688,8 @@
             this.viewModeState = mode;
             if (mode === 'dashboard') {
               this.fetchDashboardConfigAndRenderTable();
+            } else if (mode === 'iku') {
+              this.fetchIkuConfigAndRenderTable();
             } else {
               // Refresh grid layout if switching back
               setTimeout(() => {
@@ -1497,8 +1729,8 @@
           initializeAgGridConfig() {
             const gridOptions = {
               rowModelType: 'infinite',
-              cacheBlockSize: 10000,
-              infiniteInitialRowCount: 10000,
+              cacheBlockSize: 1000,
+              infiniteInitialRowCount: 1000,
               columnDefs: [],
               defaultColDef: {
                 sortable: true,
@@ -1511,9 +1743,7 @@
               },
               pagination: false,
               rowBuffer: 20,
-              rowSelection: 'multiple',
               animateRows: false,
-              suppressRowClickSelection: true,
               debounceVerticalScrollbar: true,
               enableCellTextSelection: true,
               ensureDomOrder: true
@@ -1525,15 +1755,80 @@
           // ============================================
           // DATA FETCHING
           // ============================================
-          util_GetKabOptions() {
-            return (this.filter_SelProv && this.meta_HierarchyTree[this.filter_SelProv])
-              ? Object.keys(this.meta_HierarchyTree[this.filter_SelProv]).sort()
-              : [];
+          util_GetSelectedArr(val, options) {
+            if (val === "ALL") return options;
+            if (!val) return [];
+            return val.split(';');
           },
+
+          util_ToggleMulti(currentVal, allOptions, toggleItemVal) {
+            let arr;
+            if (currentVal === "") {
+              arr = allOptions.map(o => o.val);
+            } else if (currentVal === "__NONE__") {
+              arr = [];
+            } else {
+              arr = currentVal.split(';');
+            }
+            
+            if (arr.includes(toggleItemVal)) {
+                arr = arr.filter(x => x !== toggleItemVal);
+            } else {
+                arr.push(toggleItemVal);
+            }
+            
+            if (arr.length === allOptions.length) return ""; // Revert to all (no filter)
+            if (arr.length === 0) return "__NONE__"; // Force return zero rows
+            return arr.join(';');
+          },
+
+          util_GetProvOptions() {
+            return Object.keys(this.meta_HierarchyTree).sort().map(p => ({val: p, label: p}));
+          },
+
+          util_GetKabOptions() {
+            if (!this.meta_HierarchyTree) return [];
+            let provs = (this.filter_SelProv && this.filter_SelProv !== "__NONE__")
+              ? this.filter_SelProv.split(';')
+              : Object.keys(this.meta_HierarchyTree);
+
+            let options = [];
+            provs.forEach(p => {
+              if (this.meta_HierarchyTree[p]) {
+                Object.keys(this.meta_HierarchyTree[p]).forEach(k => {
+                  options.push({val: k, label: `${p}/${k}`});
+                });
+              }
+            });
+            return options.sort((a, b) => a.label.localeCompare(b.label));
+          },
+
           util_GetKecOptions() {
-            return (this.filter_SelProv && this.filter_SelKab && this.meta_HierarchyTree[this.filter_SelProv][this.filter_SelKab])
-              ? this.meta_HierarchyTree[this.filter_SelProv][this.filter_SelKab].sort()
+            if (!this.meta_HierarchyTree) return [];
+            let provs = (this.filter_SelProv && this.filter_SelProv !== "__NONE__")
+              ? this.filter_SelProv.split(';')
+              : Object.keys(this.meta_HierarchyTree);
+            let kabs = (this.filter_SelKab && this.filter_SelKab !== "__NONE__")
+              ? this.filter_SelKab.split(';')
               : [];
+
+            let options = [];
+            provs.forEach(p => {
+              let kabMap = this.meta_HierarchyTree[p];
+              if (kabMap) {
+                let kabsToScan = Object.keys(kabMap);
+                if (kabs.length > 0) kabsToScan = kabsToScan.filter(k => kabs.includes(k));
+
+                kabsToScan.forEach(k => {
+                  if (kabMap[k]) {
+                    kabMap[k].forEach(kec => {
+                      options.push({val: kec, label: `${p}/${k}/${kec}`});
+                    });
+                  }
+                });
+              }
+            });
+            return options.sort((a, b) => a.label.localeCompare(b.label));
           },
 
           async fetch_MainGridData_FromAPI() {
@@ -1574,12 +1869,13 @@
                 if (this.filter_SelKab) urlParams.append("Kabupaten/ Kota", this.filter_SelKab);
                 if (this.filter_SelKec) urlParams.append("Kecamatan", this.filter_SelKec);
                 if (this.filter_NameSearch) urlParams.append("Desa", this.filter_NameSearch);
+                if (this.iku_GroupByOverride) urlParams.append("group_by", this.iku_GroupByOverride);
                 // Ensure Newlines are replaced with semicolons for ID list
                 if (this.filter_IdListInput.trim()) urlParams.append("ids", this.filter_IdListInput.replace(/\n/g, ";"));
 
                 try {
                   // Only show loading if it's a primary load, otherwise it flickers too much
-                  if (offset === 0) this.agGridApiInstance.showLoadingOverlay();
+                  if (offset === 0) this.agGridApiInstance.setGridOption('loading', true);
 
                   const reqUrl = `${this.apiBaseUrl}/query/${this.targetYear}?${urlParams}`;
                   let res = await fetch(reqUrl, {credentials: 'include'});
@@ -1623,10 +1919,12 @@
 
                     params.successCallback(data, totalCount);
 
+                    // Turn off loading overlay
+                    this.agGridApiInstance.setGridOption('loading', false);
+
                     if (totalCount === 0) {
-                      this.agGridApiInstance.showNoRowsOverlay();
-                    } else {
-                      this.agGridApiInstance.hideOverlay();
+                      // Optionally keep this if AG grid requires explicit trigger on infinite scroll
+                      if (this.agGridApiInstance.showNoRowsOverlay) this.agGridApiInstance.showNoRowsOverlay();
                     }
                   } else {
                     console.error("❌ [AG-Grid] Data is not an array:", data);
@@ -1634,7 +1932,8 @@
                   }
                 } catch (e) {
                   console.error("❌ [AG-Grid] Error in getRows:", e);
-                  this.agGridApiInstance.showNoRowsOverlay(); // Or show error
+                  this.agGridApiInstance.setGridOption('loading', false);
+                  if (this.agGridApiInstance.showNoRowsOverlay) this.agGridApiInstance.showNoRowsOverlay();
                   params.failCallback();
                 }
               }
@@ -1667,15 +1966,15 @@
           // DASHBOARD TABLE LOGIC
           // ============================================
           async fetchDashboardConfigAndRenderTable() {
-            await this.calculate_DashboardStats_FromAPI();
+            await this.calculate_Dashboard_Rekomendasi_ID();
           },
 
           // ============================================
           // ACTIONS: CALCULATION
           // ============================================
-          async calculate_DashboardStats_FromAPI() {
+          async calculate_Dashboard_Rekomendasi_ID() {
             // Prepare UI
-            const container = document.getElementById('dashboard_table_element');
+            const container = document.getElementById('rekomendasi_id_table_element');
             // Clear existing and show loading
             container.innerHTML = '<tbody><tr><td class="text-center p-4">Calculating & Rendering on Server...</td></tr></tbody>';
 
@@ -1686,6 +1985,7 @@
             if (this.filter_SelKab) params.append("Kabupaten/ Kota", this.filter_SelKab);
             if (this.filter_SelKec) params.append("Kecamatan", this.filter_SelKec);
             if (this.filter_NameSearch) params.append("Kode Wilayah Administrasi Desa", this.filter_NameSearch);
+            if (this.iku_GroupByOverride) params.append("group_by", this.iku_GroupByOverride);
             if (this.filter_IdListInput.trim()) params.append("ids", this.filter_IdListInput.replace(/\n/g, ";"));
 
             try {
@@ -1719,7 +2019,10 @@
           // This replaces util_AddColumnResizer. 
           // It doesn't CREATE divs (Server did that), it just activates them.
           ui_InitResizers() {
-            const table = document.getElementById('dashboard_table_element');
+            const activeTableId = this.viewModeState === 'iku' ? 'iku_table_element' : 'rekomendasi_id_table_element';
+            const table = document.getElementById(activeTableId);
+            if (!table) return;
+
             const resizers = table.querySelectorAll('.resizer');
 
             resizers.forEach(resizer => {
@@ -1757,10 +2060,76 @@
             });
           },
 
+          // Special Case filter for IKU
+          async fetchIkuConfigAndRenderTable() {
+            const container = document.getElementById('iku_table_element');
+            container.innerHTML = '<tbody><tr><td class="text-center p-4">Calculating IKU on Server...</td></tr></tbody>';
+
+            let params = new URLSearchParams();
+            if (this.filter_SelectedVersion) params.append("version", this.filter_SelectedVersion);
+            if (this.filter_SelProv) params.append("Provinsi", this.filter_SelProv);
+            if (this.filter_SelKab) params.append("Kabupaten/ Kota", this.filter_SelKab);
+            if (this.filter_SelKec) params.append("Kecamatan", this.filter_SelKec);
+            if (this.filter_NameSearch) params.append("Kode Wilayah Administrasi Desa", this.filter_NameSearch);
+            if (this.iku_GroupByOverride) params.append("group_by", this.iku_GroupByOverride);
+            if (this.filter_IdListInput.trim()) params.append("ids", this.filter_IdListInput.replace(/\n/g, ";"));
+
+            try {
+              let res = await fetch(`${this.apiBaseUrl}/dashboard/iku/${this.targetYear}?${params.toString()}`, {
+                method: "POST",
+                credentials: 'include'
+              });
+
+              if (!res.ok) throw new Error("Server Calculation Failed");
+
+              let htmlContent = await res.text();
+              container.innerHTML = htmlContent;
+
+              this.ui_InitResizers();
+              this.$nextTick(() => {
+                this.ui_ApplyFreeze();
+
+                // FIX STICKY ROW 2 HEIGHT DYNAMICALLY
+                const activeTableId = this.viewModeState === 'iku' ? 'iku_table_element' : 'dashboard_table_element';
+                const table = document.getElementById(activeTableId);
+                if (table) {
+                  const firstRow = table.querySelector('thead tr:first-child');
+                  const secondRowCells = table.querySelectorAll('thead tr:nth-child(2) th');
+                  if (firstRow && secondRowCells.length > 0) {
+                    const firstRowHeight = firstRow.getBoundingClientRect().height;
+                    secondRowCells.forEach(cell => {
+                      cell.style.top = `${firstRowHeight - 1}px`; // -1px overlap prevents gaps
+                    });
+                  }
+                }
+              });
+
+            } catch (e) {
+              console.error(e);
+              container.innerHTML = `<tbody><tr><td class="text-red-500 p-4">Error: ${e.message}</td></tr></tbody>`;
+            }
+          },
+
           // Explicit Action for Button Click (Force Switch)
           async action_CalculateDashboardStats() {
-            this.ui_SwitchViewMode('dashboard');
-            await this.calculate_DashboardStats_FromAPI();
+            if (this.viewModeState === 'grid') {
+              this.ui_SwitchViewMode('dashboard');
+            } else if (this.viewModeState === 'dashboard') {
+              await this.calculate_Dashboard_Rekomendasi_ID();
+            } else if (this.viewModeState === 'iku') {
+              await this.fetchIkuConfigAndRenderTable();
+            }
+          },
+
+          // Universal trigger to update whichever view is currently active
+          action_FilterChanged() {
+            this.fetch_MainGridData_FromAPI();
+
+            if (this.viewModeState === 'dashboard') {
+              this.calculate_Dashboard_Rekomendasi_ID();
+            } else if (this.viewModeState === 'iku') {
+              this.fetchIkuConfigAndRenderTable();
+            }
           },
 
           // ============================================
@@ -1779,7 +2148,7 @@
               Kecamatan: this.filter_SelKec,
               Desa: this.filter_NameSearch
             });
-
+            if (this.iku_GroupByOverride) params.append("group_by", this.iku_GroupByOverride);
             if (this.filter_SelectedVersion) params.append("version", this.filter_SelectedVersion);
             if (this.filter_IdListInput.trim()) params.append("ids", this.filter_IdListInput.replace(/\n/g, ";"));
 

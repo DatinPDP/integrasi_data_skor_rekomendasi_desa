@@ -873,13 +873,20 @@ def endpoint_get_download_server_excel(year: str, request: Request):
         wb.save(output)
         output.seek(0)
 
-        filename = f"Export_{params_dict.get('Provinsi', 'All')}_{year}.xlsx"
+        # Sanitize filename if multiple provinces are selected
+        provinsi_val = params_dict.get('Provinsi', 'All')
+        if not provinsi_val or provinsi_val == '__NONE__':
+            provinsi_val = 'All'
+        elif ';' in provinsi_val:
+            provinsi_val = 'Multiple_Provinsi'
+
+        filename = f"Export_{provinsi_val}_{year}.xlsx"
         
-        # Return as downloadable file
+        # Return as downloadable file (Quotes around filename prevent header injection breaks)
         return StreamingResponse(
             output, 
             media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            headers={"Content-Disposition": f"attachment; filename={filename}"}
+            headers={"Content-Disposition": f'attachment; filename="{filename}"'}
         )
 
     except Exception as e:
