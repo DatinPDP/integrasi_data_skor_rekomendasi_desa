@@ -1,5 +1,5 @@
 services:
-  backup-integrasi_data_skor_rekomendasi_desa:
+  backup_id_srd_iku:
       image: alpine:latest
       volumes:
         - ./desa_db/dbs:/app/desa_db/dbs:ro # Read-Only access to live DBs
@@ -9,9 +9,9 @@ services:
       command: /bin/sh -c "/bin/sh /backup.sh && echo '0 2 * * * /bin/sh /backup.sh' > /etc/crontabs/root && crond -f -d 8"
       restart: always
 
-  backend-integrasi_data_skor_rekomendasi_desa:
+  backend_id_srd_iku:
     build: .
-    image: integrasi_data_skor_rekomendasi_desa
+    image: integrasi_data_skor_rekomendasi_desa_iku
     command: python desa_db/server.py
     restart: always
     volumes:
@@ -23,22 +23,22 @@ services:
     env_file:
       - .env
 
-  frontend-integrasi_data_skor_rekomendasi_desa:
-    image: integrasi_data_skor_rekomendasi_desa
+  frontend_id_srd_iku:
+    image: integrasi_data_skor_rekomendasi_desa_iku
     command: python front_end/router.py
     restart: always
     environment:
       # Internal Docker URL for SSR Login
-      - API_BASE_URL=http://backend-integrasi_data_skor_rekomendasi_desa:8000 
+      - API_BASE_URL=http://backend_id_srd_iku:8000 
     volumes:
       - ./.config:/app/.config
       - ./front_end:/app/front_end
     env_file:
       - .env
     depends_on:
-      - backend-integrasi_data_skor_rekomendasi_desa
+      - backend_id_srd_iku
 
-  nginx-integrasi_data_skor_rekomendasi_desa:
+  nginx_id_srd_iku:
     image: nginx:alpine
     ports:
       - "8080:80" # This is the SINGLE port you will Tunnel
@@ -47,5 +47,5 @@ services:
       - ./exports:/app/exports:ro
       - ./front_end/static:/app/front_end/static:ro
     depends_on:
-      - backend-integrasi_data_skor_rekomendasi_desa
-      - frontend-integrasi_data_skor_rekomendasi_desa
+      - backend_id_srd_iku
+      - frontend_id_srd_iku

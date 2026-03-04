@@ -1887,7 +1887,7 @@ def helpers_render_iku_dashboard(df_filtered: pl.DataFrame, params_dict: dict) -
         if idx < len(row1) and row1[idx] not in ["WILAYAH", "JLH DESA"]:
             html += (
                 f'<th class="relative text-center bg-gray-100 dark:bg-slate-800 border dark:border-slate-600 '
-                f'p-3 text-xs iku-header-sub" data-col-idx="{idx}">'
+                f'p-3 text-xs iku-header-sub" data-col-idx="{idx}" style="width: 80px;min-width: 80px;">'
                 f'<span>{val}</span><div class="resizer"></div></th>'
             )
 

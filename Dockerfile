@@ -23,10 +23,10 @@ RUN \
     \
     # Check CPU capabilities
     if grep -q "avx2" /proc/cpuinfo; then \
-        echo "🚀 Modern CPU (AVX2) Detected: Installing standard Polars"; \
+        echo "Modern CPU (AVX2) Detected: Installing standard Polars"; \
         pip install --no-cache-dir polars==1.30.0; \
     else \
-        echo "🐢 Older CPU (No AVX2) Detected: Installing Polars LTS (CPU)"; \
+        echo "Older CPU (No AVX2) Detected: Installing Polars LTS (CPU)"; \
         pip install --no-cache-dir polars-lts-cpu; \
     fi
 
