@@ -787,7 +787,11 @@ video {
 
 /* Force the text block to wrap even if the table cell is stretched by colspan */
 
-/* Column Width Utilities */
+/* --- Table Payload Size Optimizations --- */
+
+/* IKU Dashboard Shortcuts */
+
+/* Column Rekomendasi ID Width Utilities */
 
 .resizer {
   position: absolute;
@@ -1248,6 +1252,10 @@ video {
   -webkit-user-select: none;
      -moz-user-select: none;
           user-select: none;
+}
+
+.resize {
+  resize: both;
 }
 
 .grid-cols-2 {

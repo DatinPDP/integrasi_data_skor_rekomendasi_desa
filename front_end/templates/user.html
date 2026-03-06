@@ -30,7 +30,7 @@
   <body class="global_body_container font-mono bg-gray-100 h-screen flex flex-col transition-colors
   duration-300 dark:bg-slate-900 dark:text-slate-100">
 
-    <div class="header_main_container bg-white text-slate-800 border-b border-gray-200 
+    <div class="header_main_container bg-white text-slate-800 border-b border-gray-200
     dark:bg-slate-800 dark:text-white dark:border-slate-700 p-3 flex justify-between items-center shadow-md z-20 shrink-0
     h-14 transition-colors duration-300">
 
@@ -39,7 +39,7 @@
         <div
           class="transition-all duration-300 ease-in-out shrink-0 h-full flex items-center"
           :class="isSidebarOpen ?
-          'w-80 opacity-100' 
+          'w-80 opacity-100'
           : 'w-0 opacity-0 overflow-hidden'"
         >
           <h1 class="header_title_label text-sm font-bold flex items-center gap-2 truncate h-8 w-full text-slate-700
@@ -114,7 +114,7 @@
                   <button
                     @click="action_JumpToColumn(col); open = false; term = ''"
                     class="w-full text-left px-3 py-2 text-xs border-b block truncate
-                    border-gray-100 hover:bg-blue-50 text-slate-700 
+                    border-gray-100 hover:bg-blue-50 text-slate-700
                     dark:border-slate-700 dark:hover:bg-slate-700 dark:text-slate-200"
                     :title="col"
                   > <span x-text="col"></span>
@@ -130,12 +130,12 @@
             </div>
 
             <div class="flex rounded p-0.5 border
-              bg-white border-gray-200 
+              bg-white border-gray-200
               dark:bg-slate-800 dark:border-slate-700">
               <button
                 @click="ui_ToggleTranslate(false)"
                 :class="!isTranslationActive ?
-                'bg-slate-500 text-white shadow-sm' 
+                'bg-slate-500 text-white shadow-sm'
                 : 'text-slate-500 hover:text-slate-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-slate-700'"
                 class="px-2 py-1 rounded text-[10px] font-bold transition-all flex items-center gap-1"
                 title="Raw Numbers"
@@ -145,7 +145,7 @@
               <button
                 @click="ui_ToggleTranslate(true)"
                 :class="isTranslationActive ?
-                'bg-slate-500 text-white shadow-sm' 
+                'bg-slate-500 text-white shadow-sm'
                 : 'text-slate-500 hover:text-slate-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-slate-700'"
                 class="px-2 py-1 rounded text-[10px] font-bold transition-all flex items-center gap-1"
                 title="Text Recommendations"
@@ -156,13 +156,13 @@
           </div>
 
           <div class="flex rounded p-0.5 border
-            bg-white border-gray-200 
+            bg-white border-gray-200
             dark:bg-slate-800 dark:border-slate-700">
 
             <button
               @click="ui_SwitchViewMode('grid')"
               :class="viewModeState === 'grid' ?
-              'bg-slate-500 text-white shadow-sm' 
+              'bg-slate-500 text-white shadow-sm'
               : 'text-slate-500 hover:text-slate-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-slate-700'"
               class="px-3 py-1 rounded text-[11px] font-bold transition-all flex items-center gap-1.5"
             >
@@ -215,7 +215,7 @@
             <button
               @click="ui_SwitchViewMode('dashboard')"
               :class="viewModeState === 'dashboard' ?
-              'bg-slate-500 text-white shadow-sm' 
+              'bg-slate-500 text-white shadow-sm'
               : 'text-slate-500 hover:text-slate-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-slate-700'"
               class="px-3 py-1 rounded text-[11px] font-bold transition-all flex items-center gap-1.5"
             >
@@ -260,7 +260,7 @@
             <button
               @click="ui_SwitchViewMode('iku')"
               :class="viewModeState === 'iku' ?
-              'bg-slate-500 text-white shadow-sm' 
+              'bg-slate-500 text-white shadow-sm'
               : 'text-slate-500 hover:text-slate-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-slate-700'"
               class="px-3 py-1 rounded text-[11px] font-bold transition-all flex items-center gap-1.5"
             >
@@ -308,7 +308,7 @@
 
           <div
             class="flex items-center rounded border ml-1 select-none h-7
-            bg-white border-gray-200 
+            bg-white border-gray-200
             dark:bg-slate-800 dark:border-slate-700"
             title="Freeze Columns (Scroll or Click Arrows)"
             @wheel.prevent="ui_Freeze_Scroll($event)"
@@ -350,7 +350,7 @@
               <button
                 @click="ui_Freeze_Inc()"
                 class="leading-none flex items-center h-2
-                text-slate-400 hover:text-slate-800 
+                text-slate-400 hover:text-slate-800
                 dark:text-slate-500 dark:hover:text-white"
               >
                 <svg
@@ -370,7 +370,7 @@
               <button
                 @click="ui_Freeze_Dec()"
                 class="leading-none flex items-center h-2
-                text-slate-400 hover:text-slate-800 
+                text-slate-400 hover:text-slate-800
                 dark:text-slate-500 dark:hover:text-white"
               >
                 <svg
@@ -396,7 +396,7 @@
             @click="action_CalculateDashboardStats"
             class="px-3 py-1 rounded text-[11px] font-bold transition-all shadow-sm flex items-center gap-1 group border
             bg-white hover:bg-emerald-50 text-emerald-600 border-gray-200 hover:border-emerald-300
-            dark:bg-slate-800 dark:hover:bg-emerald-600 dark:text-emerald-500 dark:hover:text-white 
+            dark:bg-slate-800 dark:hover:bg-emerald-600 dark:text-emerald-500 dark:hover:text-white
             dark:border-slate-700 dark:hover:border-emerald-500"
           >
             <span class="group-hover:animate-spin">↻</span> Hitung Skor
@@ -416,7 +416,7 @@
           >
             <button
               @click="open = !open"
-              class="flex items-center gap-1 bg-slate-100 border border-slate-300 px-2 py-1 rounded 
+              class="flex items-center gap-1 bg-slate-100 border border-slate-300 px-2 py-1 rounded
               max-w-[150px] cursor-pointer dark:bg-slate-800 dark:border-slate-600"
             >
               <span
@@ -435,8 +435,8 @@
               <div class="flex flex-wrap gap-1">
                 <template x-for="item in (filter_SelProv === '__NONE__' ? [] : filter_SelProv.split(';'))">
                   <span
-                    class="px-1.5 py-0.5 bg-slate-50 dark:bg-slate-900/50 text-amber-600 dark:text-amber-400 
-                    border border-slate-200 dark:border-slate-700 rounded text-[10px] break-words whitespace-normal"
+                    class="px-1.5 py-0.5 bg-slate-50 dark:bg-slate-900/50 text-amber-600 dark:text-amber-400
+                    border border-amber-300 dark:border-amber-600 rounded text-[10px] break-words whitespace-normal"
                     x-text="item"
                   ></span>
                 </template>
@@ -453,7 +453,7 @@
           >
             <button
               @click="open = !open"
-              class="flex items-center gap-1 bg-slate-100 border border-slate-300 px-2 py-1 rounded 
+              class="flex items-center gap-1 bg-slate-100 border border-slate-300 px-2 py-1 rounded
               max-w-[150px] cursor-pointer dark:bg-slate-800 dark:border-slate-600"
             >
               <span
@@ -490,7 +490,7 @@
           >
             <button
               @click="open = !open"
-              class="flex items-center gap-1 bg-slate-100 border border-slate-300 px-2 py-1 rounded 
+              class="flex items-center gap-1 bg-slate-100 border border-slate-300 px-2 py-1 rounded
               max-w-[150px] cursor-pointer dark:bg-slate-800 dark:border-slate-600"
             >
               <span
@@ -621,7 +621,7 @@
 
       <div
         :class="isSidebarOpen ?
-        'w-80' 
+        'w-80'
         : 'w-0'"
         class="sidebar_animation_wrapper
         relative z-20 shrink-0 transition-all
@@ -636,7 +636,7 @@
           justify-center cursor-pointer text-slate-100 dark:text-slate-900
           transform transition-transform duration-300 focus:outline-none"
           :class="isSidebarOpen ?
-          'rotate-0' 
+          'rotate-0'
           : 'rotate-180'"
           title="Toggle Sidebar"
         >
@@ -667,7 +667,7 @@
                 @click="open = !open"
                 class="flex justify-between items-center cursor-pointer mb-3 group select-none"
               >
-                <h3 class="sidebar_section_title text-xs font-bold text-gray-400 uppercase tracking-wider 
+                <h3 class="sidebar_section_title text-xs font-bold text-gray-400 uppercase tracking-wider
                   group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors flex items-center gap-2">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -694,7 +694,7 @@
                 <span
                   class="text-gray-400 text-[14px] font-bold transition-transform duration-200"
                   :class="open ?
-                  'rotate-90' 
+                  'rotate-90'
                   : 'rotate-0'"
                 >›</span>
               </div>
@@ -740,7 +740,7 @@
                 @click="open = !open"
                 class="flex justify-between items-center cursor-pointer mb-2 group select-none"
               >
-                <h3 class="sidebar_section_title text-xs font-bold text-gray-400 uppercase tracking-wider 
+                <h3 class="sidebar_section_title text-xs font-bold text-gray-400 uppercase tracking-wider
                   group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors flex items-center gap-2">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -765,7 +765,7 @@
                 <span
                   class="text-gray-400 text-[14px] font-bold transition-transform duration-200"
                   :class="open ?
-                  'rotate-90' 
+                  'rotate-90'
                   : 'rotate-0'"
                 >›</span>
               </div>
@@ -778,13 +778,13 @@
                   @click="ui_LoadVersion('')"
                   class="cursor-pointer mb-2 p-2 rounded border transition-colors flex justify-between items-center"
                   :class="!filter_SelectedVersion ?
-                  'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800' 
+                  'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800'
                   : 'bg-white border-gray-200 hover:bg-gray-50 dark:bg-slate-800 dark:border-slate-600'"
                 >
                   <span
                     class="text-xs font-bold"
                     :class="!filter_SelectedVersion ?
-                  'text-green-700 dark:text-green-400' 
+                  'text-green-700 dark:text-green-400'
                   : 'text-gray-600 dark:text-gray-300'"
                   >
                     🟢 Live (Sekarang)
@@ -853,11 +853,11 @@
                           <button
                             @click="ui_ToggleHistoryDetails(v.ts)"
                             class="px-2 py-1 text-[10px]
-                            font-bold rounded border border-gray-300 text-gray-500 hover:bg-gray-100 
+                            font-bold rounded border border-gray-300 text-gray-500 hover:bg-gray-100
                             dark:border-slate-600 dark:text-slate-400
                             dark:hover:bg-slate-700"
                             x-text="history_OpenDetailsId === v.ts ?
-                          'Hide' 
+                          'Hide'
                           : 'Detail'"
                           >
                           </button>
@@ -968,7 +968,7 @@
                 @click="open = !open"
                 class="flex justify-between items-center cursor-pointer mb-3 group select-none"
               >
-                <h3 class="sidebar_section_title text-xs font-bold text-gray-400 uppercase tracking-wider 
+                <h3 class="sidebar_section_title text-xs font-bold text-gray-400 uppercase tracking-wider
                   group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors flex items-center gap-2">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -993,7 +993,7 @@
                 <span
                   class="text-gray-400 text-[14px] font-bold transition-transform duration-200"
                   :class="open ?
-                  'rotate-90' 
+                  'rotate-90'
                   : 'rotate-0'"
                 >›</span>
               </div>
@@ -1004,7 +1004,7 @@
                 class="space-y-3"
               >
                 <div class="sidebar_location_filter_prov_group">
-                  <label class="flex items-center justify-between text-[12px] font-bold text-slate-500 mb-1 
+                  <label class="flex items-center justify-between text-[12px] font-bold text-slate-500 mb-1
                     dark:text-slate-400">
                     <span>PROVINSI</span>
                     <label
@@ -1030,12 +1030,12 @@
                   >
                     <div
                       @click="open = !open"
-                      class="w-full border p-1.5 rounded text-xs bg-white cursor-pointer 
+                      class="w-full border p-1.5 rounded text-xs bg-white cursor-pointer
                       flex justify-between items-center dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
                     >
                       <span
                         class="truncate font-bold text-slate-600 dark:text-slate-400"
-                        x-text="(!filter_SelProv) ? 'ALL SELECTED' : (filter_SelProv==='__NONE__' ? '0 Selected' : 
+                        x-text="(!filter_SelProv) ? 'ALL SELECTED' : (filter_SelProv==='__NONE__' ? '0 Selected' :
                         filter_SelProv.split(';').length + ' Selected')"
                       >
                       </span>
@@ -1044,25 +1044,27 @@
                     <div
                       x-show="open"
                       style="display: none;"
-                      class="absolute z-50 w-full mt-1 bg-white border 
+                      class="absolute z-50 w-full mt-1 bg-white border
                       rounded shadow-xl dark:bg-slate-800 dark:border-slate-600"
                     >
                       <div class="p-2 border-b dark:border-slate-700">
                         <input
                           type="text"
                           x-model="search"
-                          class="w-full border p-1.5 text-xs rounded outline-none 
+                          @keydown.enter.prevent="filter_SelProv = util_SelectAllFiltered(filter_SelProv,
+                          util_GetProvOptions(), search); filter_SelKab=''; filter_SelKec=''; action_FilterChanged()"
+                          class="w-full border p-1.5 text-xs rounded outline-none
                           focus:border-slate-500 dark:bg-slate-900 dark:border-slate-600 dark:text-slate-200"
                           placeholder="Search..."
                         >
                       </div>
                       <div class="p-2 border-b dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
-                        <label class="flex items-center gap-2 text-xs font-bold cursor-pointer text-slate-700 
+                        <label class="flex items-center gap-2 text-xs font-bold cursor-pointer text-slate-700
                           dark:text-slate-200">
                           <input
                             type="checkbox"
                             :checked="!filter_SelProv"
-                            @change="filter_SelProv = (!filter_SelProv) ? '__NONE__' : ''; filter_SelKab=''; 
+                            @change="filter_SelProv = (!filter_SelProv) ? '__NONE__' : ''; filter_SelKab='';
                             filter_SelKec=''; action_FilterChanged()"
                             class="rounded text-slate-500"
                           >
@@ -1071,16 +1073,16 @@
                       </div>
                       <div class="max-h-[240px] overflow-y-auto p-1 space-y-0.5 custom-scrollbar">
                         <template
-                          x-for="opt in util_GetProvOptions().filter(o => 
+                          x-for="opt in util_GetProvOptions().filter(o =>
                           o.label.toLowerCase().includes(search.toLowerCase())).slice(0, 20)"
                           :key="opt.val"
                         >
-                          <label class="flex items-center gap-2 text-xs cursor-pointer hover:bg-slate-100 
+                          <label class="flex items-center gap-2 text-xs cursor-pointer hover:bg-slate-100
                             dark:hover:bg-slate-700 p-1.5 rounded text-slate-600 dark:text-slate-300">
                             <input
                               type="checkbox"
                               :checked="!filter_SelProv || filter_SelProv.split(';').includes(opt.val)"
-                              @change="filter_SelProv = util_ToggleMulti(filter_SelProv, util_GetProvOptions(), 
+                              @change="filter_SelProv = util_ToggleMulti(filter_SelProv, util_GetProvOptions(),
                               opt.val); filter_SelKab=''; filter_SelKec=''; action_FilterChanged()"
                               class="rounded text-slate-500"
                             >
@@ -1091,7 +1093,7 @@
                           </label>
                         </template>
                         <div
-                          x-show="util_GetProvOptions().filter(o => 
+                          x-show="util_GetProvOptions().filter(o =>
                           o.label.toLowerCase().includes(search.toLowerCase())).length > 20"
                           class="text-[9px] text-center text-slate-400 p-1 mt-1"
                         >
@@ -1103,7 +1105,7 @@
                 </div>
 
                 <div class="sidebar_location_filter_kab_group">
-                  <label class="flex items-center justify-between text-[12px] font-bold text-slate-500 mb-1 
+                  <label class="flex items-center justify-between text-[12px] font-bold text-slate-500 mb-1
                     dark:text-slate-400">
                     <span>KABUPATEN/KOTA</span>
                     <label
@@ -1129,12 +1131,12 @@
                   >
                     <div
                       @click="open = !open"
-                      class="w-full border p-1.5 rounded text-xs bg-white cursor-pointer 
+                      class="w-full border p-1.5 rounded text-xs bg-white cursor-pointer
                       flex justify-between items-center dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
                     >
                       <span
                         class="truncate font-bold text-slate-600 dark:text-slate-400"
-                        x-text="(!filter_SelKab) ? 'ALL SELECTED' : (filter_SelKab==='__NONE__' ? '0 Selected' : 
+                        x-text="(!filter_SelKab) ? 'ALL SELECTED' : (filter_SelKab==='__NONE__' ? '0 Selected' :
                         filter_SelKab.split(';').length + ' Selected')"
                       >
                       </span>
@@ -1143,25 +1145,27 @@
                     <div
                       x-show="open"
                       style="display: none;"
-                      class="absolute z-50 w-full mt-1 bg-white border 
+                      class="absolute z-50 w-full mt-1 bg-white border
                       rounded shadow-xl dark:bg-slate-800 dark:border-slate-600"
                     >
                       <div class="p-2 border-b dark:border-slate-700">
                         <input
                           type="text"
                           x-model="search"
-                          class="w-full border p-1.5 text-xs rounded outline-none 
+                          @keydown.enter.prevent="filter_SelKab = util_SelectAllFiltered(filter_SelKab,
+                          util_GetKabOptions(), search); filter_SelKec=''; action_FilterChanged()"
+                          class="w-full border p-1.5 text-xs rounded outline-none
                           focus:border-slate-500 dark:bg-slate-900 dark:border-slate-600 dark:text-slate-200"
                           placeholder="Search..."
                         >
                       </div>
                       <div class="p-2 border-b dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
-                        <label class="flex items-center gap-2 text-xs font-bold cursor-pointer text-slate-700 
+                        <label class="flex items-center gap-2 text-xs font-bold cursor-pointer text-slate-700
                           dark:text-slate-200">
                           <input
                             type="checkbox"
                             :checked="!filter_SelKab"
-                            @change="filter_SelKab = (!filter_SelKab) ? '__NONE__' : ''; filter_SelKec=''; 
+                            @change="filter_SelKab = (!filter_SelKab) ? '__NONE__' : ''; filter_SelKec='';
                             action_FilterChanged()"
                             class="rounded text-slate-500"
                           >
@@ -1170,16 +1174,16 @@
                       </div>
                       <div class="max-h-[240px] overflow-y-auto p-1 space-y-0.5 custom-scrollbar">
                         <template
-                          x-for="opt in util_GetKabOptions().filter(o => 
+                          x-for="opt in util_GetKabOptions().filter(o =>
                           o.label.toLowerCase().includes(search.toLowerCase())).slice(0, 20)"
                           :key="opt.val"
                         >
-                          <label class="flex items-center gap-2 text-xs cursor-pointer hover:bg-slate-100 
+                          <label class="flex items-center gap-2 text-xs cursor-pointer hover:bg-slate-100
                             dark:hover:bg-slate-700 p-1.5 rounded text-slate-600 dark:text-slate-300">
                             <input
                               type="checkbox"
                               :checked="!filter_SelKab || filter_SelKab.split(';').includes(opt.val)"
-                              @change="filter_SelKab = util_ToggleMulti(filter_SelKab, util_GetKabOptions(), opt.val); 
+                              @change="filter_SelKab = util_ToggleMulti(filter_SelKab, util_GetKabOptions(), opt.val);
                               filter_SelKec=''; action_FilterChanged()"
                               class="rounded text-slate-500"
                             >
@@ -1191,7 +1195,7 @@
                           </label>
                         </template>
                         <div
-                          x-show="util_GetKabOptions().filter(o => 
+                          x-show="util_GetKabOptions().filter(o =>
                           o.label.toLowerCase().includes(search.toLowerCase())).length > 20"
                           class="text-[9px] text-center text-slate-400 p-1 mt-1"
                         >
@@ -1203,7 +1207,7 @@
                 </div>
 
                 <div class="sidebar_location_filter_kec_group">
-                  <label class="flex items-center justify-between text-[12px] font-bold text-slate-500 mb-1 
+                  <label class="flex items-center justify-between text-[12px] font-bold text-slate-500 mb-1
                     dark:text-slate-400">
                     <span>KECAMATAN</span>
                     <label
@@ -1229,12 +1233,12 @@
                   >
                     <div
                       @click="open = !open"
-                      class="w-full border p-1.5 rounded text-xs bg-white cursor-pointer 
+                      class="w-full border p-1.5 rounded text-xs bg-white cursor-pointer
                       flex justify-between items-center dark:bg-slate-900 dark:border-slate-600 dark:text-slate-300"
                     >
                       <span
                         class="truncate font-bold text-slate-600 dark:text-slate-400"
-                        x-text="(!filter_SelKec) ? 'ALL SELECTED' : (filter_SelKec==='__NONE__' ? '0 Selected' : 
+                        x-text="(!filter_SelKec) ? 'ALL SELECTED' : (filter_SelKec==='__NONE__' ? '0 Selected' :
                         filter_SelKec.split(';').length + ' Selected')"
                       >
                       </span>
@@ -1243,20 +1247,22 @@
                     <div
                       x-show="open"
                       style="display: none;"
-                      class="absolute z-50 w-full mt-1 bg-white border 
+                      class="absolute z-50 w-full mt-1 bg-white border
                       rounded shadow-xl dark:bg-slate-800 dark:border-slate-600"
                     >
                       <div class="p-2 border-b dark:border-slate-700">
                         <input
                           type="text"
                           x-model="search"
-                          class="w-full border p-1.5 text-xs rounded outline-none 
+                          @keydown.enter.prevent="filter_SelKec = util_SelectAllFiltered(filter_SelKec,
+                          util_GetKecOptions(), search); action_FilterChanged()"
+                          class="w-full border p-1.5 text-xs rounded outline-none
                           focus:border-slate-500 dark:bg-slate-900 dark:border-slate-600 dark:text-slate-200"
                           placeholder="Search..."
                         >
                       </div>
                       <div class="p-2 border-b dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
-                        <label class="flex items-center gap-2 text-xs font-bold cursor-pointer text-slate-700 
+                        <label class="flex items-center gap-2 text-xs font-bold cursor-pointer text-slate-700
                           dark:text-slate-200">
                           <input
                             type="checkbox"
@@ -1269,16 +1275,16 @@
                       </div>
                       <div class="max-h-[240px] overflow-y-auto p-1 space-y-0.5 custom-scrollbar">
                         <template
-                          x-for="opt in util_GetKecOptions().filter(o => 
+                          x-for="opt in util_GetKecOptions().filter(o =>
                           o.label.toLowerCase().includes(search.toLowerCase())).slice(0, 20)"
                           :key="opt.val"
                         >
-                          <label class="flex items-center gap-2 text-xs cursor-pointer hover:bg-slate-100 
+                          <label class="flex items-center gap-2 text-xs cursor-pointer hover:bg-slate-100
                             dark:hover:bg-slate-700 p-1.5 rounded text-slate-600 dark:text-slate-300">
                             <input
                               type="checkbox"
                               :checked="!filter_SelKec || filter_SelKec.split(';').includes(opt.val)"
-                              @change="filter_SelKec = util_ToggleMulti(filter_SelKec, util_GetKecOptions(), opt.val); 
+                              @change="filter_SelKec = util_ToggleMulti(filter_SelKec, util_GetKecOptions(), opt.val);
                               action_FilterChanged()"
                               class="rounded text-slate-500"
                             >
@@ -1290,7 +1296,7 @@
                           </label>
                         </template>
                         <div
-                          x-show="util_GetKecOptions().filter(o => 
+                          x-show="util_GetKecOptions().filter(o =>
                           o.label.toLowerCase().includes(search.toLowerCase())).length > 20"
                           class="text-[9px] text-center text-slate-400 p-1 mt-1"
                         >
@@ -1302,7 +1308,7 @@
                 </div>
 
                 <div class="sidebar_location_filter_search_group mb-3">
-                  <label class="flex items-center justify-end text-[12px] font-bold text-slate-500 mb-1 
+                  <label class="flex items-center justify-end text-[12px] font-bold text-slate-500 mb-1
                     dark:text-slate-400">
                     <label
                       class="flex items-center gap-1 cursor-pointer"
@@ -1323,8 +1329,8 @@
                   <input
                     type="text"
                     x-model="filter_NameSearch"
-                    class="sidebar_input_search_name w-full border p-2 
-                    rounded text-xs focus:border-slate-500 outline-none dark:bg-slate-900 dark:border-slate-600 
+                    class="sidebar_input_search_name w-full border p-2
+                    rounded text-xs focus:border-slate-500 outline-none dark:bg-slate-900 dark:border-slate-600
                     dark:text-slate-300"
                     placeholder="Cari Nama Desa (HURUF KAPITAL)..."
                   >
@@ -1388,7 +1394,9 @@
           class="view_container_iku flex-1 p-4 overflow-hidden relative"
           style="display: none;"
         >
-          <div class="dashboard_table_wrapper dashboard-container shadow-md rounded">
+          <div 
+            class="dashboard_table_wrapper dashboard-container shadow-md rounded h-full overflow-auto custom-scrollbar"
+            @scroll="if($el.scrollTop + $el.clientHeight >= $el.scrollHeight - 200) action_LoadMoreIku()">
             <table
               id="iku_table_element"
               class="dash-table text-left"
@@ -1406,10 +1414,10 @@
     </div>
 
     <div
-      x-data="{ 
+      x-data="{
           toast: { show: false, msg: '', type: 'info', timeout: null },
           modal: { show: false, type: 'info', title: '', msg: '', callback: null },
-          
+         
           // Helper: Show Toast
           showToast(msg, type = 'info') {
               clearTimeout(this.toast.timeout);
@@ -1421,7 +1429,7 @@
                   this.toast.timeout = setTimeout(() => { this.toast.show = false }, 3000);
               }
           },
-          
+         
           // Helper: Show Modal
           showModal(title, msg, type = 'info', cb = null) {
               this.modal = { show: true, type, title, msg, callback: cb };
@@ -1435,10 +1443,10 @@
       x-init="
           // Listen for legacy Alpine variables from parent
           $watch('setUiStatusMessage', val => val ? showToast(val, 'info') : (toast.show = false));
-          
+         
           // Listen for legacy Alert State
-          $watch('ui_AlertState', val => { 
-              if(val.isOpen) showModal(val.title, val.message, val.type, val.confirmCallback); 
+          $watch('ui_AlertState', val => {
+              if(val.isOpen) showModal(val.title, val.message, val.type, val.confirmCallback);
           });
 
           // Listen for Global Window Events (For Login Page or detached scripts)
@@ -1549,7 +1557,7 @@
 
           <p
             class="mb-6 pl-1 text-sm text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-wrap"
-            x-html="modal.msg"
+            x-text="modal.msg"
           ></p>
 
           <div class="flex justify-end gap-2">
@@ -1640,6 +1648,12 @@
             confirmCallback: null // Function to run if user clicks "Yes"
           },
 
+          // --- IKU PAGINATION ---
+          iku_offset: 0,
+          iku_limit: 100,
+          iku_isLoadingMore: false,
+          iku_hasMore: true,
+
           // --- REUSABLE HELPERS ---
           util_Alert(title, message, type = 'info') {
             this.ui_AlertState = {
@@ -1673,6 +1687,26 @@
             this.initializeAgGridConfig();
             this.fetchVersionHistoryAndHierarchy();
             this.fetch_MainGridData_FromAPI();
+            
+            this.ui_CheckMobileOrientation();
+            window.addEventListener('resize', () => this.ui_CheckMobileOrientation());
+          },
+
+          ui_CheckMobileOrientation() {
+            if (this._orientationForced) return;
+            
+            if (window.innerHeight > window.innerWidth && window.innerWidth < 1024) {
+              this.util_Confirm(
+                "Portrait Mode Detected",
+                "For the best administrative experience, rotate your device horizontally or click Confirm to force landscape mode.",
+                () => {
+                  this._orientationForced = true;
+                  document.body.style.cssText = 'transform: rotate(-90deg); transform-origin: left top; ' +
+                                                'width: 100vh; height: 100vw; overflow-x: hidden; ' +
+                                                'position: absolute; top: 100%; left: 0;';
+                }
+              );
+            }
           },
 
           ui_ToggleDarkMode() {
@@ -1793,7 +1827,7 @@
           },
 
           // ============================================
-          // ACTIONS: Version Diff sidebar 
+          // ACTIONS: Version Diff sidebar
           // ============================================
           ui_LoadVersion(ts) {
             this.filter_SelectedVersion = ts;
@@ -1887,7 +1921,6 @@
             this.filter_SelProv = "";
             this.filter_SelKab = "";
             this.filter_SelKec = "";
-            this.stagingData_Object = null;
             this.stats_TotalRows = "0";
             this.stats_LastUpdateLabel = "N/A";
             this.history_DiffCache = {}; // <--- CLEAR CACHE for sidebar diff
@@ -1954,6 +1987,20 @@
 
             if (arr.length === allOptions.length) return ""; // Revert to all (no filter)
             if (arr.length === 0) return "__NONE__"; // Force return zero rows
+            return arr.join(';');
+          },
+
+          util_SelectAllFiltered(currentVal, allOptions, search) {
+            if (!search) return currentVal;
+            let currentArr = (currentVal && currentVal !== "__NONE__") ? currentVal.split(';') : [];
+            let filteredVals = allOptions.filter(o => o.label.toLowerCase()
+                .includes(search.toLowerCase())).map(o => o.val);
+           
+            if (filteredVals.length === 0) return currentVal;
+            let arr = Array.from(new Set([...currentArr, ...filteredVals]));
+           
+            if (arr.length === allOptions.length) return "";
+            if (arr.length === 0) return "__NONE__";
             return arr.join(';');
           },
 
@@ -2191,7 +2238,7 @@
           },
 
           // Resizers
-          // This replaces util_AddColumnResizer. 
+          // This replaces util_AddColumnResizer.
           // It doesn't CREATE divs (Server did that), it just activates them.
           ui_InitResizers() {
             const activeTableId = this.viewModeState === 'iku' ? 'iku_table_element' : 'rekomendasi_id_table_element';
@@ -2240,6 +2287,10 @@
             const container = document.getElementById('iku_table_element');
             container.innerHTML = '<tbody><tr><td class="text-center p-4">Calculating IKU on Server...</td></tr></tbody>';
 
+            // Reset pagination state when filters change
+            this.iku_offset = 0;
+            this.iku_hasMore = true;
+
             let params = new URLSearchParams();
             if (this.filter_SelectedVersion) params.append("version", this.filter_SelectedVersion);
             if (this.filter_SelProv) params.append("Provinsi", this.filter_SelProv);
@@ -2248,6 +2299,10 @@
             if (this.filter_NameSearch) params.append("Kode Wilayah Administrasi Desa", this.filter_NameSearch);
             if (this.iku_GroupByOverride) params.append("group_by", this.iku_GroupByOverride);
             if (this.filter_IdListInput.trim()) params.append("ids", this.filter_IdListInput.replace(/\n/g, ";"));
+            
+            params.append("offset", this.iku_offset);
+            params.append("limit", this.iku_limit);
+            params.append("is_append", "false");
 
             try {
               let res = await fetch(`${this.apiBaseUrl}/dashboard/iku/${this.targetYear}?${params.toString()}`, {
@@ -2261,28 +2316,49 @@
               container.innerHTML = htmlContent;
 
               this.ui_InitResizers();
-              this.$nextTick(() => {
-                this.ui_ApplyFreeze();
-
-                // FIX STICKY ROW 2 HEIGHT DYNAMICALLY
-                const activeTableId = this.viewModeState === 'iku' ? 'iku_table_element' : 'dashboard_table_element';
-                const table = document.getElementById(activeTableId);
-                if (table) {
-                  const firstRow = table.querySelector('thead tr:first-child');
-                  const secondRowCells = table.querySelectorAll('thead tr:nth-child(2) th');
-                  if (firstRow && secondRowCells.length > 0) {
-                    const firstRowHeight = firstRow.getBoundingClientRect().height;
-                    secondRowCells.forEach(cell => {
-                      cell.style.top = `${firstRowHeight - 1}px`; // -1px overlap prevents gaps
-                    });
-                  }
-                }
-              });
-
+              this.$nextTick(() => { this.ui_ApplyFreeze(); });
             } catch (e) {
               console.error(e);
               container.innerHTML = `<tbody><tr><td class="text-red-500 p-4">Error: ${e.message}</td></tr></tbody>`;
             }
+          },
+
+          async action_LoadMoreIku() {
+            if (this.iku_isLoadingMore || !this.iku_hasMore) return;
+            this.iku_isLoadingMore = true;
+            this.iku_offset += this.iku_limit;
+
+            let params = new URLSearchParams();
+            if (this.filter_SelectedVersion) params.append("version", this.filter_SelectedVersion);
+            if (this.filter_SelProv) params.append("Provinsi", this.filter_SelProv);
+            if (this.filter_SelKab) params.append("Kabupaten/ Kota", this.filter_SelKab);
+            if (this.filter_SelKec) params.append("Kecamatan", this.filter_SelKec);
+            if (this.filter_NameSearch) params.append("Kode Wilayah Administrasi Desa", this.filter_NameSearch);
+            if (this.iku_GroupByOverride) params.append("group_by", this.iku_GroupByOverride);
+            if (this.filter_IdListInput.trim()) params.append("ids", this.filter_IdListInput.replace(/\n/g, ";"));
+            
+            params.append("offset", this.iku_offset);
+            params.append("limit", this.iku_limit);
+            params.append("is_append", "true");
+
+            try {
+              let res = await fetch(`${this.apiBaseUrl}/dashboard/iku/${this.targetYear}?${params.toString()}`, {
+                method: "POST",
+                credentials: 'include'
+              });
+              let htmlContent = await res.text();
+              
+              if (!htmlContent.trim()) {
+                  this.iku_hasMore = false;
+              } else {
+                  const tbody = document.querySelector('#iku_table_element tbody');
+                  if (tbody) {
+                      tbody.insertAdjacentHTML('beforeend', htmlContent);
+                      this.$nextTick(() => { this.ui_ApplyFreeze(); });
+                  }
+              }
+            } catch (e) { console.error("Error loading more IKU:", e); } 
+            finally { this.iku_isLoadingMore = false; }
           },
 
           // Explicit Action for Button Click (Force Switch)
@@ -2321,7 +2397,7 @@
               Provinsi: this.filter_SelProv,
               "Kabupaten/ Kota": this.filter_SelKab,
               Kecamatan: this.filter_SelKec,
-              Desa: this.filter_NameSearch
+              "Kode Wilayah Administrasi Desa": this.filter_NameSearch
             });
             if (this.iku_GroupByOverride) params.append("group_by", this.iku_GroupByOverride);
             if (this.filter_SelectedVersion) params.append("version", this.filter_SelectedVersion);

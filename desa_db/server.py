@@ -990,7 +990,7 @@ async def endpoint_post_calculate_dashboard(year: str, request: Request):
 @app.post("/dashboard/iku/{year}", dependencies=[Depends(auth_get_current_user)])
 async def endpoint_post_calculate_iku_dashboard(year: str, request: Request):
     """
-    Calculates and renders the IKU dashboard based on filtered data.
+    Calculates and renders the IKU dashboard based on filtered data (Paginated).
     
     Logic:
     - Applies time-travel (?version) and dynamic location/ID filters
@@ -1004,6 +1004,11 @@ async def endpoint_post_calculate_iku_dashboard(year: str, request: Request):
 
     try:
         params_dict = dict(request.query_params)
+        
+        # Pagination Extraction
+        limit = int(params_dict.get("limit", 100))
+        offset = int(params_dict.get("offset", 0))
+        is_append = params_dict.get("is_append", "false").lower() == "true"
 
         # Build base query with time filter
         version = params_dict.get("version")
@@ -1023,7 +1028,8 @@ async def endpoint_post_calculate_iku_dashboard(year: str, request: Request):
         df_filtered = con.execute(filtered_query, values).pl()
 
         # Render HTML using the new IKU helper
-        html_table = helpers_render_iku_dashboard(df_filtered, params_dict)
+        # Pass limit, offset, and is_append
+        html_table = helpers_render_iku_dashboard(df_filtered, params_dict, limit=limit, offset=offset, is_append=is_append)
 
         return HTMLResponse(content=html_table)
 

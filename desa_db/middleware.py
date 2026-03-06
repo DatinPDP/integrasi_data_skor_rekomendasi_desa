@@ -1182,27 +1182,38 @@ def helpers_generate_excel_workbook(con, df_grid: pl.DataFrame, do_translate: bo
                 prov = params_dict.get("Provinsi", "")
                 kab = params_dict.get("Kabupaten/ Kota", "")
                 kec = params_dict.get("Kecamatan", "")
+                desa = params_dict.get("Kode Wilayah Administrasi Desa", params_dict.get("Desa", ""))
 
                 # Since empty string now means "All selected/No filter", we check for empty
                 if not kab or kab == "__NONE__":
                     group_col = "Provinsi"
                 elif not kec or kec == "__NONE__":
                     group_col = "Kabupaten/ Kota"
-                elif not params_dict.get("Desa"):
+                elif not desa or desa == "__NONE__":
                     group_col = "Kecamatan"
                 else:
                     group_col = "Desa"
             
-            wilayah_header = group_col.upper()
-            write_row1 = [wilayah_header if v == "WILAYAH" else v for v in row1]
+            hierarchy = ["Provinsi", "Kabupaten/ Kota", "Kecamatan", "Desa"]
+            if group_col in hierarchy:
+                group_cols = hierarchy[:hierarchy.index(group_col) + 1]
+            else:
+                group_cols = ["Provinsi"]
+
+            write_row1 = [c.upper() for c in group_cols] + row1[1:]
+            write_row2 = [""] * len(group_cols) + row2[1:]
             
             ws3.append(write_row1)
-            ws3.append(row2)
+            ws3.append(write_row2)
             
-            # Merge Row 1 headers horizontally
-            current_val = write_row1[0]
-            start_col = 1
-            for col_idx in range(2, len(write_row1) + 1):
+            # Merge Top-Left columns vertically (Group Cols + JLH DESA)
+            for col_idx in range(1, len(group_cols) + 2):
+                ws3.merge_cells(start_row=1, start_column=col_idx, end_row=2, end_column=col_idx)
+                
+            # Merge Row 1 headers horizontally for parent metrics
+            current_val = write_row1[len(group_cols) + 1]
+            start_col = len(group_cols) + 2
+            for col_idx in range(len(group_cols) + 3, len(write_row1) + 1):
                 v = write_row1[col_idx - 1]
                 if v != "" and v != current_val:
                     if col_idx - 1 > start_col:
@@ -1211,11 +1222,6 @@ def helpers_generate_excel_workbook(con, df_grid: pl.DataFrame, do_translate: bo
                     start_col = col_idx
             if len(write_row1) > start_col:
                 ws3.merge_cells(start_row=1, start_column=start_col, end_row=1, end_column=len(write_row1))
-            
-            # Merge Top-Left columns vertically
-            for col_idx, v in enumerate(row1):
-                if v in ["WILAYAH", "JLH DESA"]:
-                    ws3.merge_cells(start_row=1, start_column=col_idx+1, end_row=2, end_column=col_idx+1)
             
             for r in [1, 2]:
                 for cell in ws3[r]:
@@ -1247,7 +1253,8 @@ def helpers_generate_excel_workbook(con, df_grid: pl.DataFrame, do_translate: bo
                             parent_to_statuses[current_parent].append(sub_val)
 
             df_filtered = df_grid
-            if df_filtered.height > 0 and group_col in df_filtered.columns:
+            valid_grouping = all(c in df_filtered.columns for c in group_cols)
+            if df_filtered.height > 0 and valid_grouping:
                 exprs = []
                 for parent in parent_metrics:
                     children = iku_mapping.get(parent, [])
@@ -1278,7 +1285,7 @@ def helpers_generate_excel_workbook(con, df_grid: pl.DataFrame, do_translate: bo
                             safe_status = status.replace(" ", "_")
                             agg_exprs.append(pl.lit(0).alias(f"__iku_{safe_status}_{parent}"))
 
-                df_grouped = df_filtered.group_by(group_col).agg(agg_exprs).sort(group_col)
+                df_grouped = df_filtered.group_by(group_cols).agg(agg_exprs).sort(group_cols)
 
                 total_jlh_desa = df_grouped["JLH DESA"].sum()
                 totals = {"JLH DESA": total_jlh_desa}
@@ -1288,7 +1295,7 @@ def helpers_generate_excel_workbook(con, df_grid: pl.DataFrame, do_translate: bo
                         safe_status = status.replace(" ", "_")
                         totals[f"__iku_{safe_status}_{parent}"] = df_grouped[f"__iku_{safe_status}_{parent}"].sum()
 
-                total_row = ["TOTAL", total_jlh_desa]
+                total_row = ["TOTAL"] + [""] * (len(group_cols) - 1) + [total_jlh_desa]
                 for idx in range(2, len(row2)):
                     metric_info = col_idx_to_metric.get(idx)
                     val_to_show = "-"
@@ -1321,7 +1328,7 @@ def helpers_generate_excel_workbook(con, df_grid: pl.DataFrame, do_translate: bo
 
                 # Render Body Rows
                 for row_data in df_grouped.to_dicts():
-                    data_row = [row_data.get(group_col, "Unknown"), row_data.get("JLH DESA", 0)]
+                    data_row = [row_data.get(c, "Unknown") for c in group_cols] + [row_data.get("JLH DESA", 0)]
                     for idx in range(2, len(row2)):
                         metric_info = col_idx_to_metric.get(idx)
                         val_to_show = "-"
@@ -1353,8 +1360,9 @@ def helpers_generate_excel_workbook(con, df_grid: pl.DataFrame, do_translate: bo
                         elif isinstance(cell.value, float):
                             cell.number_format = '#,##0.00'
 
-            ws3.column_dimensions['A'].width = 35
-            ws3.column_dimensions['B'].width = 15
+            for i in range(1, len(group_cols) + 1):
+                ws3.column_dimensions[get_column_letter(i)].width = 25
+            ws3.column_dimensions[get_column_letter(len(group_cols) + 1)].width = 15
 
     return wb
 
@@ -1749,7 +1757,14 @@ def helpers_render_dashboard_html(calculated_rows: list[dict]) -> str:
     return html
 
 # IKU Dashboard rendering
-def helpers_render_iku_dashboard(df_filtered: pl.DataFrame, params_dict: dict) -> str:
+def helpers_render_iku_dashboard(
+    df_filtered: pl.DataFrame,
+    params_dict: dict,
+    limit: int = 100,
+    offset: int = 0,
+    is_append: bool = False
+) -> str:
+
     """
     Renders HTML table for IKU Dashboard from filtered DataFrame.
     
@@ -1807,8 +1822,11 @@ def helpers_render_iku_dashboard(df_filtered: pl.DataFrame, params_dict: dict) -
         else:
             group_col = "Desa"
 
-    # Make the table header explicitly show the level you are viewing
-    wilayah_header = group_col.upper()
+    hierarchy = ["Provinsi", "Kabupaten/ Kota", "Kecamatan", "Desa"]
+    if group_col in hierarchy:
+        group_cols = hierarchy[:hierarchy.index(group_col) + 1]
+    else:
+        group_cols = ["Provinsi"]
 
     # Define valid statuses that can exist in the DB
     valid_statuses = {"mandiri", "maju", "berkembang", "tertinggal", "sangat tertinggal"}
@@ -1841,57 +1859,60 @@ def helpers_render_iku_dashboard(df_filtered: pl.DataFrame, params_dict: dict) -
                     parent_to_statuses[current_parent].append(sub_val)
 
     # --- Build HTML Header ---
-    html = "<thead><tr>"
-    
-    colspans = []
-    if row1:
-        current_val = row1[0]
-        count = 1
-        for val in row1[1:]:
-            if val == current_val and val != "":
-                count += 1
+    html = ""
+    if not is_append:
+        html += "<thead><tr>"
+        
+        colspans = []
+        if row1:
+            current_val = row1[0]
+            count = 1
+            for val in row1[1:]:
+                if val == current_val and val != "":
+                    count += 1
+                else:
+                    colspans.append((current_val, count))
+                    current_val = val
+                    count = 1
+            colspans.append((current_val, count))
+
+        # Top level headers
+        col_idx_tracker = 0
+        for val, span in colspans:
+            if val == "WILAYAH":
+                for c in group_cols:
+                    html += (
+                        f'<th rowspan="2" class="relative bg-gray-200 dark:bg-slate-700 border dark:border-slate-600 '
+                        f'p-2 iku-header-wilayah" data-col-idx="{col_idx_tracker}">'
+                        f'<span>{c.upper()}</span><div class="resizer"></div></th>'
+                    )
+                    col_idx_tracker += 1
+            elif val == "JLH DESA":
+                html += (
+                    f'<th rowspan="2" class="relative bg-gray-200 dark:bg-slate-700 border dark:border-slate-600 '
+                    f'p-2 iku-header-jlh" data-col-idx="{col_idx_tracker}">'
+                    f'<span>{val}</span><div class="resizer"></div></th>'
+                )
+                col_idx_tracker += 1
             else:
-                colspans.append((current_val, count))
-                current_val = val
-                count = 1
-        colspans.append((current_val, count))
+                html += (
+                    f'<th colspan="{span}" class="text-center relative bg-gray-200 dark:bg-slate-700 border '
+                    f'dark:border-slate-600 p-3 iku-header-group" style="width: 300px;min-width: 300px;">'
+                    f'<span>{val}</span><div class="resizer"></div></th>'
+                )
 
-    # Top level headers
-    col_idx_tracker = 0
-    for val, span in colspans:
-        if val == "WILAYAH":
-            html += (
-                f'<th rowspan="2" class="relative bg-gray-200 dark:bg-slate-700 border dark:border-slate-600 '
-                f'p-2 iku-header-wilayah" data-col-idx="{col_idx_tracker}">'
-                f'<span>{wilayah_header}</span><div class="resizer"></div></th>'
-            )
-            col_idx_tracker += 1
-        elif val == "JLH DESA":
-            html += (
-                f'<th rowspan="2" class="relative bg-gray-200 dark:bg-slate-700 border dark:border-slate-600 '
-                f'p-2 iku-header-jlh" data-col-idx="{col_idx_tracker}">'
-                f'<span>{val}</span><div class="resizer"></div></th>'
-            )
-            col_idx_tracker += 1
-        else:
-            html += (
-                f'<th colspan="{span}" class="text-center relative bg-gray-200 dark:bg-slate-700 border '
-                f'dark:border-slate-600 p-3 iku-header-group" style="width: 300px;min-width: 300px;">'
-                f'<span>{val}</span><div class="resizer"></div></th>'
-            )
+        html += "</tr><tr>"
 
-    html += "</tr><tr>"
+        # Sub level headers (Starting from data-col-idx=2)
+        for idx, val in enumerate(row2):
+            if idx < len(row1) and row1[idx] not in ["WILAYAH", "JLH DESA"]:
+                html += (
+                    f'<th class="relative text-center bg-gray-100 dark:bg-slate-800 border dark:border-slate-600 '
+                    f'p-3 text-xs iku-header-sub" data-col-idx="{idx + len(group_cols) - 1}" style="width: 80px;min-width: 80px;">'
+                    f'<span>{val}</span><div class="resizer"></div></th>'
+                )
 
-    # Sub level headers (Starting from data-col-idx=2)
-    for idx, val in enumerate(row2):
-        if idx < len(row1) and row1[idx] not in ["WILAYAH", "JLH DESA"]:
-            html += (
-                f'<th class="relative text-center bg-gray-100 dark:bg-slate-800 border dark:border-slate-600 '
-                f'p-3 text-xs iku-header-sub" data-col-idx="{idx}" style="width: 80px;min-width: 80px;">'
-                f'<span>{val}</span><div class="resizer"></div></th>'
-            )
-
-    html += "</tr></thead><tbody>"
+        html += "</tr></thead><tbody>"
 
     # --- Build HTML Body ---
     if df_filtered.height > 0:
@@ -1934,7 +1955,7 @@ def helpers_render_iku_dashboard(df_filtered: pl.DataFrame, params_dict: dict) -
                         agg_exprs.append(pl.lit(0).alias(f"__iku_{safe_status}_{parent}"))
 
             # Group by hierarchy
-            df_grouped = df_filtered.group_by(group_col).agg(agg_exprs).sort(group_col)
+            df_grouped = df_filtered.group_by(group_cols).agg(agg_exprs).sort(group_cols)
 
             # Calculate TOTAL Row & Column Maximums for Heatmap
             total_jlh_desa = df_grouped["JLH DESA"].sum()
@@ -1958,64 +1979,71 @@ def helpers_render_iku_dashboard(df_filtered: pl.DataFrame, params_dict: dict) -
                 col_maxes[f"__iku_total_{parent}"] = parent_total_series.max()
 
             # Inject TOTAL Row HTML (Forced to precisely match header classes, no tailwind text coloring)
-            html += "<tr class='font-extrabold'>"
-            html += (
-                f'<td class="p-3 border dark:border-slate-600 bg-gray-200 dark:bg-slate-700 text-slate-800'
-                f'dark:text-slate-100 iku-cell-wilayah" data-col-idx="0">TOTAL</td>'
-            )
-            html += (
-                f'<td class="p-3 border dark:border-slate-600 bg-gray-200 dark:bg-slate-700 text-center'
-                f'font-mono iku-cell-jlh" data-col-idx="1">{total_jlh_desa:,}</td>'
-            )
-
-            for idx in range(2, len(row2)):
-                metric_info = col_idx_to_metric.get(idx)
-                val_to_show = "-"
-                
-                if metric_info:
-                    parent = metric_info["parent"]
-                    sub = metric_info["sub"]
-                    
-                    # Dynamically sum all valid statuses mapped to THIS parent
-                    t_total = sum(totals.get(f"__iku_{s.replace(' ', '_')}_{parent}", 0) for s in parent_to_statuses.get(parent, []))
-                    
-                    if sub == "rata-rata":
-                        avg_val = totals.get(f"__iku_avg_{parent}")
-                        if avg_val is not None:
-                            val_to_show = f"{avg_val:.2f}"
-                    elif sub in valid_statuses:
-                        safe_sub = sub.replace(" ", "_")
-                        val = totals.get(f"__iku_{safe_sub}_{parent}", 0)
-                        val_to_show = f"{val:,}"
-                    elif sub == "total":
-                        val_to_show = f"{t_total:,}"
-                    elif "capaian" in sub:
-                        if total_jlh_desa > 0:
-                            val_to_show = f"{(t_total / total_jlh_desa) * 100:.1f}%"
-                        else:
-                            val_to_show = "0.0%"
-
+            if not is_append:
+                html += "<tr class='font-extrabold'>"
+                html += (
+                    f'<td class="p-3 border dark:border-slate-600 bg-gray-200 dark:bg-slate-700 text-slate-800'
+                    f'dark:text-slate-100 iku-cell-wilayah" data-col-idx="0">TOTAL</td>'
+                )
+                for c_offset in range(1, len(group_cols)):
+                    html += (
+                        f'<td class="p-3 border dark:border-slate-600 bg-gray-200 dark:bg-slate-700 text-slate-800 '
+                        f'dark:text-slate-100 iku-cell-wilayah" data-col-idx="{c_offset}"></td>'
+                    )
                 html += (
                     f'<td class="p-3 border dark:border-slate-600 bg-gray-200 dark:bg-slate-700 text-center '
-                    f'iku-cell-data text-slate-800 dark:text-slate-100" data-col-idx="{idx}">{val_to_show}</td>'
+                    f'font-mono iku-cell-jlh" data-col-idx="{len(group_cols)}">{total_jlh_desa:,}</td>'
                 )
-            html += "</tr>"
-            
+
+                for idx in range(2, len(row2)):
+                    metric_info = col_idx_to_metric.get(idx)
+                    val_to_show = "-"
+                    
+                    if metric_info:
+                        parent = metric_info["parent"]
+                        sub = metric_info["sub"]
+                        
+                        # Dynamically sum all valid statuses mapped to THIS parent
+                        t_total = sum(totals.get(f"__iku_{s.replace(' ', '_')}_{parent}", 0) for s in parent_to_statuses.get(parent, []))
+                        
+                        if sub == "rata-rata":
+                            avg_val = totals.get(f"__iku_avg_{parent}")
+                            if avg_val is not None:
+                                val_to_show = f"{avg_val:.2f}"
+                        elif sub in valid_statuses:
+                            safe_sub = sub.replace(" ", "_")
+                            val = totals.get(f"__iku_{safe_sub}_{parent}", 0)
+                            val_to_show = f"{val:,}"
+                        elif sub == "total":
+                            val_to_show = f"{t_total:,}"
+                        elif "capaian" in sub:
+                            if total_jlh_desa > 0:
+                                val_to_show = f"{(t_total / total_jlh_desa) * 100:.1f}%"
+                            else:
+                                val_to_show = "0.0%"
+
+                    html += (
+                        f'<td class="p-3 border dark:border-slate-600 bg-gray-200 dark:bg-slate-700 text-center '
+                        f'iku-cell-data text-slate-800 dark:text-slate-100" data-col-idx="{idx + len(group_cols) - 1}">{val_to_show}</td>'
+                    )
+                html += "</tr>"
+
+            # Apply Pagination Slice
+            if limit and limit > 0:
+                df_page = df_grouped.slice(offset, limit)
+            else:
+                df_page = df_grouped
+
             # Inject calculated values into HTML body (With CSS Heatmap logic applied)
-            for row_data in df_grouped.to_dicts():
-                html += "<tr class='hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors'>"
-                wilayah = row_data.get(group_col, "Unknown")
+            for row_data in df_page.to_dicts():
+                html += "<tr class='dash-tr-hover'>"
                 jlh_desa = row_data.get("JLH DESA", 0)
                 
                 # Wilayah & Jumlah Desa Columns
-                html += (
-                    f'<td class="p-3 border dark:border-slate-700 font-bold text-slate-700 dark:text-slate-200 '
-                    f'iku-cell-wilayah" data-col-idx="0">{h.escape(str(wilayah))}</td>'
-                )
-                html += (
-                    f'<td class="p-3 border dark:border-slate-700 text-center font-mono iku-cell-jlh" '
-                    f'data-col-idx="1">{jlh_desa:,}</td>'
-                )
+                for c_idx, c_name in enumerate(group_cols):
+                    wilayah = row_data.get(c_name, "Unknown")
+                    html += f'<td class="iku-td-w" data-col-idx="{c_idx}">{h.escape(str(wilayah))}</td>'
+                html += f'<td class="iku-td-j" data-col-idx="{len(group_cols)}">{jlh_desa:,}</td>'
 
                 # Map corresponding calculated Data
                 for idx in range(2, len(row2)):
@@ -2068,18 +2096,18 @@ def helpers_render_iku_dashboard(df_filtered: pl.DataFrame, params_dict: dict) -
                                 # Cap opacity at 0.55 so text stays readable
                                 inline_style = f"background-color: rgba(34, 197, 94, {min(1.0, max(0.0, intensity)) * 0.55});"
 
-                    html += (
-                        f'<td class="p-3 border dark:border-slate-700 text-center font-semibold text-slate-800 dark:text-slate-100 '
-                        f'iku-cell-data" style="padding-top: 2px; padding-bottom: 2px; {inline_style}" data-col-idx="{idx}">{val_to_show}</td>'
-                    )
+                    html += f'<td class="iku-td-d" style="{inline_style}" data-col-idx="{idx + len(group_cols) - 1}">{val_to_show}</td>'
                 html += "</tr>"
         else:
-            html += (
-                f"<tr><td colspan='{len(row2)}' class='text-center p-4 text-red-500'>"
-                f"Kolom '{group_col}' tidak ditemukan di database</td></tr>"
-            )
+            if not is_append:
+                html += (
+                    f"<tr><td colspan='{len(row2)}' class='text-center p-4 text-red-500'>"
+                    f"Kolom '{group_col}' tidak ditemukan di database</td></tr>"
+                )
     else:
-        html += f"<tr><td colspan='{len(row2)}' class='text-center p-4'>Tidak ada data untuk filter ini</td></tr>"
+        if not is_append:
+            html += f"<tr><td colspan='{len(row2)}' class='text-center p-4'>Tidak ada data untuk filter ini</td></tr>"
 
-    html += "</tbody>"
+    if not is_append:
+        html += "</tbody>"
     return html
