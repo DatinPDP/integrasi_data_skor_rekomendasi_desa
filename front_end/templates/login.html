@@ -4,10 +4,13 @@
   <head>
     <meta charset="UTF-8">
     <title>Login data skor rekomendasi desa</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
     <style>
       /* --- 1. TEXTURED BACKGROUNDS (CSS ONLY) --- */
       body {
-        font-family: monospace;
+        font-family: 'Atkinson Hyperlegible', sans-serif;
         height: 100vh;
         margin: 0;
         display: flex;
@@ -23,7 +26,6 @@
       }
 
       .login-box {
-        border-radius: 10px;
         background: rgba(255, 255, 255, 0.95);
         /* Slight opacity */
         padding: 2.5rem;
@@ -32,11 +34,11 @@
         border: 1px solid #d1d5db;
         /* Sharp shadow for retro feel */
         box-shadow: 8px 8px 0px rgba(0, 0, 0, 0.1);
-        border-radius: 4px;
+        border-radius: 16px;
         color: #323A45;
       }
 
-      /* --- 2. SPLIT HEADER (30% Icon | 70% Text) --- */
+      /* --- 2. SPLIT HEADER (40% Icon | 60% Text) --- */
       .login-header {
         display: flex;
         align-items: center;
@@ -46,7 +48,7 @@
       }
 
       .header-icon {
-        width: 30%;
+        width: 40%;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -55,23 +57,33 @@
       }
 
       .header-title {
-        width: 70%;
-        padding-left: 1rem;
+        width: 60%;
+        padding-left: 0rem;
+      }
+
+      /* Groups all heading elements to remove spacing */
+      .header-title h1,
+      .header-title h2,
+      .header-title h3,
+      .header-title h4,
+      .header-title h5,
+      .header-title h6,
+      .header-title small {
+        margin: 0;
+        line-height: 1;
       }
 
       .header-title h2 {
-        margin: 0;
-        font-size: 1.25rem;
-        line-height: 1.2;
+        font-size: 2rem;
         color: #323A45;
         text-transform: uppercase;
         letter-spacing: 0.5px;
       }
 
+      .header-title h3,
       .header-title small {
         display: block;
-        margin-top: 5px;
-        font-size: 0.7rem;
+        font-size: 1rem;
         color: #6b7280;
         font-weight: normal;
       }
@@ -94,7 +106,7 @@
         width: 100%;
         padding: 10px;
         box-sizing: border-box;
-        border-radius: 2px;
+        border-radius: 6px;
         border: 2px solid #e5e7eb;
         background: #f9fafb;
         font-family: inherit;
@@ -111,9 +123,9 @@
       button {
         width: 100%;
         padding: 12px;
-        background-color: #1f2937;
+        background-color: #64748B;
         /* Dark Grey */
-        border-radius: 2px;
+        border-radius: 6px;
         color: white;
         border: none;
         cursor: pointer;
@@ -124,19 +136,6 @@
         letter-spacing: 1px;
         transition: transform 0.1s, opacity 0.2s;
       }
-
-      button {
-        border-radius: 2px;
-        width: 100%;
-        padding: 10px;
-        background-color: #64748B;
-        color: white;
-        border: none;
-        cursor: pointer;
-        font-family: inherit;
-        font-weight: bold;
-      }
-
 
       button:hover {
         background-color: #EFF1F3;
@@ -166,20 +165,10 @@
 
       <div class="login-header">
         <div class="header-icon">
-          <svg
-            width="48"
-            height="48"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-            <path d="M8 11h8"></path>
-            <path d="M12 11v4"></path>
-          </svg>
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/Logo_Kementerian_Desa_dan_Pembangunan_Daerah_Tertinggal_Republik_Indonesia_%282024%29.svg/1280px-Logo_Kementerian_Desa_dan_Pembangunan_Daerah_Tertinggal_Republik_Indonesia_%282024%29.svg.png"
+          width="68"
+          height="68"
+          alt="Login Icon">
         </div>
 
         <div class="header-title">

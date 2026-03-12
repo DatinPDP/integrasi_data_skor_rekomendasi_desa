@@ -63,7 +63,7 @@
     @apply overflow-auto h-full border border-gray-300 bg-white relative dark:bg-slate-900 dark:border-slate-700;
   }
   .dash-table {
-    @apply border-collapse w-max min-w-full text-[13px] table-fixed p-1 font-mono;
+    @apply border-collapse w-max min-w-full text-[13px] table-fixed p-1;
   }
   /* Sticky Headers */
   .dash-table thead th {
@@ -149,7 +149,7 @@
       @apply p-3 border dark:border-slate-700 font-bold text-slate-700 dark:text-slate-200 iku-cell-wilayah;
   }
   .iku-td-j {
-      @apply p-3 border dark:border-slate-700 text-center font-mono iku-cell-jlh;
+      @apply p-3 border dark:border-slate-700 text-center iku-cell-jlh;
   }
   .iku-td-d {
       @apply px-3 py-0.5 border dark:border-slate-700 text-center font-semibold text-slate-800 dark:text-slate-100 iku-cell-data;

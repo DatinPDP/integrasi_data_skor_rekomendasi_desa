@@ -1582,7 +1582,7 @@ def helpers_render_dashboard_html(calculated_rows: list[dict]) -> str:
     html += """
     <table class="iku-table table-auto w-full text-left text-xs text-slate-700 dark:text-slate-300 border-collapse" 
         style="table-layout: fixed; width: 100%;">
-        <thead>
+        <thead style="font-family: 'Atkinson Hyperlegible', sans-serif !important;">
             <tr>
                 <th class="col-no relative" rowspan="2" data-col-idx="0" style="width: 40px; min-width: 40px;">
                     <span>NO</span><div class="resizer"></div>
@@ -1643,7 +1643,7 @@ def helpers_render_dashboard_html(calculated_rows: list[dict]) -> str:
                 </th>
             </tr>
         </thead>
-        <tbody>
+        <tbody style="font-family: 'Atkinson Hyperlegible', sans-serif !important;">
     """
 
     # --- CALCULATE ROW SPANS (Ported from JS) ---
@@ -1861,7 +1861,7 @@ def helpers_render_iku_dashboard(
     # --- Build HTML Header ---
     html = ""
     if not is_append:
-        html += "<thead><tr>"
+        html += "<thead style=\"font-family: 'Atkinson Hyperlegible', sans-serif !important;\"><tr>"
         
         colspans = []
         if row1:
@@ -1912,7 +1912,7 @@ def helpers_render_iku_dashboard(
                     f'<span>{val}</span><div class="resizer"></div></th>'
                 )
 
-        html += "</tr></thead><tbody>"
+        html += "</tr></thead><tbody style=\"font-family: 'Atkinson Hyperlegible', sans-serif !important;\">"
 
     # --- Build HTML Body ---
     if df_filtered.height > 0:
@@ -1992,7 +1992,7 @@ def helpers_render_iku_dashboard(
                     )
                 html += (
                     f'<td class="p-3 border dark:border-slate-600 bg-gray-200 dark:bg-slate-700 text-center '
-                    f'font-mono iku-cell-jlh" data-col-idx="{len(group_cols)}">{total_jlh_desa:,}</td>'
+                    f'iku-cell-jlh" data-col-idx="{len(group_cols)}">{total_jlh_desa:,}</td>'
                 )
 
                 for idx in range(2, len(row2)):

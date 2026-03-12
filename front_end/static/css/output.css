@@ -701,7 +701,6 @@ video {
   table-layout: fixed;
   border-collapse: collapse;
   padding: 0.25rem;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   font-size: 13px;
 }
 

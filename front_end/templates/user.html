@@ -9,10 +9,20 @@
     <meta charset="UTF-8">
     <title>User Dashboard</title>
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+
     <link
       href="./static/css/output.css"
       rel="stylesheet"
     >
+
+    <style>
+      body, .font-mono { 
+        font-family: 'Atkinson Hyperlegible', sans-serif !important; 
+      }
+    </style>
 
     <script
       defer
@@ -36,29 +46,14 @@
 
       <div class="header_left_group flex items-center gap-1">
 
-        <div
-          class="transition-all duration-300 ease-in-out shrink-0 h-full flex items-center"
-          :class="isSidebarOpen ?
-          'w-80 opacity-100'
-          : 'w-0 opacity-0 overflow-hidden'"
-        >
+        <div class="h-full flex items-center w-80 shrink-0">
           <h1 class="header_title_label text-sm font-bold flex items-center gap-2 truncate h-8 w-full text-slate-700
             border-r border-gray-300 dark:text-slate-100 dark:border-slate-600/50">
             <span class="text-blue-600 dark:text-blue-400 flex items-center gap-1.5">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="w-4 h-4"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                <path d="M8 11h8"></path>
-                <path d="M12 11v4"></path>
-              </svg>
+              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/Logo_Kementerian_Desa_dan_Pembangunan_Daerah_Tertinggal_Republik_Indonesia_%282024%29.svg/1280px-Logo_Kementerian_Desa_dan_Pembangunan_Daerah_Tertinggal_Republik_Indonesia_%282024%29.svg.png"
+              width="30"
+              height="30"
+              alt="Login Icon">
               <span>User</span>
             </span>
 
