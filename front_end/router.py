@@ -186,7 +186,11 @@ async def root(request: Request):
     
     if role == "admin": return RedirectResponse(url="/admin")
     if role == "user": return RedirectResponse(url="/user")
-    return RedirectResponse(url="/login")
+    
+    return templates.TemplateResponse("home.html", {
+        "request": request,
+        "api_url": "" 
+    })
 
 if __name__ == "__main__":
     import uvicorn

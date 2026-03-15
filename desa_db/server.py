@@ -145,6 +145,7 @@ try:
         helpers_calculate_dashboard_stats,
         helpers_render_dashboard_html,
         helpers_render_iku_dashboard,
+        helpers_get_public_iku_json,
         helpers_generate_excel_workbook,
         helpers_background_task_generate_pre_render_excel,
         ID_COL,
@@ -159,7 +160,7 @@ except ImportError:
     from desa_db.middleware import helpers_init_db, helpers_internal_process_temp_file
     from desa_db.middleware import helpers_build_dynamic_query, helpers_get_cache_path
     from desa_db.middleware import helpers_build_dynamic_query, helpers_get_cache_path
-    from desa_db.middleware import helpers_generate_excel_workbook
+    from desa_db.middleware import helpers_generate_excel_workbook, helpers_get_public_iku_json
     from desa_db.middleware import helpers_background_task_generate_pre_render_excel
     from desa_db.middleware import ID_COL, BASE_DIR as MW_BASE_DIR, CONFIG_DIR
 
@@ -199,6 +200,24 @@ class LoginRequest(BaseModel):
     """Login credentials model."""
     username: str
     password: str
+
+@app.get("/public/dashboard/iku/{year}")
+def endpoint_get_public_iku_json(year: str, metric: str = Query(None)):
+    """
+    Public JSON endpoint for homepage IKU visualization (no authentication).
+    
+    Query param:
+    - ?metric=... → returns data array for that specific parent metric
+    - No metric → returns only the list of available metrics
+    
+    Returns:
+        JSONResponse: exact structure from helpers_get_public_iku_json()
+    """
+    try:
+        data = helpers_get_public_iku_json(year, metric_filter=metric)
+        return JSONResponse(content=data)
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
 
 @app.post("/api/login")
 async def login(creds: LoginRequest, response: JSONResponse = None):

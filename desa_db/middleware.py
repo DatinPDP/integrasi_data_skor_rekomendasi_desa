@@ -2111,3 +2111,128 @@ def helpers_render_iku_dashboard(
     if not is_append:
         html += "</tbody>"
     return html
+
+def helpers_get_public_iku_json(year: str, metric_filter: str = None):
+    """
+    Public simplified IKU dashboard data generator (used by homepage).
+    
+    Logic:
+    - Loads table_structure_IKU.csv + iku_mapping.json
+    - If metric_filter=None: returns only the list of available metrics
+    - If metric_filter provided:
+      - Validates the metric exists
+      - Computes per-Provinsi IKU score (average of mapped child columns)
+      - Aggregates: JLH DESA, rata_rata, and capaian % (based on status ≥4)
+      - Groups exclusively by Provinsi
+    - Fully safe, no authentication required
+    
+    Returns:
+        dict:
+        - {"metrics": ["Parent1", "Parent2", ...]}          if no metric_filter
+        - {metric_filter: [{"provinsi": str, "jlh_desa": int, "rata_rata": float, "capaian": float}, ...]}  if metric specified
+        - {"error": str} on failure
+    """
+    con, _ = helpers_get_db_connection(year)
+    try:
+        iku_csv_path = os.path.join(CONFIG_DIR, "table_structure_IKU.csv")
+        iku_mapping_path = os.path.join(CONFIG_DIR, "iku_mapping.json")
+
+        if not os.path.exists(iku_csv_path) or not os.path.exists(iku_mapping_path):
+            return {"metrics": [], "error": "Config missing"}
+
+        with open(iku_mapping_path, "r", encoding="utf-8") as f:
+            iku_mapping = json.load(f)
+
+        with open(iku_csv_path, "r", encoding="utf-8-sig", errors="replace") as f:
+            reader = csv.reader(f, delimiter=';')
+            rows = list(reader)
+
+        if len(rows) < 2: return {"metrics": []}
+
+        row1 = rows[0]
+        row2 = rows[1]
+        valid_statuses = {"mandiri", "maju", "berkembang", "tertinggal", "sangat tertinggal"}
+
+        parent_metrics = []
+        parent_to_statuses = {}
+        current_parent = ""
+
+        # Map metrics
+        for idx, p_val in enumerate(row1):
+            if p_val.strip() != "":
+                current_parent = p_val.strip()
+                if current_parent not in parent_to_statuses:
+                    parent_to_statuses[current_parent] = []
+            if idx >= 2:
+                sub_val = row2[idx].strip().lower()
+                if current_parent not in parent_metrics:
+                    parent_metrics.append(current_parent)
+                if sub_val in valid_statuses and sub_val not in parent_to_statuses[current_parent]:
+                    parent_to_statuses[current_parent].append(sub_val)
+
+        # NO METRIC REQUESTED -> ONLY Return the list of metric names
+        if not metric_filter:
+            return {"metrics": parent_metrics}
+        
+        # INVALID METRIC REQUESTED -> Return empty
+        if metric_filter not in parent_metrics:
+            return {metric_filter: []}
+
+        # METRIC SPECIFIED -> Fetch only the specific data
+        df = con.execute("SELECT * FROM master_data WHERE valid_to IS NULL").pl()
+        if df.height == 0 or "Provinsi" not in df.columns: 
+            return {metric_filter: []}
+
+        parent = metric_filter
+        children = iku_mapping.get(parent, [])
+        valid_children = [c.strip() for c in children if c.strip() in df.columns]
+        
+        exprs = []
+        if valid_children:
+            sum_expr = pl.sum_horizontal(
+                [pl.col(c).cast(pl.Float64, strict=False).fill_null(0) for c in valid_children]
+            )
+            exprs.append((sum_expr / len(valid_children)).alias(f"__iku_score_{parent}"))
+        else:
+            exprs.append(pl.lit(None).alias(f"__iku_score_{parent}"))
+
+        df = df.with_columns(exprs)
+
+        agg_exprs = [pl.len().alias("JLH DESA")]
+        has_status = "Status ID" in df.columns
+        agg_exprs.append(pl.col(f"__iku_score_{parent}").mean().alias(f"__iku_avg_{parent}"))
+        
+        if has_status:
+            for status in parent_to_statuses.get(parent, []):
+                cond = (pl.col("Status ID") == status.upper()) & (pl.col(f"__iku_score_{parent}").fill_null(0) >= 4)
+                agg_exprs.append(cond.cast(pl.Int32).sum().alias(f"__iku_{status.replace(' ', '_')}_{parent}"))
+
+        # Group solely by Provinsi
+        df_grouped = df.group_by(["Provinsi"]).agg(agg_exprs).sort("Provinsi")
+        df_dicts = df_grouped.to_dicts()
+
+        metric_data = []
+        for row in df_dicts:
+            jlh = row.get("JLH DESA", 0)
+            avg = row.get(f"__iku_avg_{parent}")
+            t_total = sum(
+                row.get(f"__iku_{s.replace(' ', '_')}_{parent}", 0) for s in parent_to_statuses.get(parent, [])
+            )
+            capaian = (t_total / jlh * 100) if jlh > 0 else 0
+
+            metric_data.append({
+                "provinsi": row.get("Provinsi", "Unknown"),
+                "jlh_desa": jlh,
+                "rata_rata": round(avg, 2) if avg is not None else 0.0,
+                "capaian": round(capaian, 1)
+            })
+
+        # Return exact JSON structure requested: {"Nama Metric": [ {data...} ] }
+        return {metric_filter: metric_data}
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return {"error": str(e)}
+    finally:
+        con.close()

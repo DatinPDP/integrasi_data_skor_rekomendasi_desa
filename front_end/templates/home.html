@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en" x-data="PublicHomeApp()">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard Data Skor Rekomendasi Desa</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link 
+    href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&display=swap" 
+    rel="stylesheet">
+  <script defer src="/static/js/alpine.min.js"></script>
+  <style>
+    body {
+      font-family: 'Atkinson Hyperlegible', sans-serif;
+      min-height: 100vh;
+      margin: 0;
+      display: flex;
+      justify-content: flex-end; /* Moves content to the right */
+      align-items: flex-start;
+      padding: 5rem 2rem 2rem 2rem;
+      color: #333;
+
+      /* Dot Matrix (Active) */
+      background-color: #f0f2f5;
+      background-image: radial-gradient(#cbd5e1 1.5px, transparent 1.5px);
+      background-size: 24px 24px;
+
+    }
+
+    .flat-element {
+      box-shadow: 8px 8px 0px rgba(0, 0, 0, 0.1);
+      border-radius: 16px;
+      color: #323A45;
+      background-color: #ffffff;
+      border: 1px solid #e2e8f0;
+    }
+
+    /* Bypassing missing Tailwind classes with explicit CSS */
+    .login-btn {
+      position: absolute;
+      top: 1.5rem;
+      right: 1.5rem;
+      padding: 0.5rem 1rem;
+      background-color: transparent;
+      color: #323A45;
+      font-weight: 700;
+      border-radius: 0.25rem;
+      transition: background-color 0.2s ease-in-out;
+      text-decoration: none;
+    }
+
+    .login-btn:hover {
+      background-color: #ffffff;
+    }
+
+    .header-left {
+      position: absolute;
+      top: 1.5rem;
+      left: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .header-left img {
+      width: 3rem;
+      height: 3rem;
+      object-fit: contain;
+    }
+
+    .header-left h1 {
+      font-size: 1.125rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #1e293b;
+      line-height: 1.25;
+      margin: 0;
+    }
+
+    .header-left p {
+      font-size: 0.875rem;
+      color: #64748b;
+      margin: 0;
+    }
+
+    .main-wrapper {
+      width: 100%;
+      max-width: 700px;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .table-scroll-container {
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    select option {
+      background-color: #ffffff;
+      color: #323A45;
+      font-family: 'Atkinson Hyperlegible', sans-serif;
+      font-weight: 700;
+      padding: 10px;
+    }
+
+    /* --- Custom Scrollbar --- */
+    /* Webkit (Chrome/Edge/Safari) */
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    ::-webkit-scrollbar-track { background: #f1f1f1; }
+    ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 5px; }
+    ::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+    
+    /* Fallback width constraints for table elements */
+    .w-full { width: 95%; }
+    .text-left { text-align: left; }
+    .border-collapse { border-collapse: collapse; }
+    .p-4 { padding: 0.9rem; }
+  </style>
+</head>
+
+<body class="relative w-full">
+  <div class="header-left">
+    <img 
+      src="https://upload.wikimedia.org/wikipedia/commons/7/76/Logo_Kementerian_Desa_dan_Pembangunan_Daerah_Tertinggal_Republik_Indonesia_%282024%29.svg" 
+      alt="Logo">
+    <div>
+      <h1>Capaian IKU Nasional</h1>
+    </div>
+  </div>
+
+  <a href="/login" class="login-btn">Login</a>
+
+  <div class="main-wrapper">
+    
+    <select id="metric-select" name="metric" x-model="selectedMetric"
+            class="w-full p-4 font-bold focus:outline-none cursor-pointer flat-element appearance-none">
+      <option value="">-- Pilih Indikator --</option>
+      <template x-for="metric in metrics" :key="metric">
+        <option :value="metric" x-text="metric"></option>
+      </template>
+    </select>
+
+    <div x-show="isLoading" class="py-12 w-full text-center font-bold animate-pulse text-lg text-[#323A45]">
+      Memuat Data...
+    </div>
+
+    <div x-show="!isLoading && selectedMetric && currentData.length > 0" 
+         class="w-full overflow-hidden flat-element table-scroll-container">
+      <div style="overflow-x: auto;">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr style="border-bottom: 1px solid #e2e8f0; background: #f8fafc; font-size: 0.75rem; text-transform: uppercase;">
+              <template x-for="col in Object.keys(currentData[0] || {})" :key="col">
+                <th class="p-4 font-bold" style="white-space: nowrap;" x-text="col.replace(/_/g, ' ')"></th>
+              </template>
+            </tr>
+          </thead>
+          <tbody>
+            <template x-for="(row, index) in currentData" :key="index">
+              <tr style="border-bottom: 1px solid #f1f5f9;">
+                <template x-for="col in Object.keys(row)" :key="col">
+                  <td class="p-4 font-mono text-sm" style="white-space: nowrap;" x-text="row[col]"></td>
+                </template>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div x-show="!isLoading && selectedMetric && currentData.length === 0" 
+         class="py-12 w-full text-center" style="font-style: italic;" class="flat-element">
+      Tidak ada data untuk indikator ini.
+    </div>
+
+  </div>
+
+  <script>
+    function PublicHomeApp() {
+      return {
+        year: new Date().getFullYear() - 1,
+        isLoading: true,
+        metrics: [],
+        currentData: [],
+        selectedMetric: "",
+
+        async init() {
+          try {
+            // Initial load ONLY requests the metrics list (No Data Leak)
+            const res = await fetch(`/public/dashboard/iku/${this.year}`);
+            if(res.ok) {
+              const json = await res.json();
+              this.metrics = json.metrics || [];
+              if (this.metrics.length > 0) {
+                this.selectedMetric = this.metrics[0];
+                await this.fetchData(this.selectedMetric);
+              }
+            }
+          } catch(e) { console.error(e); } 
+          finally { this.isLoading = false; }
+
+          // Watch for dropdown changes and fetch the exact metric payload
+          this.$watch('selectedMetric', async (val) => {
+            if (!val) {
+              this.currentData = [];
+              return;
+            }
+            await this.fetchData(val);
+          });
+        },
+
+        async fetchData(metric) {
+          this.isLoading = true;
+          this.currentData = [];
+          try {
+            const url = `/public/dashboard/iku/${this.year}?metric=${encodeURIComponent(metric)}`;
+            const res = await fetch(url);
+            if (res.ok) {
+              const json = await res.json();
+              this.currentData = json[metric] || [];
+            }
+          } catch(e) { console.error(e); } 
+          finally { this.isLoading = false; }
+        }
+      }
+    }
+  </script>
+</body>
+</html>
