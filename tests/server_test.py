@@ -5,6 +5,7 @@ import csv
 import hashlib
 import pytest
 import duckdb
+import concurrent.futures
 from fastapi.testclient import TestClient
 from openpyxl import Workbook
 
@@ -306,3 +307,47 @@ def test_stage_upload_missing_header_file(client, test_year, tmp_path, monkeypat
     )
     assert res.status_code == 500
     assert "Configuration file not found" in res.json()["error"]
+
+def test_database_concurrent_read_only_access(test_year):
+    """
+    Tests that Option 1 allows multiple users to query the database 
+    at the exact same time without triggering DuckDB file lock crashes.
+    """
+    # SETUP: Admin writes to the database (read_only=False)
+    con_write, _ = middleware.helpers_get_db_connection(test_year, read_only=False)
+    con_write.execute("CREATE TABLE IF NOT EXISTS test_concurrency (id INTEGER)")
+    con_write.execute("INSERT INTO test_concurrency VALUES (1), (2), (3)")
+    con_write.close() # Admin releases the lock
+
+    # 2. SIMULATE CONCURRENCY: The worker function for public users
+    def simulate_public_user_query():
+        # Each user requests their own read_only connection
+        con_read, _ = middleware.helpers_get_db_connection(test_year, read_only=True)
+        try:
+            res = con_read.execute("SELECT COUNT(*) FROM test_concurrency").fetchone()[0]
+            return {"status": "success", "count": res}
+        except Exception as e:
+            return {"status": "error", "message": str(e)}
+        finally:
+            con_read.close()
+
+    # EXECUTE: Fire 20 requests at the exact same time
+    num_concurrent_users = 20
+    results = []
+    
+    with concurrent.futures.ThreadPoolExecutor(max_workers=num_concurrent_users) as executor:
+        # Submit all 20 tasks to the thread pool
+        futures = [executor.submit(simulate_public_user_query) for _ in range(num_concurrent_users)]
+        
+        # Gather the results as they finish
+        for future in concurrent.futures.as_completed(futures):
+            results.append(future.result())
+
+    # ASSERTIONS: Ensure NO users got locked out
+    assert len(results) == num_concurrent_users
+    
+    errors = [r["message"] for r in results if r["status"] == "error"]
+    assert len(errors) == 0, f"Concurrency failed! Users got errors: {errors}"
+    
+    # Verify all users successfully read the correct data
+    assert all(r["count"] == 3 for r in results)

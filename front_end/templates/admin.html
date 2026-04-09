@@ -2213,7 +2213,7 @@
             if (window.innerHeight > window.innerWidth && window.innerWidth < 1024) {
               this.util_Confirm(
                 "Portrait Mode Detected",
-                "For the best administrative experience, rotate your device horizontally or click Confirm to force landscape mode.",
+                "For the best experience, rotate your device horizontally or click Confirm to force landscape mode.",
                 () => {
                   this._orientationForced = true;
                   document.body.style.cssText = 'transform: rotate(-90deg); transform-origin: left top; ' +
@@ -2801,7 +2801,7 @@
 
             this.util_Confirm(
               "Konfirmasi Tahun Upload",
-              `Bagian ini akan mengupdate tahun <span class="text-red-400 font-bold">${this.targetYear}</span>, untuk mengganti pilih dropdown tahun di 'Histori & Perubahan'. Tekan Confirm untuk melanjutkan`,
+              `Bagian ini akan mengupdate tahun ${this.targetYear}, untuk mengganti pilih dropdown tahun di 'Histori & Perubahan'. Tekan Confirm untuk melanjutkan`,
               async () => {
                 try {
                   // Reset UI
@@ -2975,7 +2975,6 @@
 
           async action_CommitStagedData_ToDB() {
             if (!this.tempUploadData_object) return;
-            this.ui_UploadStatusMessage = "Saving...";
             let p = new URLSearchParams({
               temp_id: this.tempUploadData_object.temp_id,
               filename: this.tempUploadData_object.filename
