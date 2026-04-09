@@ -556,7 +556,8 @@ async def endpoint_post_commit_stage(
     if not os.path.exists(temp_path):
         return JSONResponse(status_code=404, content={"error": "Staging session expired. Please upload again."})
 
-    con, _ = helpers_get_db_connection(year)
+    con, _ = helpers_get_db_connection(year, read_only=False)
+
     try:
         con.execute("BEGIN TRANSACTION")
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -1055,7 +1056,7 @@ async def endpoint_post_delete_ids(
         dict: {"status": "success", "deleted_count": int, "deleted_ids": list} or {"status": "warning", "message": str}
         or JSONResponse 400/500 on error
     """
-    con, _ = helpers_get_db_connection(year)
+    con, _ = helpers_get_db_connection(year, read_only=False)
     try:
         # STRICT RULE: Split by SEMICOLON (;) or Newline. NO COMMAS.
         raw_ids = re.split(r'[;\n\r]+', ids)

@@ -16,7 +16,8 @@ dist/
 build/
 installed.txt
 _notes.md
-.ignore/
+.venv/
+.mise.toml
 
 # ==========================
 # DATA FILES
@@ -33,6 +34,7 @@ _notes.md
 *.part
 *.tmp
 *.bak
+.ignore/
 
 # ==========================
 # FRONTEND (Next.js / Node)

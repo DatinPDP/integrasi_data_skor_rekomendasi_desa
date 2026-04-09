@@ -68,6 +68,14 @@ os.makedirs(EXPORT_FOLDER, exist_ok=True)
 # Point to ../.config/rekomendasi.json relative to this file
 os.makedirs(DB_FOLDER, exist_ok=True)
 
+# Defined globally as a frozenset for O(1) instantaneous lookups.
+# Edit this list if tematik exceptions change.
+IKU_TEMATIK_EXCEPTIONS = frozenset([
+    "Persentase (%) Desa yang mengembangkan Model Tematik Bidang Pertanian/Perkebunan/Peternakan/Perikanan",
+    "Persentase (%) Desa yang mengembangkan Model Tematik Bidang Pariwisata",
+    "Persentase (%) desa yang mengembangkan desa model tematik yang berstatus mandiri"
+])
+
 # ==========================================
 # LOGIC LOADER (Existing)
 # ==========================================
@@ -147,11 +155,11 @@ def helpers_read_excel_preview(file_path: str, limit_rows: int = 25):
     Reads first N rows of 'Skor' sheet for frontend preview.
     - .xlsx: openpyxl streaming (read_only=True) for low memory
     - .xlsb/.xlsx fallback: Polars calamine
-    - Caps at 400 columns
+    - Caps at 424 columns
     - Converts None → ""
     - Returns pure list-of-lists
     Returns:
-        list[list[str]]: rows as list of lists (max limit_rows rows, 400 cols)
+        list[list[str]]: rows as list of lists (max limit_rows rows, 424 cols)
     """
     rows = []
 
@@ -175,7 +183,7 @@ def helpers_read_excel_preview(file_path: str, limit_rows: int = 25):
                     clean_row = [str(cell) if cell is not None else "" for cell in row]
                     
                     # Check if row has data
-                    rows.append(clean_row[:400])
+                    rows.append(clean_row[:424])
 
             finally:
                 wb.close()
@@ -195,7 +203,7 @@ def helpers_read_excel_preview(file_path: str, limit_rows: int = 25):
             df = df.head(limit_rows)
 
             # Limit width (similar to existing logic)
-            max_col = min(df.width, 400)
+            max_col = min(df.width, 424)
             df = df[:, :max_col]
             
             # Replace nulls with empty string for JSON safety
@@ -232,7 +240,7 @@ def helpers_generate_header_mapping(file_path: str, header_row_idx: int):
     - Loads standards and aliases from headers.json
     - .xlsx: streams only header row with openpyxl (read_only=True)
     - .xlsb: full read with calamine + row extraction
-    - Caps at 400 columns
+    - Caps at 424 columns
     - Detects first non-empty column → start_col (dynamic alignment)
     - First 6 columns: forced index mapping + auto-confirm
     - Remaining columns: two-pass matching (skips empty headers)
@@ -275,7 +283,7 @@ def helpers_generate_header_mapping(file_path: str, header_row_idx: int):
         # Iterate until we hit the row (efficient skipping)
         for i, row in enumerate(ws.iter_rows(min_row=target_excel_row, max_row=target_excel_row, values_only=True)):
             clean_row = [str(cell) if cell is not None else "" for cell in row]
-            file_headers_raw = clean_row[:400]
+            file_headers_raw = clean_row[:424]
             break
         
         wb.close()
@@ -291,7 +299,7 @@ def helpers_generate_header_mapping(file_path: str, header_row_idx: int):
             engine="calamine",
             has_header=False
         )
-        max_col = min(df.width, 400)
+        max_col = min(df.width, 424)
         df = df[:, :max_col]
 
         if header_row_idx >= df.height:
@@ -469,7 +477,7 @@ def helpers_sync_db_schema(con: duckdb.DuckDBPyConnection, year: str):
             except Exception as e:
                 print(f"Failed to add column {clean_h}: {e}")
 
-# INTERNAL FILE PROCESSOR, staging uploads basically
+# Resumable uploads + convert to db basically
 def helpers_internal_process_temp_file(
     year: str,
     file_path: str,
@@ -562,7 +570,7 @@ def helpers_internal_process_temp_file(
 
         # Structure Cleaning:
         # Slice: Cap width to prevent reading infinite empty Excel columns
-        max_col = min(df.width, 400) 
+        max_col = min(df.width, 424) 
         df = df[:, :max_col] # DO NOT drop columns manually anymore; Calamine offset handles it safely
 
         # Sync the absolute UI index with Calamine's stripped index
@@ -700,7 +708,7 @@ def helpers_internal_process_temp_file(
         # print("--------------------------------\n", flush=True)
 
         # Compare with DB (CDC Logic - Identical to previous)
-        con, db_path = helpers_get_db_connection(year)
+        con, db_path = helpers_get_db_connection(year, read_only=False)
         helpers_init_db(con, df.columns) # Ensure tables exist
         helpers_sync_db_schema(con, year) # Check headers.json vs DB
 
@@ -750,10 +758,11 @@ def helpers_internal_process_temp_file(
     except Exception as e:
         raise e
 
-def helpers_get_db_connection(year: str):
+def helpers_get_db_connection(year: str, read_only: bool = True):
     """
     Returns DuckDB connection and path for the given year.
     Validates year format (must be 20XX).
+    Defaults to read_only=True for infinite concurrent user access.
     """
     clean_year = os.path.basename(year)
 
@@ -761,7 +770,8 @@ def helpers_get_db_connection(year: str):
         raise ValueError(f"Year must start with 20XX, got: '{clean_year}'")
 
     db_path = os.path.join(DB_FOLDER, f"data_{clean_year}.duckdb")
-    con = duckdb.connect(db_path)
+    # Apply read_only flag to OS file lock
+    con = duckdb.connect(db_path, read_only=read_only)
 
     return con, db_path
 
@@ -947,6 +957,20 @@ def helpers_build_dynamic_query(con, base_query, request_params, base_values=Non
             base_query += f" WHERE {filter_str}"
 
     return base_query, values
+
+def helpers_get_iku_normal_or_tematik(parent: str, status: str) -> pl.Expr:
+    """
+    Returns the Polars condition expression for IKU status aggregation.
+    Applies > 0 threshold for specific tematik exceptions, >= 4 for everything else.
+    """
+    score_col = pl.col(f"__iku_score_{parent}").fill_null(0)
+    status_col = pl.col("Status ID") == status.upper()
+    
+    # O(1) hash lookup against the global set
+    if parent in IKU_TEMATIK_EXCEPTIONS:
+        return status_col & (score_col > 0)
+    
+    return status_col & (score_col >= 4)
 
 def helpers_generate_excel_workbook(con, df_grid: pl.DataFrame, do_translate: bool, params_dict: dict = None) -> Workbook:
     """
@@ -1265,7 +1289,7 @@ def helpers_generate_excel_workbook(con, df_grid: pl.DataFrame, do_translate: bo
                         sum_expr = pl.sum_horizontal([pl.col(c).cast(pl.Float64, strict=False).fill_null(0) for c in valid_children])
                         exprs.append((sum_expr / num_children).alias(f"__iku_score_{parent}"))
                     else:
-                        exprs.append(pl.lit(None).alias(f"__iku_score_{parent}"))
+                        exprs.append(pl.lit(None, dtype=pl.Float64).alias(f"__iku_score_{parent}"))
                 
                 if exprs:
                     df_filtered = df_filtered.with_columns(exprs)
@@ -1276,9 +1300,10 @@ def helpers_generate_excel_workbook(con, df_grid: pl.DataFrame, do_translate: bo
                     agg_exprs.append(pl.col(f"__iku_score_{parent}").mean().alias(f"__iku_avg_{parent}"))
                     
                     if has_status:
+                        # Dynamically count ONLY the statuses required by this parent's CSV headers
                         for status in parent_to_statuses.get(parent, []):
                             safe_status = status.replace(" ", "_")
-                            cond = (pl.col("Status ID") == status.upper()) & (pl.col(f"__iku_score_{parent}").fill_null(0) >= 4)
+                            cond = helpers_get_iku_normal_or_tematik(parent, status)
                             agg_exprs.append(cond.cast(pl.Int32).sum().alias(f"__iku_{safe_status}_{parent}"))
                     else:
                         for status in parent_to_statuses.get(parent, []):
@@ -1931,13 +1956,13 @@ def helpers_render_iku_dashboard(
                     exprs.append(avg_expr.alias(f"__iku_score_{parent}"))
                 else:
                     # If columns don't exist in DB, assign None
-                    exprs.append(pl.lit(None).alias(f"__iku_score_{parent}"))
+                    exprs.append(pl.lit(None, dtype=pl.Float64).alias(f"__iku_score_{parent}"))
             
             # Apply to dataframe
             if exprs:
                 df_filtered = df_filtered.with_columns(exprs)
 
-            # STEP 2: Group by Region (Wilayah) and aggregate
+            # Group by Region (Wilayah) and aggregate
             has_status = "Status ID" in df_filtered.columns
             agg_exprs = [pl.len().alias("JLH DESA")]
             for parent in parent_metrics:
@@ -1947,7 +1972,7 @@ def helpers_render_iku_dashboard(
                     # Dynamically count ONLY the statuses required by this parent's CSV headers
                     for status in parent_to_statuses.get(parent, []):
                         safe_status = status.replace(" ", "_")
-                        cond = (pl.col("Status ID") == status.upper()) & (pl.col(f"__iku_score_{parent}").fill_null(0) >= 4)
+                        cond = helpers_get_iku_normal_or_tematik(parent, status)
                         agg_exprs.append(cond.cast(pl.Int32).sum().alias(f"__iku_{safe_status}_{parent}"))
                 else:
                     for status in parent_to_statuses.get(parent, []):

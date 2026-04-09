@@ -24,6 +24,7 @@ services:
       - .env
 
   frontend_id_srd_iku:
+    build: .
     image: integrasi_data_skor_rekomendasi_desa_iku
     command: python front_end/router.py
     restart: always
