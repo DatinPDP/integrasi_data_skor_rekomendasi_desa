@@ -1,0 +1,92 @@
+digraph User_Architecture_Flow {
+	compound=true forcelabels=true nodesep=1 rankdir=TB ranksep=1 splines=ortho
+	node [fontname=Helvetica fontsize=11 margin="0.3,0.15" shape=box style="rounded,filled"]
+	edge [color="#555555" fontname=Helvetica fontsize=9]
+	User [label="User Request
+(Browser)" fillcolor="#D1C4E9" shape=oval]
+	subgraph cluster_frontend {
+		color="#90CAF9" fillcolor="#E3F2FD" fontname="Helvetica-Bold" label="FRONTEND & SSR ROUTER (Port 8001)" margin=20 style=filled
+		Router [label="Router (router.py)
+Intercepts all traffic" fillcolor="#BBDEFB"]
+		Route_404 [label="404 Handler
+Serve templates/404.html" fillcolor="#FFCDD2"]
+		Route_CheckJWT [label="Verify JWT Session Cookie
+Get Role (Admin/User)" fillcolor="#BBDEFB"]
+		Login_UI [label="Login Page (login.html)
+Submit Username/Password" fillcolor="#90CAF9"]
+		User_UI [label="User Dashboard (admin.html)
+Alpine.js + AG Grid Init" fillcolor="#90CAF9" height=4]
+		UI_Filters [label="Update Sidebar Filters & Year
+(Triggers Refresh Loop)" fillcolor="#C8E6C9" height=2.5]
+	}
+	subgraph cluster_backend {
+		color="#BDBDBD" fillcolor="#F5F5F5" fontname="Helvetica-Bold" label="BACKEND API (server.py / middleware.py)" margin=20 style=filled
+		API_Login [label="/api/login
+Verify bcrypt Password" fillcolor="#E0E0E0"]
+		Logic_JWT [label="Generate JWT Token
+Set HttpOnly Cookie" fillcolor="#A5D6A7"]
+		API_Query [label="/query
+DuckDB -> Polars -> JSON Stream" fillcolor="#E0E0E0"]
+		API_Rekomendasi [label="/dashboard/calculate
+Aggregate Scores & Narrative (HTML)" fillcolor="#E0E0E0"]
+		API_IKU [label="/dashboard/iku
+Group Hierarchy & Heatmap (HTML)" fillcolor="#E0E0E0"]
+		API_History [label="/history/details
+Compare valid_from / valid_to" fillcolor="#E0E0E0"]
+		API_Download [label="/download/excel
+Dynamic Workbook or Precompiled" fillcolor="#E0E0E0"]
+	}
+	subgraph cluster_storage {
+		color="#FFCC80" fillcolor="#FFF3E0" fontname="Helvetica-Bold" label="STORAGE & CONFIG" margin=20 style=filled
+		DB_DuckDB [label="DuckDB (dbs/)
+SCD Type 2 master_data" fillcolor="#FFE0B2" height=2.5 shape=cylinder]
+		Cfg_Users [label="auth_users.json" fillcolor="#FFE0B2" shape=folder]
+		Cfg_Logic [label="headers.json, rekomendasi.json
+Table Structures etc." fillcolor="#FFE0B2" height=2 shape=folder]
+		Export_Dir [label="exports/ directory
+Precompiled Master XLSX" fillcolor="#FFE0B2" shape=folder]
+		DB_DuckDB -> Cfg_Users [style=invis weight=100]
+		Cfg_Users -> Cfg_Logic [style=invis weight=100]
+		Cfg_Logic -> Export_Dir [style=invis weight=100]
+	}
+	User -> Router
+	Router -> Route_404 [xlabel="Invalid URL"]
+	Router -> Route_CheckJWT [xlabel="Valid Endpoint"]
+	Route_CheckJWT -> Login_UI [xlabel="Missing/Invalid Token"]
+	Route_CheckJWT -> User_UI [xlabel="Valid User Token"]
+	Login_UI -> API_Login [xlabel="POST Credentials"]
+	API_Login -> Cfg_Users [xlabel="Lookup Hash"]
+	Cfg_Users -> API_Login [color="#0f766e" constraint=false fontcolor="#0f766e" xlabel="[RETURN] User Data"]
+	API_Login -> Login_UI [color=red constraint=false fontcolor=red xlabel="[LOOP] Invalid Credentials"]
+	API_Login -> Logic_JWT [xlabel="Valid Password"]
+	Logic_JWT -> User_UI [constraint=false xlabel="Redirect to Dashboard"]
+	User_UI -> UI_Filters [xlabel="Change View / Filter / Sort"]
+	UI_Filters -> API_Query [xlabel="Grid View Active"]
+	UI_Filters -> API_Rekomendasi [xlabel="Rekomendasi Active"]
+	UI_Filters -> API_IKU [xlabel="IKU Active"]
+	API_Query -> DB_DuckDB [xlabel="Execute Query"]
+	DB_DuckDB -> API_Query [color="#0f766e" constraint=false fontcolor="#0f766e" xlabel="[RETURN] Raw Data"]
+	API_Rekomendasi -> DB_DuckDB [xlabel="Execute Filter"]
+	DB_DuckDB -> API_Rekomendasi [color="#0f766e" constraint=false fontcolor="#0f766e" xlabel="[RETURN] Filtered Data"]
+	API_IKU -> DB_DuckDB [xlabel="Execute Filter"]
+	DB_DuckDB -> API_IKU [color="#0f766e" constraint=false fontcolor="#0f766e" xlabel="[RETURN] Filtered Data"]
+	API_Rekomendasi -> Cfg_Logic [xlabel="Read Formats/Intervensi"]
+	Cfg_Logic -> API_Rekomendasi [color="#0f766e" constraint=false fontcolor="#0f766e" xlabel="[RETURN] Logic Templates"]
+	API_IKU -> Cfg_Logic [xlabel="Read IKU Hierarchy"]
+	Cfg_Logic -> API_IKU [color="#0f766e" constraint=false fontcolor="#0f766e" xlabel="[RETURN] IKU Mapping"]
+	API_Query -> User_UI [color=blue constraint=false xlabel="[LOOP] Render JSON to AG Grid"]
+	API_Rekomendasi -> User_UI [color=blue constraint=false xlabel="[LOOP] Render HTML Table"]
+	API_IKU -> User_UI [color=blue constraint=false xlabel="[LOOP] Render HTML Heatmap"]
+	User_UI -> API_History [xlabel="Expand History Sidebar"]
+	API_History -> DB_DuckDB [xlabel="Query Target Timestamp"]
+	DB_DuckDB -> API_History [color="#0f766e" constraint=false fontcolor="#0f766e" xlabel="[RETURN] Historical Data"]
+	API_History -> User_UI [color=blue constraint=false xlabel="[LOOP] Show Diff Details"]
+	User_UI -> API_Download [xlabel="Request Excel"]
+	API_Download -> Export_Dir [xlabel="No Filters -> Check Static (Pre-Compiled)"]
+	Export_Dir -> API_Download [color="#0f766e" constraint=false fontcolor="#0f766e" xlabel="[RETURN] Static File (Pre-Compiled)"]
+	API_Download -> DB_DuckDB [xlabel="Filters Active -> Query Dynamic Data"]
+	DB_DuckDB -> API_Download [color="#0f766e" constraint=false fontcolor="#0f766e" xlabel="[RETURN] Dynamic Data"]
+	API_Download -> User_UI [color=blue constraint=false xlabel="[LOOP] Trigger File Download"]
+	API_Download -> DB_DuckDB [minlen=5 style=invis weight=200]
+	API_History -> DB_DuckDB [minlen=5 style=invis weight=200]
+}
