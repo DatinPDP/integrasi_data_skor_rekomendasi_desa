@@ -12,7 +12,7 @@
 <g id="clust1" class="cluster">
 <title>cluster_frontend</title>
 <polygon fill="#e3f2fd" stroke="#90caf9" points="55.05,-1018.8 55.05,-1863.75 1209.05,-1863.75 1209.05,-1018.8 55.05,-1018.8"/>
-<text xml:space="preserve" text-anchor="middle" x="632.05" y="-1846.45" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="14.00">FRONTEND &amp; SSR ROUTER (Port 8001)</text>
+<text xml:space="preserve" text-anchor="middle" x="632.05" y="-1846.45" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="14.00">FRONTEND</text>
 </g>
 <g id="clust2" class="cluster">
 <title>cluster_backend</title>

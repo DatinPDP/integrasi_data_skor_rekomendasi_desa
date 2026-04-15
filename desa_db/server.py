@@ -24,6 +24,9 @@ from fastapi.responses import JSONResponse, FileResponse, HTMLResponse, Redirect
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 from starlette.exceptions import HTTPException as StarletteHTTPException # For 404 handler
 from contextlib import asynccontextmanager
 
@@ -95,6 +98,11 @@ app = FastAPI(
     openapi_url=None,
     lifespan=app_lifespan
 ) 
+
+# FastAPI Rate limiter
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # ==========================================
 # MIDDLEWARE SETUP
@@ -202,9 +210,11 @@ class LoginRequest(BaseModel):
     password: str
 
 @app.get("/public/dashboard/iku/{year}")
-def endpoint_get_public_iku_json(year: str, metric: str = Query(None)):
+@limiter.limit("60/minute")
+def endpoint_get_public_iku_json(request: Request, year: str, metric: str = Query(None)):
     """
     Public JSON endpoint for homepage IKU visualization (no authentication).
+    Rate limited per the industry standard (60 requests per minute per IP).
     
     Query param:
     - ?metric=... → returns data array for that specific parent metric

@@ -1337,7 +1337,7 @@ def helpers_generate_excel_workbook(con, df_grid: pl.DataFrame, do_translate: bo
                         elif sub == "total":
                             val_to_show = t_total
                         elif "capaian" in sub:
-                            val_to_show = f"{(t_total / total_jlh_desa) * 100:.1f}%" if total_jlh_desa > 0 else "0.0%"
+                            val_to_show = f"{(t_total / total_jlh_desa) * 100:.2f}%" if total_jlh_desa > 0 else "0.0%"
                     total_row.append(val_to_show)
 
                 ws3.append(total_row)
@@ -1371,7 +1371,7 @@ def helpers_generate_excel_workbook(con, df_grid: pl.DataFrame, do_translate: bo
                                 val_to_show = t_total
                             elif "capaian" in sub:
                                 jlh_desa = row_data.get("JLH DESA", 0)
-                                val_to_show = f"{(t_total / jlh_desa) * 100:.1f}%" if jlh_desa > 0 else "0.0%"
+                                val_to_show = f"{(t_total / jlh_desa) * 100:.2f}%" if jlh_desa > 0 else "0.0%"
                         data_row.append(val_to_show)
                     
                     ws3.append(data_row)
@@ -2043,7 +2043,7 @@ def helpers_render_iku_dashboard(
                             val_to_show = f"{t_total:,}"
                         elif "capaian" in sub:
                             if total_jlh_desa > 0:
-                                val_to_show = f"{(t_total / total_jlh_desa) * 100:.1f}%"
+                                val_to_show = f"{(t_total / total_jlh_desa) * 100:.2f}%"
                             else:
                                 val_to_show = "0.0%"
 
@@ -2107,7 +2107,7 @@ def helpers_render_iku_dashboard(
                         if "capaian" in sub:
                             if jlh_desa > 0:
                                 ratio = t_total / jlh_desa
-                                val_to_show = f"{ratio * 100:.1f}%"
+                                val_to_show = f"{ratio * 100:.2f}%"
                                 # Capaian heatmap: Hue ranges from 0 (Red) to 120 (Green)
                                 hue = int(ratio * 120)
                                 inline_style = f"background-color: hsla({hue}, 70%, 50%, 0.4);"
@@ -2223,13 +2223,25 @@ def helpers_get_public_iku_json(year: str, metric_filter: str = None):
 
         df = df.with_columns(exprs)
 
+        # Mathematical calculation ALWAYS uses all 5 statuses
+        target_statuses = ["mandiri", "maju", "berkembang", "tertinggal", "sangat tertinggal"]
+
+        # The JSON output restricts the visible keys for Tematik exceptions
+        if parent in IKU_TEMATIK_EXCEPTIONS:
+            output_statuses = ["mandiri"]
+        else:
+            output_statuses = ["mandiri", "maju", "berkembang", "tertinggal", "sangat tertinggal"]
+
+        # Aggregate ALL 5 targeted statuses for the DB calculation
+        statuses_to_aggregate = set(target_statuses)
+
         agg_exprs = [pl.len().alias("JLH DESA")]
         has_status = "Status ID" in df.columns
         agg_exprs.append(pl.col(f"__iku_score_{parent}").mean().alias(f"__iku_avg_{parent}"))
         
         if has_status:
             # Dynamically count ONLY the statuses required by this parent's CSV headers
-            for status in parent_to_statuses.get(parent, []):
+            for status in statuses_to_aggregate:
                 safe_status = status.replace(" ", "_")
                 cond = helpers_get_iku_normal_or_tematik(parent, status)
                 agg_exprs.append(cond.cast(pl.Int32).sum().alias(f"__iku_{safe_status}_{parent}"))
@@ -2239,23 +2251,58 @@ def helpers_get_public_iku_json(year: str, metric_filter: str = None):
         df_dicts = df_grouped.to_dicts()
 
         metric_data = []
+        total_jlh = 0
+        total_avg_sum = 0.0
+        total_t_total = 0
+        totals_status = {s: 0 for s in output_statuses}
+
         for row in df_dicts:
             jlh = row.get("JLH DESA", 0)
             avg = row.get(f"__iku_avg_{parent}")
+            avg_val = avg if avg is not None else 0.0
+            
+            # Use ALL 5 target_statuses for the sum, enforcing the correct Capaian math ratio
             t_total = sum(
-                row.get(f"__iku_{s.replace(' ', '_')}_{parent}", 0) for s in parent_to_statuses.get(parent, [])
+                row.get(f"__iku_{s.replace(' ', '_')}_{parent}", 0) for s in target_statuses
             )
             capaian = (t_total / jlh * 100) if jlh > 0 else 0
 
+            # Inject ONLY the specified output_statuses into the payload
             metric_data.append({
                 "provinsi": row.get("Provinsi", "Unknown"),
                 "jlh_desa": jlh,
-                "rata_rata": round(avg, 2) if avg is not None else 0.0,
-                "capaian": round(capaian, 1)
+                "rata_rata": round(avg_val, 2),
+                **{status: row.get(f"__iku_{status.replace(' ', '_')}_{parent}", 0) for status in output_statuses},
+                "capaian": round(capaian, 2)
             })
 
-        # Return exact JSON structure requested: {"Nama Metric": [ {data...} ] }
-        return {metric_filter: metric_data}
+            # 2. Accumulate for Server-Side Totals
+            total_jlh += jlh
+            total_avg_sum += avg_val
+            total_t_total += t_total
+            for status in output_statuses:
+                totals_status[status] += row.get(f"__iku_{status.replace(' ', '_')}_{parent}", 0)
+
+        # 3. Build Final Totals Dictionary (Pre-formatted with commas and percentages)
+        num_prov = len(metric_data)
+        final_total_avg = total_avg_sum / num_prov if num_prov > 0 else 0.0
+        final_total_capaian = (total_t_total / total_jlh * 100) if total_jlh > 0 else 0.0
+
+        totals_dict = {
+            "provinsi": "TOTAL",
+            "jlh_desa": f"{total_jlh:,}",
+            "rata_rata": f"{final_total_avg:.2f}",
+            **{status: f"{totals_status[status]:,}" for status in output_statuses},
+            "capaian": f"{final_total_capaian:.2f} %"
+        }
+
+        # Return structured JSON with isolated "data" and "totals"
+        return {
+            metric_filter: {
+                "data": metric_data,
+                "totals": totals_dict
+            }
+        }
 
     except Exception as e:
         import traceback

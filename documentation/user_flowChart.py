@@ -16,7 +16,7 @@ def flowchart():
 
     # --- CLUSTER: FRONTEND & ROUTER (Port 8001) ---
     with dot.subgraph(name='cluster_frontend') as fe:
-        fe.attr(style='filled', fillcolor='#E3F2FD', color='#90CAF9', label='FRONTEND & SSR ROUTER (Port 8001)', fontname='Helvetica-Bold', margin='20')
+        fe.attr(style='filled', fillcolor='#E3F2FD', color='#90CAF9', label='FRONTEND', fontname='Helvetica-Bold', margin='20')
 
         fe.node('Router', 'Router (router.py)\nIntercepts all traffic', fillcolor='#BBDEFB')
         fe.node('Route_404', '404 Handler\nServe templates/404.html', fillcolor='#FFCDD2')
