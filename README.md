@@ -76,28 +76,3 @@ the behaviour at start will always try to make excel files ready to download fro
 ```
 pytest tests/server_test.py
 ```
-
-## Below are not recommended =====================================================
-
-### Virtual Environment Setup (run once)
-```bash
-Python311 -m venv .venv
-source .venv/Scripts/activate
-pip install -r .config/requirements.txt
-```
-
-### Run backend+middleware
-run backend
-```bash
-python desa_db/server.py
-```
-
-### or run both front and backend
-```bash
-python run_system.py
-```
-
-### (deprecated) Run mock frontend
-```bash
-streamlit run tests/serverSheets_test.py
-```
