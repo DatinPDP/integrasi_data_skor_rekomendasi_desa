@@ -1865,7 +1865,7 @@ Sumber: [desa_db/middleware.py:148](https://github.com/anbe-on/integrasi_data_sk
 
 ### Logika Pengelompokan dan Agregasi
 
-Sistem menentukan tingkat pengelompokan (Provinsi, Kabupaten, dll.) berdasarkan `params_dict` dan kemudian menghitung skor IKU dengan merata-ratakan kolom anak yang dipetakan. Ini mengagregasi data untuk menampilkan jumlah desa (`JLH DESA`), skor rata-rata, dan jumlah ambang batas status yang berbeda.
+Sistem menentukan tingkat pengelompokan (Provinsi, Kabupaten, dan lain-lain.) berdasarkan `params_dict` dan kemudian menghitung skor IKU dengan merata-ratakan kolom anak yang dipetakan. Ini mengagregasi data untuk menampilkan jumlah desa (`JLH DESA`), skor rata-rata, dan jumlah ambang batas status yang berbeda.
 
 ```python
 # Menentukan hierarki pengelompokan
