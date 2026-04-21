@@ -4,27 +4,636 @@ Generated on: 2026-04-16 04:29:49
 
 ## Table of Contents
 
+- [Server Setup (Ubuntu / Debian)](#page-server-setup)
+  - [1. Update the System](#1-update-the-system)
+  - [2. Install Git](#2-install-git)
+  - [3. Install Docker and Docker Compose](#4-install-docker-and-docker-compose)
+  - [4. Install Python 3.11 and Virtual Environment](#5-install-python-311-and-virtual-environment)
+  - [5. Install Node.js, npm and npx](#6-install-nodejs-npm-and-npx)
+  - [6. Install OpenSSL](#7-install-openssl)
+  - [7. Compile Tailwind CSS](#8-compile-tailwind-css)
+  - [8. Generate APP_SECRET_KEY and Create .env](#9-generate-app_secret_key-and-create-env)
+  - [9. Add the First User](#10-add-the-first-user)
+  - [10. Start the Stack](#11-start-the-stack)
+
 - [Project Introduction](#page-project-introduction)
+  - [System Architecture Overview](#system-architecture-overview)
+    - [Backend Services](#backend-services)
+    - [Frontend Interface](#frontend-interface)
+    - [Configuration Management](#configuration-management)
+  - [Core Components and Functionality](#core-components-and-functionality)
+    - [Data Integration and Processing](#data-integration-and-processing)
+      - [Database Schema and Management](#database-schema-and-management)
+    - [Excel Report Generation](#excel-report-generation)
+      - [Dashboard Rekomendasi Details](#dashboard-rekomendasi-details)
+      - [Dashboard IKU Details](#dashboard-iku-details)
+    - [Configuration Files and Structure](#configuration-files-and-structure)
+    - [Styling and Frontend Configuration](#styling-and-frontend-configuration)
+  - [Deployment and Development](#deployment-and-development)
+    - [Docker Deployment](#docker-deployment)
+    - [Testing](#testing)
+  - [User Interface Elements](#user-interface-elements)
+    - [Login Page](#login-page)
+    - [Admin Dashboard](#admin-dashboard)
+    - [User Dashboard](#user-dashboard)
+
 - [System Requirements](#page-system-requirements)
+  - [Software Dependencies](#software-dependencies)
+    - [Python Version](#python-version)
+    - [Core Python Packages](#core-python-packages)
+  - [Runtime Environment](#runtime-environment)
+    - [Operating System](#operating-system)
+    - [Hardware Recommendations](#hardware-recommendations)
+  - [Configuration](#configuration)
+    - [Configuration Files Directory](#configuration-files-directory)
+    - [Key Configuration Files](#key-configuration-files)
+    - [Environment Variables](#environment-variables)
+  - [Installation and Setup](#installation-and-setup)
+    - [Docker Installation and Run](#docker-installation-and-run)
+  - [Running the System](#running-the-system)
+    - [Running with Docker Compose](#running-with-docker-compose)
+  - [Frontend Development Setup](#frontend-development-setup)
+    - [Compiling Tailwind CSS](#compiling-tailwind-css)
+  - [Testing](#testing-1)
+    - [Running Tests](#running-tests)
+  - [System Architecture Overview](#system-architecture-overview-1)
+    - [Backend API (desa_db/server.py)](#backend-api-desa_dbserverpy)
+    - [Data Processing and Middleware (desa_db/middleware.py)](#data-processing-and-middleware-desa_dbmiddlewarepy)
+    - [Frontend (front_end/)](#frontend-front_end)
+    - [Workflow Example: Dashboard Generation](#workflow-example-dashboard-generation)
+    - [Workflow Example: User Authentication](#workflow-example-user-authentication)
+  - [Development and Testing Setup](#development-and-testing-setup)
+    - [Mock Data and Configuration Setup](#mock-data-and-configuration-setup)
+    - [Test Execution](#test-execution)
+  - [Frontend Styling](#frontend-styling)
+    - [Example Login Page Styling](#example-login-page-styling)
+
 - [Architecture Overview](#page-architecture-overview)
+  - [System Deployment and Orchestration](#system-deployment-and-orchestration)
+    - [Docker Compose Services](#docker-compose-services)
+    - [Service Interconnections](#service-interconnections)
+  - [Backend Service (desa_db/server.py)](#backend-service-desa_dbserverpy)
+    - [Core Functionality](#core-functionality)
+    - [Key Components and Modules](#key-components-and-modules)
+    - [API Endpoints Overview](#api-endpoints-overview)
+  - [Frontend Service (front_end/router.py)](#frontend-service-front_endrouterpy)
+    - [Key Responsibilities](#key-responsibilities)
+    - [Routing and Views](#routing-and-views)
+  - [Reverse Proxy and Static Asset Management (Nginx)](#reverse-proxy-and-static-asset-management-nginx)
+    - [Nginx Configuration](#nginx-configuration)
+  - [Configuration Management](#configuration-management-1)
+    - [Configuration Files](#configuration-files-1)
+  - [Data Flow and Processing](#data-flow-and-processing)
+    - [Data Loading and Preparation](#data-loading-and-preparation)
+    - [Score and Recommendation Calculation](#score-and-recommendation-calculation)
+    - [Report Generation](#report-generation)
+  - [Frontend Styling and Theming](#frontend-styling-and-theming)
+    - [Tailwind CSS Configuration](#tailwind-css-configuration)
+    - [Utility Classes](#utility-classes)
+  - [Conclusion](#conclusion)
+
 - [Data Flow Diagram](#page-data-flow)
+  - [Core Components and Data Flow](#core-components-and-data-flow)
+    - [Backend API Endpoints](#backend-api-endpoints)
+      - [Authentication Flow](#authentication-flow)
+      - [Data Upload and Processing](#data-upload-and-processing)
+    - [Middleware Logic](#middleware-logic)
+      - [Database Initialization and Management](#database-initialization-and-management)
+      - [Report Generation (Excel)](#report-generation-excel)
+      - [Dashboard Rendering (HTML)](#dashboard-rendering-html)
+    - [Frontend Components](#frontend-components)
+      - [Routing](#routing)
+  - [Configuration and Data Models](#configuration-and-data-models)
+    - [Configuration Files](#configuration-files-2)
+    - [Database Schema](#database-schema)
+  - [Testing and Development Setup](#testing-and-development-setup)
+    - [Docker Deployment](#docker-deployment-1)
+    - [Unit and Integration Testing](#unit-and-integration-testing)
+  - [Summary](#summary)
+
 - [Component Relationships](#page-component-relationships)
+  - [Backend Service (desa_db)](#backend-service-desa_db)
+    - [Core Functionality and Modules](#core-functionality-and-modules)
+    - [Authentication Flow](#authentication-flow-1)
+    - [Data Processing and Reporting](#data-processing-and-reporting)
+  - [Frontend Service (front_end)](#frontend-service-front_end)
+    - [Key Files and Technologies](#key-files-and-technologies)
+    - [Styling with Tailwind CSS](#styling-with-tailwind-css)
+  - [Docker Orchestration (docker-compose.yml)](#docker-orchestration-docker-composeyml)
+    - [Services Defined](#services-defined)
+  - [Configuration Management](#configuration-management-2)
+    - [Key Configuration Files](#key-configuration-files-1)
+  - [Data Flow and Interaction](#data-flow-and-interaction)
+
 - [Data Upload and Processing](#page-data-upload-and-processing)
+  - [Data Upload Endpoints](#data-upload-endpoints)
+    - [Resumable Upload Initialization (/upload/init/{year})](#resumable-upload-initialization-uploadinityear)
+    - [Upload Chunk (/upload/chunk/{year})](#upload-chunk-uploadchunkyear)
+    - [Finalize Upload (/upload/finalize/{year})](#finalize-upload-uploadfinalizeyear)
+  - [Frontend Upload Interface](#frontend-upload-interface)
+    - [Admin Page (/admin)](#admin-page-admin)
+  - [Hashing and File Integrity](#hashing-and-file-integrity)
+    - [SparkMD5](#sparkmd5)
+  - [Data Processing Flow](#data-processing-flow)
+  - [API Models for Upload](#api-models-for-upload)
+  - [Test Cases](#test-cases)
+  - [Configuration and Constants](#configuration-and-constants)
+  - [Server Protection and Routing](#server-protection-and-routing)
+  - [Data Processing Logic (Implied)](#data-processing-logic-implied)
+
 - [Dashboards and Reporting](#page-dashboard-and-reporting)
+  - [Core Reporting Components](#core-reporting-components)
+    - [Configuration Files](#configuration-files-3)
+    - [Excel Workbook Generation](#excel-workbook-generation)
+    - [Styling and Formatting](#styling-and-formatting)
+  - [Sheet 1: Grid Data](#sheet-1-grid-data)
+    - [Data Loading and Transformation](#data-loading-and-transformation)
+    - [Header and Data Writing](#header-and-data-writing)
+    - [Formatting](#formatting)
+  - [Sheet 2: Dashboard Rekomendasi](#sheet-2-dashboard-rekomendasi)
+    - [Data Loading and Configuration](#data-loading-and-configuration)
+    - [Data Processing and Calculation](#data-processing-and-calculation)
+    - [Header and Column Formatting](#header-and-column-formatting)
+    - [Row Merging and Styling](#row-merging-and-styling)
+  - [Sheet 3: Dashboard IKU](#sheet-3-dashboard-iku)
+    - [Data Loading and Mapping](#data-loading-and-mapping)
+    - [Grouping and Aggregation Logic](#grouping-and-aggregation-logic)
+    - [Header Rendering and Styling](#header-rendering-and-styling)
+    - [Data Presentation](#data-presentation)
+  - [User Interface](#user-interface)
+    - [Admin Dashboard (admin.html)](#admin-dashboard-adminhtml)
+    - [User Dashboard (user.html)](#user-dashboard-userhtml)
+  - [Backend API Endpoints](#backend-api-endpoints-1)
+    - [/dashboard Endpoint](#dashboard-endpoint)
+    - [/dashboard_iku Endpoint](#dashboard_iku-endpoint)
+    - [/download_excel Endpoint](#download_excel-endpoint)
+  - [Data Flow and Architecture](#data-flow-and-architecture)
+    - [Request Flow Example (Excel Download)](#request-flow-example-excel-download)
+    - [HTML Rendering Flow (Dashboard IKU)](#html-rendering-flow-dashboard-iku)
+  - [Testing](#testing-2)
+    - [Unit Tests for Server and Reporting](#unit-tests-for-server-and-reporting)
+
 - [User Authentication and Authorization](#page-user-authentication)
+  - [Authentication Flow](#authentication-flow-2)
+    - [Login Process](#login-process)
+    - [JWT Generation and Cookie Management](#jwt-generation-and-cookie-management)
+    - [Logout Process](#logout-process)
+  - [Authorization and Role-Based Access Control](#authorization-and-role-based-access-control)
+    - [User Roles](#user-roles)
+    - [Role Enforcement](#role-enforcement)
+  - [User Management](#user-management)
+    - [Adding Users](#adding-users)
+    - [Password Hashing](#password-hashing)
+  - [Data Storage for Authentication](#data-storage-for-authentication)
+  - [Key Components and Files](#key-components-and-files)
+  - [Architectural Overview](#architectural-overview)
+    - [Authentication Flow Diagram](#authentication-flow-diagram)
+    - [Authorization Check Diagram](#authorization-check-diagram)
+
 - [Configuration Files](#page-configuration-files)
+  - [Configuration File Directory](#configuration-file-directory)
+  - [Key Configuration Files](#key-configuration-files-2)
+    - [headers.json](#headersjson)
+    - [rekomendasi.json](#rekomendasijson)
+    - [table_structure.csv](#table_structurecsv)
+    - [table_structure_IKU.csv](#table_structure_ikucsv)
+    - [iku_mapping.json](#iku_mappingjson)
+    - [intervensi_kegiatan_mapping.json](#intervensi_kegiatan_mappingjson)
+  - [Data Flow and Processing](#data-flow-and-processing-1)
+    - [Dashboard Rekomendasi Data Flow](#dashboard-rekomendasi-data-flow)
+    - [Dashboard IKU Data Flow](#dashboard-iku-data-flow)
+  - [Configuration Management](#configuration-management-3)
+    - [Adding Users](#adding-users-1)
+    - [Environment Variables](#environment-variables-1)
+    - [Tailwind CSS Configuration](#tailwind-css-configuration-1)
+
 - [Database Structure](#page-database-structure)
+
 - [Backend API Endpoints](#page-backend-api)
+  - [Authentication Endpoints](#authentication-endpoints)
+    - [Login Endpoint](#login-endpoint)
+    - [Logout Endpoint](#logout-endpoint)
+    - [Authentication Middleware](#authentication-middleware)
+  - [Data and Configuration Endpoints](#data-and-configuration-endpoints)
+    - [Table Structure Endpoint](#table-structure-endpoint)
+    - [Excel Preview and Processing Endpoints](#excel-preview-and-processing-endpoints)
+  - [Dashboard and Reporting Endpoints](#dashboard-and-reporting-endpoints)
+    - [Generate Excel Workbook Endpoint](#generate-excel-workbook-endpoint)
+    - [Dashboard Rendering Endpoints](#dashboard-rendering-endpoints)
+  - [System Orchestration and Configuration](#system-orchestration-and-configuration)
+    - [docker-compose.yml](#docker-composeyml)
+  - [Testing](#testing-3)
+  - [API Endpoint Summary](#api-endpoint-summary)
+
 - [Authentication Module](#page-authentication-module)
+  - [User Management](#user-management-1)
+    - [Adding New Users](#adding-new-users)
+      - [Usage](#usage)
+    - [User Data Storage](#user-data-storage)
+  - [Authentication Flow](#authentication-flow-3)
+    - [Login Process](#login-process-1)
+      - [Login Endpoint (/api/login)](#login-endpoint-apilogin)
+    - [Logout Process](#logout-process-1)
+    - [Protected Routes](#protected-routes)
+  - [Authorization](#authorization)
+    - [Role-Based Access Control](#role-based-access-control)
+  - [Security Considerations](#security-considerations)
+    - [Password Hashing](#password-hashing-1)
+    - [JWT Security](#jwt-security)
+  - [Configuration](#configuration-1)
+    - [Environment Variable APP_SECRET_KEY](#environment-variable-app_secret_key)
+  - [Testing](#testing-4)
+  - [Key Components](#key-components)
+
 - [Frontend Overview](#page-frontend-overview)
+  - [Architecture and Setup](#architecture-and-setup)
+    - [Core Components and Setup](#core-components-and-setup)
+    - [Dependencies and Styling](#dependencies-and-styling)
+  - [Routing and User Interface](#routing-and-user-interface)
+    - [Authentication and Redirection](#authentication-and-redirection)
+    - [API Integration](#api-integration)
+  - [Frontend Development Workflow](#frontend-development-workflow)
+    - [Development Server](#development-server)
+    - [Styling with Tailwind CSS](#styling-with-tailwind-css-1)
+  - [Data Flow and Interaction](#data-flow-and-interaction-1)
+    - [User Authentication Flow](#user-authentication-flow-3)
+    - [Data Display Flow](#data-display-flow)
+  - [Configuration](#configuration-2)
+    - [Environment Variables](#environment-variables-2)
+    - [Frontend Configuration in router.py](#frontend-configuration-in-routerpy)
+  - [Styling and UI Elements](#styling-and-ui-elements)
+    - [Tailwind CSS Configuration](#tailwind-css-configuration-2)
+    - [CSS Utility Classes](#css-utility-classes)
+
 - [Login Page](#page-login-page)
+  - [User Interface (Frontend)](#user-interface-frontend)
+    - [Key UI Elements:](#key-ui-elements)
+  - [Authentication Flow (Frontend & Backend Interaction)](#authentication-flow-frontend--backend-interaction)
+    - [Frontend Routing (front_end/router.py)](#frontend-routing-front_endrouterpy-1)
+    - [Backend API (desa_db/server.py)](#backend-api-desa_dbserverpy-1)
+  - [Authentication Logic (desa_db/auth.py)](#authentication-logic-desa_dbauthpy)
+    - [Key Functions:](#key-functions)
+  - [Data Models and Schemas](#data-models-and-schemas)
+    - [Login Request (desa_db/server.py)](#login-request-desa_dbserverpy)
+    - [User Data Structure (from auth_users.json)](#user-data-structure-from-auth_usersjson)
+  - [Security Considerations](#security-considerations-1)
+  - [Configuration](#configuration-3)
+  - [User Redirection](#user-redirection)
+  - [Mermaid Diagrams](#mermaid-diagrams)
+    - [Login Flow Sequence Diagram](#login-flow-sequence-diagram)
+    - [Frontend Router Logic Diagram](#frontend-router-logic-diagram)
+
 - [User Dashboard](#page-user-dashboard)
+  - [Core Components and Functionality](#core-components-and-functionality-1)
+    - [Front-end Structure (user.html)](#front-end-structure-userhtml)
+    - [JavaScript Functionality (UserDashboardApp())](#javascript-functionality-userdashboardapp)
+    - [Data Grid Integration (ag-grid-community.min.js)](#data-grid-integration-ag-grid-communityminjs)
+    - [Styling (output.css)](#styling-outputcss)
+  - [Data Flow and API Interaction](#data-flow-and-api-interaction-1)
+    - [API Endpoints (Inferred)](#api-endpoints-inferred)
+    - [Data Processing (Middleware)](#data-processing-middleware)
+  - [User Interface Elements](#user-interface-elements-1)
+    - [Header](#header)
+    - [Main Content Area](#main-content-area)
+  - [Example Data Visualization (Inferred)](#example-data-visualization-inferred)
+  - [Architecture Overview](#architecture-overview-1)
+    - [Front-end Frameworks and Libraries](#front-end-frameworks-and-libraries)
+    - [Back-end Frameworks and Libraries](#back-end-frameworks-and-libraries)
+  - [Security Considerations](#security-considerations-2)
+  - [Testing](#testing-5)
+
 - [Admin Dashboard](#page-admin-dashboard)
+
 - [Docker Deployment](#page-docker-deployment)
+  - [Architecture Overview](#architecture-overview-2)
+    - [Services](#services)
+    - [Data Flow](#data-flow-1)
+  - [Dockerfile and Image Building](#dockerfile-and-image-building)
+    - [Dockerfile Instructions](#dockerfile-instructions)
+  - [Configuration](#configuration-4)
+    - [.env File](#env-file)
+    - [Configuration Directory (.config/)](#configuration-directory-config)
+    - [tailwind.config.js](#tailwindconfigjs)
+    - [nginx.conf](#nginxconf)
+  - [Running the Application with Docker Compose](#running-the-application-with-docker-compose)
+    - [Development vs. Production](#development-vs-production)
+  - [Testing](#testing-6)
+  - [Deprecated Methods](#deprecated-methods)
+  - [.dockerignore File](#dockerignore-file)
+
 - [Nginx Configuration](#page-nginx-configuration)
+  - [Core Nginx Configuration (nginx.conf)](#core-nginx-configuration-nginxconf)
+    - [Server Block](#server-block)
+    - [Static File Serving](#static-file-serving)
+    - [Backend API Proxying](#backend-api-proxying)
+  - [Docker Integration (docker-compose.yml)](#docker-integration-docker-composeyml)
+    - [Nginx Service Definition](#nginx-service-definition)
+    - [Service Dependencies](#service-dependencies)
+  - [Deployment and Runtime (README.md)](#deployment-and-runtime-readmemd)
+  - [Frontend Routing (front_end/router.py)](#frontend-routing-front_endrouterpy-2)
+  - [Summary of Nginx Role](#summary-of-nginx-role)
+
 - [Environment Variables](#page-environment-variables)
+  - [Configuration Management](#configuration-management-4)
+    - [.env File](#env-file-1)
+    - [APP_SECRET_KEY](#app_secret_key)
+    - [API_BASE_URL](#api_base_url)
+  - [System Startup and Environment Variable Injection](#system-startup-and-environment-variable-injection)
+    - [Docker Compose Environment Variable Handling](#docker-compose-environment-variable-handling)
+  - [Summary](#summary-1)
+
 - [Customizing Configurations](#page-customizing-configurations)
+  - [Configuration File Structure](#configuration-file-structure)
+    - [headers.json](#headersjson-1)
+    - [rekomendasi.json](#rekomendasijson-1)
+    - [table_structure.csv](#table_structurecsv-1)
+    - [table_structure_IKU.csv](#table_structure_ikucsv-1)
+    - [iku_mapping.json](#iku_mappingjson-1)
+  - [Data Processing and Configuration Loading](#data-processing-and-configuration-loading)
+    - [Configuration Directory](#configuration-directory-1)
+    - [Loading rekomendasi.json](#loading-rekomendasijson)
+    - [Generating Excel Workbooks](#generating-excel-workbooks-1)
+  - [Dashboard Specific Configurations](#dashboard-specific-configurations)
+    - [Dashboard Rekomendasi Configuration](#dashboard-rekomendasi-configuration)
+    - [Dashboard IKU Configuration](#dashboard-iku-configuration)
+  - [Example Configuration Snippets](#example-configuration-snippets)
+    - [headers.json Example](#headersjson-example)
+    - [rekomendasi.json Example](#rekomendasijson-example)
+    - [table_structure_IKU.csv Example](#table_structure_ikucsv-example)
+    - [iku_mapping.json Example](#iku_mappingjson-example)
+  - [System Integration](#system-integration)
+
 - [Adding and Managing Users](#page-adding-users)
+  - [User Authentication and Authorization](#user-authentication-and-authorization-1)
+    - [Login Endpoint (/api/login)](#login-endpoint-apilogin-1)
+    - [Logout Endpoint (/api/logout)](#logout-endpoint-apilogout-1)
+    - [Protected Routes](#protected-routes-1)
+  - [User Management Script (add_user.py)](#user-management-script-add_userpy)
+    - [Functionality](#functionality-1)
+    - [Usage](#usage-1)
+  - [User Data Storage (.config/auth_users.json)](#user-data-storage-configauth_usersjson)
+  - [Frontend Login Interface (front_end/templates/login.html)](#frontend-login-interface-front_endtemplatesloginhtml)
+    - [Components](#components-1)
+  - [System Requirements for User Management](#system-requirements-for-user-management)
+  - [Testing User Management](#testing-user-management)
+    - [Test Setup](#test-setup)
+    - [Test Client](#test-client)
+  - [Mermaid Diagrams](#mermaid-diagrams-1)
+    - [User Authentication Flow](#user-authentication-flow-4)
+    - [User Data Structure](#user-data-structure-1)
+    - [User Addition Flow](#user-addition-flow)
+  - [Conclusion](#conclusion-1)
+
+<a id='page-server-setup'></a>
+
+## Server Setup (Ubuntu / Debian)
+
+### Related Pages
+
+Related topics: [System Requirements](#page-system-requirements), [Docker Deployment](#page-docker-deployment), [Adding and Managing Users](#page-adding-users)
+
+# Server Setup (Ubuntu / Debian)
+
+This guide walks through preparing a clean Ubuntu Server (22.04 LTS or later) or any Debian-based system to run the `integrasi_data_skor_rekomendasi_desa` stack. All runtime services are managed by Docker Compose. The local tooling installed here — Python `.venv`, Node.js/npm, and OpenSSL — is used only for the one-time setup steps before the containers are started.
+
+---
+
+## 1. Update the System
+
+Always start with a full package update to ensure you have the latest security patches and package index.
+
+```bash
+sudo apt update && sudo apt upgrade -y
+```
+
+---
+
+## 2. Install Git
+
+Git is required to clone the repository.
+
+```bash
+sudo apt install -y git
+```
+
+Verify:
+
+```bash
+git --version
+```
+
+Clone the repository and enter the project directory:
+
+```bash
+git clone https://github.com/anbe-on/integrasi_data_skor_rekomendasi_desa.git
+cd integrasi_data_skor_rekomendasi_desa
+```
+
+---
+
+## 3. Install Docker and Docker Compose
+
+The stack runs entirely in Docker. Install Docker Engine and the Compose plugin using the official Docker apt repository.
+
+```bash
+# Update package index and install prerequisites
+sudo apt update
+sudo apt install -y ca-certificates curl
+
+# Add Docker's official GPG key
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+# Add the Docker repository (modern .sources format)
+sudo tee /etc/apt/sources.list.d/docker.sources <<EOF
+Types: deb
+URIs: https://download.docker.com/linux/ubuntu
+Suites: $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}")
+Components: stable
+Architectures: $(dpkg --print-architecture)
+Signed-By: /etc/apt/keyrings/docker.asc
+EOF
+
+# Update apt and install Docker
+sudo apt update
+sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+```
+
+Allow your user to run Docker without `sudo`:
+
+```bash
+sudo usermod -aG docker $USER
+newgrp docker
+```
+
+Verify both tools are working:
+
+```bash
+docker --version
+docker compose version
+```
+
+> **Debian users:** replace `ubuntu` with `debian` in the repository URL above.
+
+---
+
+## 4. Install Python 3.11 and Virtual Environment
+
+Python is **not** used to run the stack — Docker handles that. It is needed locally only for `add_user.py`, the script that creates the initial user account stored in `.config/auth_users.json`.
+
+```bash
+sudo apt install -y python3.11 python3.11-venv python3-pip
+```
+
+Create a virtual environment inside the project and install only what `add_user.py` needs:
+
+```bash
+python3.11 -m venv .venv
+source .venv/bin/activate
+pip install -r .config/requirements.txt
+```
+
+You can deactivate the virtual environment when you are done with user management:
+
+```bash
+deactivate
+```
+
+> The `.venv` directory is excluded from the Docker image via `.dockerignore`.
+
+---
+
+## 5. Install Node.js, npm and npx
+
+Node.js/npm is needed to compile the Tailwind CSS stylesheet into `front_end/static/css/output.css`. This is a one-time step before the first build. If `output.css` already exists in the repository, you can skip this section.
+
+Install Node.js 20 LTS via NodeSource:
+
+```bash
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install -y nodejs
+```
+
+`npx` is bundled with npm and is available immediately after. Verify:
+
+```bash
+node --version
+npm --version
+npx --version
+```
+
+---
+
+## 6. Install OpenSSL
+
+OpenSSL is used to generate the `APP_SECRET_KEY` for JWT signing. It is pre-installed on most Ubuntu/Debian systems; run the following to confirm or install it:
+
+```bash
+sudo apt install -y openssl
+openssl version
+```
+
+---
+
+## 7. Compile Tailwind CSS
+
+This step only needs to be done once (or whenever the HTML templates change significantly). Skip it if `front_end/static/css/output.css` already exists.
+
+```bash
+cd front_end/
+npm install -D tailwindcss@3 postcss autoprefixer
+npx tailwindcss init
+```
+
+Paste the following into `tailwind.config.js`:
+
+```javascript
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  darkMode: 'class',
+  content: ["./**/*.html", "./static/**/*.js"],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+}
+```
+
+Compile the stylesheet:
+
+```bash
+npx tailwindcss -i ./static/css/input.css -o ./static/css/output.css
+```
+
+Return to the project root:
+
+```bash
+cd ..
+```
+
+---
+
+## 8. Generate APP_SECRET_KEY and Create .env
+
+Create a `.env` file in the project root with a securely generated secret key:
+
+```bash
+echo "APP_SECRET_KEY=$(openssl rand -hex 32)" > .env
+```
+
+Verify the file looks correct:
+
+```bash
+cat .env
+# APP_SECRET_KEY=<64-character hex string>
+```
+
+---
+
+## 9. Add the First User
+
+Use `add_user.py` with the virtual environment activated to create your initial admin account. The credentials are saved to `.config/auth_users.json`.
+
+```bash
+source .venv/bin/activate
+python add_user.py <username> <password> admin
+# Example:
+python add_user.py admin MySecretPass123 admin
+deactivate
+```
+
+Replace `<username>` and `<password>` with your own values. The third argument is the role (`admin` or `user`).
+
+---
+
+## 10. Start the Stack
+
+With all prerequisites in place, build and start all Docker services in detached mode:
+
+```bash
+docker compose up -d --build
+```
+
+On first startup the system will attempt to prepare Excel files from the database. The application is then accessible via Nginx on port `8080`:
+
+```
+http://<server-ip>:8080
+```
+
+To check running containers:
+
+```bash
+docker compose ps
+```
+
+To follow logs:
+
+```bash
+docker compose logs -f
+```
+
+---
 
 <a id='page-project-introduction'></a>
 
@@ -59,7 +668,7 @@ The project utilizes Python for its backend services, including data processing 
 
 The system can be broadly divided into three main parts: the backend API and data processing, the frontend user interface, and the configuration management.
 
-Sources: [README.md:1-23]()
+Sources: [README.md:1-15]()
 
 ### Backend Services
 
@@ -77,7 +686,7 @@ graph TD
     G --> D;
 ```
 
-Sources: [README.md:60-61](), [desa_db/server.py]()
+Sources: [README.md:67-73](), [desa_db/server.py]()
 
 ### Frontend Interface
 
@@ -101,7 +710,7 @@ Sources: [front_end/templates/login.html](), [front_end/templates/admin.html](),
 
 The system relies on various configuration files to define its behavior, data structures, and mappings. These files are typically located in a `.config/` directory.
 
-Sources: [README.md:5-11]()
+Sources: [README.md:1-11]()
 
 ## Core Components and Functionality
 
@@ -190,7 +799,7 @@ The project uses several configuration files to define system behavior and data 
 | `table_structure_IKU.csv` | Defines the structure for the "Dashboard IKU" table.                     | `.config/`  |
 | `iku_mapping.json`        | Maps IKU parent metrics to their corresponding score columns.            | `.config/`  |
 
-Sources: [README.md:5-11](), [tests/server_test.py:16-35]()
+Sources: [README.md:1-11](), [tests/server_test.py:16-35]()
 
 ### Styling and Frontend Configuration
 
@@ -219,28 +828,14 @@ Sources: [front_end/tailwind.config.js]()
 
 Docker and Docker Compose are recommended for deploying the application. The `docker compose up -d --build` command initiates the build and deployment process.
 
-Sources: [README.md:32-41]()
+Sources: [README.md:67-73]()
 
-### Local Development (Not Recommended)
-
-For local development, a virtual environment setup is provided. This involves creating a virtual environment, activating it, and installing dependencies from `requirements.txt`.
-
-```bash
-# Virtual Environment Setup (run once)
-Python311 -m venv .venv
-source .venv/Scripts/activate
-pip install -r .config/requirements.txt
-```
-
-The backend can be run using `python desa_db/server.py`, and both frontend and backend can be run together using `python run_system.py`.
-
-Sources: [README.md:47-58]()
 
 ### Testing
 
 Unit tests for the server components can be run using `pytest`. The `tests/server_test.py` file contains fixtures and test cases for the server functionality.
 
-Sources: [README.md:43-44](), [tests/server_test.py]()
+Sources: [README.md:75-77](), [tests/server_test.py]()
 
 ## User Interface Elements
 
@@ -279,7 +874,6 @@ Related topics: [Project Introduction](#page-project-introduction), [Docker Depl
 - [.config/requirements.txt](https://github.com/anbe-on/integrasi_data_skor_rekomendasi_desa/blob/main/.config/requirements.txt)
 - [desa_db/middleware.py](https://github.com/anbe-on/integrasi_data_skor_rekomendasi_desa/blob/main/desa_db/middleware.py)
 - [desa_db/server.py](https://github.com/anbe-on/integrasi_data_skor_rekomendasi_desa/blob/main/desa_db/server.py)
-- [run_system.py](https://github.com/anbe-on/integrasi_data_skor_rekomendasi_desa/blob/main/run_system.py)
 - [front_end/tailwind.config.js](https://github.com/anbe-on/integrasi_data_skor_rekomendasi_desa/blob/main/front_end/tailwind.config.js)
 - [front_end/templates/login.html](https://github.com/anbe-on/integrasi_data_skor_rekomendasi_desa/blob/main/front_end/templates/login.html)
 - [tests/server_test.py](https://github.com/anbe-on/integrasi_data_skor_rekomendasi_desa/blob/main/tests/server_test.py)
@@ -296,7 +890,7 @@ The project relies on a specific set of Python packages to function correctly. T
 ### Python Version
 
 The system is developed and tested with Python 3.11.9.
-Sources: [README.md:4-5]()
+Sources: [README.md:14]()
 
 ### Core Python Packages
 
@@ -331,13 +925,13 @@ The system has specific requirements for its execution environment, including op
 
 ### Operating System
 
-While not explicitly stated as a strict requirement, the use of Docker is recommended, and WSL (Windows Subsystem for Linux) is suggested for Windows users. This implies compatibility with Linux-based environments.
-Sources: [README.md:17-18](), [README.md:25]()
+Docker is required to run the application. On Windows, WSL (Windows Subsystem for Linux) is recommended for running Docker.
+Sources: [README.md:17](), [README.md:69]()
 
 ### Hardware Recommendations
 
 A CPU supporting AVX2 is recommended. This typically includes Intel 4th generation processors and AMD Ryzen processors.
-Sources: [README.md:6-7]()
+Sources: [README.md:15]()
 
 ## Configuration
 
@@ -346,7 +940,7 @@ The project utilizes a configuration directory (`.config/`) and environment vari
 ### Configuration Files Directory
 
 All configuration files are located within the `.config/` directory.
-Sources: [README.md:2-3]()
+Sources: [README.md:1-2]()
 
 ### Key Configuration Files
 
@@ -357,7 +951,7 @@ Sources: [README.md:2-3]()
 *   `table_structure.csv`: Defines the structure for data tables.
 *   `table_structure_IKU.csv`: Defines the structure for IKU (Indikator Kinerja Utama) tables.
 *   `iku_mapping.json`: Maps IKU metrics.
-Sources: [README.md:3-9](), [tests/server_test.py:15-37]()
+Sources: [README.md:5-10](), [tests/server_test.py:15-37]()
 
 ### Environment Variables
 
@@ -365,55 +959,32 @@ A `.env` file is used to store sensitive or environment-specific settings.
 
 *   `APP_SECRET_KEY`: A secret key for the application, which can be generated using `openssl rand -hex 32`.
 
-Sources: [README.md:13-16]()
+Sources: [README.md:26-37]()
 
 ## Installation and Setup
 
-The project offers multiple methods for setup and execution, including Docker-based deployment and manual virtual environment setup.
+The project is deployed using Docker. Ensure Docker and Docker Compose are installed before proceeding.
 
 ### Docker Installation and Run
-
-This is the recommended method for deployment.
 
 1.  **Install Docker and Docker Compose:** Ensure these are installed on your system.
 2.  **Build and Run:** Execute `docker compose up -d --build` in the project's root directory.
     *   The system will attempt to prepare Excel files from the database upon startup.
 
-Sources: [README.md:24-31]()
-
-### Virtual Environment Setup (Manual)
-
-This method is described as "not recommended" but provides a fallback.
-
-1.  **Create Virtual Environment:** `Python311 -m venv .venv`
-2.  **Activate Virtual Environment:** `source .venv/Scripts/activate`
-3.  **Install Dependencies:** `pip install -r .config/requirements.txt`
-
-Sources: [README.md:34-37]()
+Sources: [README.md:67-73]()
 
 ## Running the System
 
-The system can be launched using different scripts depending on the desired mode of operation.
+The system is run entirely through Docker Compose.
 
 ### Running with Docker Compose
 
 Execute `docker compose up -d --build` from the project root.
-Sources: [README.md:29]()
-
-### Running Backend and Middleware (Manual)
-
-Start the backend server using: `python desa_db/server.py`
-Sources: [README.md:39]()
-
-### Running Frontend and Backend Simultaneously (Manual)
-
-Use the `run_system.py` script for an integrated launch.
-Sources: [README.md:41-42](), [run_system.py]()
-
+Sources: [README.md:71]()
 
 ## Frontend Development Setup
 
-For frontend development, particularly if using Tailwind CSS, the following steps are involved.
+If `output.css` does not yet exist, compile Tailwind CSS before building the Docker image.
 
 ### Compiling Tailwind CSS
 
@@ -436,7 +1007,7 @@ For frontend development, particularly if using Tailwind CSS, the following step
     Sources: [front_end/tailwind.config.js]()
 5.  **Compile CSS:** `npx tailwindcss -i ./static/css/input.css -o ./static/css/output.css --watch`
 
-Sources: [README.md:19-23]()
+Sources: [README.md:39-66]()
 
 ## Testing
 
@@ -446,7 +1017,7 @@ Unit tests for the server component are available and can be executed using pyte
 
 Execute the following command in the project's root directory:
 `pytest tests/server_test.py`
-Sources: [README.md:32]()
+Sources: [README.md:77]()
 
 ## System Architecture Overview
 
@@ -469,12 +1040,6 @@ Sources: [desa_db/middleware.py]()
 The frontend provides the user interface for interacting with the system. It includes HTML templates and is styled using Tailwind CSS. The `login.html` template demonstrates the UI structure and styling approach.
 
 Sources: [front_end/templates/login.html](), [front_end/tailwind.config.js]()
-
-### System Execution (`run_system.py`) (Not Recommended)
-
-This script orchestrates the startup of both the backend and frontend components, facilitating a unified development or deployment environment. Run these if you choose not to use Docker, it manages subprocesses for each part of the application.
-
-Sources: [run_system.py]()
 
 ### Workflow Example: Dashboard Generation
 
@@ -525,7 +1090,7 @@ Sources: [tests/server_test.py:15-37]()
 
 The `pytest` framework is used for running tests, with a specific command provided to execute server tests.
 
-Sources: [README.md:32]()
+Sources: [README.md:77]()
 
 ```mermaid
 graph TD
@@ -582,7 +1147,6 @@ Related topics: [Data Flow Diagram](#page-data-flow), [Component Relationships](
 <summary>Relevant source files</summary>
 
 - [docker-compose.yml](https://github.com/anbe-on/integrasi_data_skor_rekomendasi_desa/blob/main/docker-compose.yml)
-- [run_system.py](https://github.com/anbe-on/integrasi_data_skor_rekomendasi_desa/blob/main/run_system.py)
 - [nginx.conf](https://github.com/anbe-on/integrasi_data_skor_rekomendasi_desa/blob/main/nginx.conf)
 - [desa_db/server.py](https://github.com/anbe-on/integrasi_data_skor_rekomendasi_desa/blob/main/desa_db/server.py)
 - [front_end/router.py](https://github.com/anbe-on/integrasi_data_skor_rekomendasi_desa/blob/main/front_end/router.py)
@@ -690,7 +1254,7 @@ The frontend service is responsible for the user interface and client-side inter
 
 ### Routing and Views
 
-The `front_end/router.py` file likely defines routes that map URL paths to specific HTML templates or rendering functions.
+The `front_end/router.py` file defines routes that map URL paths to specific HTML templates or rendering functions.
 
 ```mermaid
 graph TD
@@ -1096,7 +1660,7 @@ Sources: [README.md]()
 
 Configuration is managed through JSON and CSV files, typically located in the `.config/` directory.
 
-Sources: [README.md:3-7]()
+Sources: [README.md:5-10]()
 
 | File Name           | Description                                    | Format |
 | :------------------ | :--------------------------------------------- | :----- |
@@ -1108,7 +1672,7 @@ Sources: [README.md:3-7]()
 | `table_structure_IKU.csv` | Defines the structure for the IKU dashboard. | CSV    |
 | `iku_mapping.json`  | Maps parent IKU metrics to child columns.      | JSON   |
 
-Sources: [README.md:3-7](), [tests/server_test.py:21-44]()
+Sources: [README.md:5-10](), [tests/server_test.py:21-44]()
 
 ### Database Schema
 
@@ -1117,22 +1681,23 @@ The `master_data` table is central to storing the village scores. It includes me
 Sources: [desa_db/middleware.py:239-257]()
 
 ```mermaid
-erDiagram
-    master_data {
+classDiagram
+    class master_data {
         TIMESTAMP valid_from
         TIMESTAMP valid_to
         VARCHAR commit_id
         VARCHAR source_file
         VARCHAR Provinsi
-        VARCHAR 'Kabupaten/ Kota'
-        VARCHAR 'Kecamatan'
-        VARCHAR 'Kode Wilayah Administrasi Desa'
-        VARCHAR 'Desa'
-        VARCHAR 'Status ID'
-        TINYINT 'Score A'
-        TINYINT 'Score B'
+        VARCHAR Kabupaten/Kota
+        VARCHAR Kecamatan
+        VARCHAR "Kode Wilayah Administrasi Desa"
+        VARCHAR Desa
+        VARCHAR "Status ID"
+        TINYINT "Score A"
+        TINYINT "Score B"
         %% ... other score columns dynamically added
     }
+
 ```
 
 Sources: [desa_db/middleware.py:239-257]()
@@ -1147,7 +1712,7 @@ Sources: [README.md]()
 
 Docker Compose is recommended for running the application, ensuring consistent environments for development and production.
 
-Sources: [README.md:14-35]()
+Sources: [README.md:39-66]()
 
 ```mermaid
 graph TD
@@ -1160,7 +1725,7 @@ graph TD
     G --> D;
 ```
 
-Sources: [README.md:14-35]()
+Sources: [README.md:39-66]()
 
 ### Unit and Integration Testing
 
@@ -1170,13 +1735,13 @@ Sources: [tests/server_test.py]()
 
 ```mermaid
 graph TD
-    A[Test Runner (pytest)] --> B(Setup Test Environment);
-    B --> C[Create Mock Config Files];
-    C --> D[Create Mock Data];
-    D --> E[Initialize FastAPI App];
-    E --> F{Override Dependencies};
-    F --> G[Run API Tests];
-    G --> H[Assert Results];
+    A[Test Runner pytest] --> B(Setup Test Environment)
+    B --> C[Create Mock Config Files]
+    C --> D[Create Mock Data]
+    D --> E[Initialize FastAPI App]
+    E --> F{Override Dependencies}
+    F --> G[Run API Tests]
+    G --> H[Assert Results]
 ```
 
 Sources: [tests/server_test.py]()
@@ -1222,7 +1787,7 @@ The system comprises several key components:
 *   **Frontend Service (`front_end`)**: A web interface built with HTML, CSS (Tailwind CSS), and JavaScript, responsible for user interaction, data visualization, and communication with the backend API.
 *   **Database**: Although not explicitly detailed in the provided files, the backend interacts with a database (implied by `helpers_get_db_connection` and SQL queries in `middleware.py`).
 *   **Configuration**: Various JSON and CSV files within the `.config` directory manage system settings, data mappings, and headers.
-*   **Docker Orchestration**: `docker-compose.yml` defines the services, their dependencies, volumes, and network configurations for deployment and local development.
+*   **Docker Orchestration**: `docker-compose.yml` defines the services, their dependencies, volumes, and network configurations for deployment.
 
 ## Backend Service (`desa_db`)
 
@@ -1254,16 +1819,16 @@ Sources: [desa_db/server.py:119-154](), [desa_db/auth.py]()
 
 ```mermaid
 graph TD
-    A[User] ->> B(Frontend);
-    B ->> C{POST /api/login};
-    C ->> D[desa_db/server.py];
-    D ->> E[desa_db/auth.py];
-    E -- Verify Credentials --> F[auth_users.json];
-    F -- Credentials Match --> E;
-    E -- Generate JWT --> D;
-    D -- Set HttpOnly Cookie --> G[Response];
-    G --> B;
-    B -- Redirect/Load Page --> A;
+    A[User] --> B(Frontend)
+    B --> C{"POST /api/login"}
+    C --> D["desa_db/server.py"]
+    D --> E["desa_db/auth.py"]
+    E -- "Verify Credentials" --> F["auth_users.json"]
+    F -- "Credentials Match" --> E
+    E -- "Generate JWT" --> D
+    D -- "Set HttpOnly Cookie" --> G[Response]
+    G --> B
+    B -- "Redirect/Load Page" --> A
 ```
 
 ### Data Processing and Reporting
@@ -1312,7 +1877,7 @@ The frontend provides the user interface for interacting with the backend servic
 
 *   **HTML Templates**: `login.html`, `user.html`, `admin.html` define the structure of different user interfaces.
 *   **CSS**: `output.css` generated from Tailwind CSS provides styling. `tailwind.config.js` configures Tailwind.
-*   **Routing**: `front_end/router.py` likely handles client-side routing or serves static assets.
+*   **Routing**: `front_end/router.py` handles client-side routing or serves static assets.
 *   **API Communication**: JavaScript within the HTML templates or separate JS files (not provided) would handle making requests to the backend API.
 
 Sources: [front_end/templates/login.html](), [front_end/templates/user.html](), [front_end/templates/admin.html](), [front_end/tailwind.config.js](), [front_end/router.py]()
@@ -1388,7 +1953,7 @@ Configuration is centralized and managed through various files, primarily locate
 *   **`.config/iku_mapping.json`**: Maps IKU parent metrics to their constituent sub-metrics.
 *   **`.env`**: Environment variables, particularly `APP_SECRET_KEY`, used for application secrets.
 
-Sources: [tests/server_test.py:15-36](), [README.md:4-9]()
+Sources: [tests/server_test.py:15-36](), [README.md:5-10]()
 
 ```mermaid
 graph TD
@@ -1519,7 +2084,7 @@ This endpoint is called after all chunks of a file have been uploaded. It finali
     *   `upload_id` (str): The unique identifier of the upload.
     *   `filename` (str): The original filename.
     *   `total_hash` (str): The MD5 hash of the entire file.
-*   **Processing:** This endpoint likely triggers the finalization of the file and may initiate background processing tasks.
+*   **Processing:** This endpoint triggers the finalization of the file and may initiate background processing tasks.
 
 Sources: [desa_db/server.py:189-194]()
 
@@ -1545,7 +2110,7 @@ The system uses MD5 hashing to ensure the integrity of uploaded files and indivi
 
 The `spark-md5.min.js` library is used on the frontend for calculating MD5 hashes of files and their chunks. This is crucial for verifying that data has not been corrupted during transmission.
 
-*   **Usage:** The `helpers_compute_md5` function in the frontend JavaScript (not fully provided in context, but implied by usage in `admin.html` logic) would likely use SparkMD5 to hash file blobs.
+*   **Usage:** The `helpers_compute_md5` function in the frontend JavaScript (not fully provided in context, but implied by usage in `admin.html` logic) used SparkMD5 to hash file blobs.
 *   **API Integration:** The computed hash is sent to the backend during the upload initialization and chunking phases.
 
 Sources: [front_end/static/js/spark-md5.min.js]()
@@ -1622,7 +2187,7 @@ Sources: [desa_db/server.py:43-59]()
 
 ## Data Processing Logic (Implied)
 
-While the detailed data processing logic after upload is not fully exposed in the provided snippets, the `admin.html` template and `server.py` indicate that upon successful upload finalization, the system proceeds to "Processing" and then "Store Processed Data". The `middleware.py` file contains functions like `helpers_internal_process_temp_file`, `helpers_read_excel_preview`, and `helpers_generate_header_mapping`, suggesting that processed files are likely Excel or CSV, which are then parsed, mapped, and stored.
+While the detailed data processing logic after upload is not fully exposed in the provided snippets, the `admin.html` template and `server.py` indicate that upon successful upload finalization, the system proceeds to "Processing" and then "Store Processed Data". The `middleware.py` file contains functions like `helpers_internal_process_temp_file`, `helpers_read_excel_preview`, and `helpers_generate_header_mapping`, suggesting that processed files are Excel or CSV, which are then parsed, mapped, and stored.
 
 Sources: [front_end/templates/admin.html](), [desa_db/server.py:205-235](), [desa_db/middleware.py]()
 
@@ -2376,13 +2941,13 @@ The project utilizes a set of configuration files to define data structures, map
 
 The configuration files dictate how raw data is transformed into meaningful metrics, how different data points are mapped to specific indicators, and how scores are generated and displayed. Understanding these files is essential for customizing the system's behavior, data interpretation, and reporting capabilities.
 
-Sources: [README.md:5-9]()
+Sources: [README.md:5-10]()
 
 ## Configuration File Directory
 
 All configuration files are stored in the `.config/` directory, which is located at the root of the project. This centralized location ensures easy access and management of all system settings.
 
-Sources: [README.md:5-9]()
+Sources: [README.md:5-10]()
 
 ## Key Configuration Files
 
@@ -2527,21 +3092,21 @@ Sources: [desa_db/middleware.py:318-370]()
 
 ## Configuration Management
 
-The `README.md` file provides instructions on how to manage configuration files and run the system, including setup for Docker and virtual environments.
+The `README.md` file provides instructions on how to manage configuration files and run the system, focused on Docker-based deployment.
 
-Sources: [README.md:5-9]()
+Sources: [README.md:5-10]()
 
 ### Adding Users
 
 Users can be added using the `add_user.py` script, which stores credentials in `.config/auth_users.json`.
 
-Sources: [README.md:15-19]()
+Sources: [README.md:13-17]()
 
 ### Environment Variables
 
 An `.env` file is used to store sensitive application secrets, such as `APP_SECRET_KEY`, which can be generated using `openssl rand -hex 32`.
 
-Sources: [README.md:21-27]()
+Sources: [README.md:26-37]()
 
 ### Tailwind CSS Configuration
 
@@ -2551,7 +3116,7 @@ Sources: [front_end/tailwind.config.js:3-9]()
 
 The system's configuration files are fundamental to its operation, enabling flexible data interpretation, scoring, and reporting. By organizing these settings in dedicated files, the project facilitates customization and maintainability.
 
-Sources: [README.md:5-9](), [desa_db/middleware.py]()
+Sources: [README.md:5-10](), [desa_db/middleware.py]()
 
 ---
 
@@ -2579,7 +3144,6 @@ Related topics: [Frontend Overview](#page-frontend-overview), [Authentication Mo
 - [desa_db/server.py](https://github.com/anbe-on/integrasi_data_skor_rekomendasi_desa/blob/main/desa_db/server.py)
 - [tests/server_test.py](https://github.com/anbe-on/integrasi_data_skor_rekomendasi_desa/blob/main/tests/server_test.py)
 - [docker-compose.yml](https://github.com/anbe-on/integrasi_data_skor_rekomendasi_desa/blob/main/docker-compose.yml)
-- [run_system.py](https://github.com/anbe-on/integrasi_data_skor_rekomendasi_desa/blob/main/run_system.py)
 - [front_end/router.py](https://github.com/anbe-on/integrasi_data_skor_rekomendasi_desa/blob/main/front_end/router.py)
 - [desa_db/middleware.py](https://github.com/anbe-on/integrasi_data_skor_rekomendasi_desa/blob/main/desa_db/middleware.py)
 
@@ -2589,7 +3153,7 @@ Related topics: [Frontend Overview](#page-frontend-overview), [Authentication Mo
 
 This document outlines the backend API endpoints provided by the `integrasi_data_skor_rekomendasi_desa` project. These endpoints serve as the core interface for the frontend applications and other services to interact with the backend logic, data processing, and authentication mechanisms. The backend is primarily implemented using FastAPI, a modern, fast web framework for building APIs with Python. It handles user authentication, data manipulation, file processing, and serves dynamic content for dashboards.
 
-The backend API is designed to be accessed internally by the frontend router (`front_end/router.py`) and can be orchestrated to run alongside the frontend using `run_system.py` or `docker-compose.yml`.
+The backend API is designed to be accessed internally by the frontend router (`front_end/router.py`) and is orchestrated together with the frontend via `docker-compose.yml`.
 
 ## Authentication Endpoints
 
@@ -2647,7 +3211,7 @@ The `/config/table_structure` endpoint retrieves the table structure configurati
 
 *   **Method:** `GET`
 *   **Path:** `/config/table_structure`
-*   **Authentication:** Requires an authenticated user (admin role not explicitly enforced here, but likely intended).
+*   **Authentication:** Requires an authenticated user (admin role not explicitly enforced here, but it is needed).
 *   **Response:** A JSON array representing the table structure, or a `404 Not Found` if the configuration file is missing.
 
 Sources: [desa_db/server.py:350-376]()
@@ -2694,7 +3258,7 @@ Sources: [desa_db/middleware.py:573-928]()
 
 ### Dashboard Rendering Endpoints
 
-*   **`/render_dashboard` (GET):** Renders the main dashboard, likely serving an HTML page.
+*   **`/render_dashboard` (GET):** Renders the main dashboard, serving an HTML page.
     Sources: [desa_db/server.py:547-556]()
 *   **`/render_iku_dashboard` (GET):** Renders the IKU-specific dashboard.
     Sources: [desa_db/server.py:559-568]()
@@ -2706,32 +3270,6 @@ Sources: [desa_db/middleware.py:148-150]()
 ## System Orchestration and Configuration
 
 The project includes scripts and configurations for running the backend and frontend together, as well as for managing dependencies and deployments.
-
-### `run_system.py`
-
-This script orchestrates the simultaneous startup of the backend and frontend applications. It sets up necessary environment variables and launches the respective processes.
-
-Sources: [run_system.py]()
-
-A `FRONTEND_CONFIGS` dictionary defines the command and port for different frontend types (e.g., `fastapi`, `nextjs`).
-
-```python
-FRONTEND_CONFIGS = {
-    "fastapi": {
-        "cmd": [sys.executable, "front_end/router.py"],
-        "port": 8001,
-        "path": "front_end/router.py"
-    },
-    "nextjs": {
-        "cmd": ["npm", "run", "dev"],
-        "port": 3000,
-        "path": "frontend/package.json",
-        "cwd": "frontend"
-    }
-}
-```
-
-Sources: [run_system.py:24-37]()
 
 ### `docker-compose.yml`
 
@@ -2997,7 +3535,7 @@ The authentication module relies on several configuration elements:
 | File/Variable         | Description                                                                 | Location/Source                                     |
 | :-------------------- | :-------------------------------------------------------------------------- | :-------------------------------------------------- |
 | `.config/auth_users.json` | Stores hashed passwords, roles, and user status.                          | [add_user.py:10-13]() , [README.md:5-8]()           |
-| `SECRET_KEY`          | Secret key for JWT signing and encryption. Must be set as an environment variable. | [desa_db/auth.py:8-10]() , [README.md:20-27]()       |
+| `SECRET_KEY`          | Secret key for JWT signing and encryption. Must be set as an environment variable. | [desa_db/auth.py:8-10]() , [README.md:26-37]()       |
 | `ALGORITHM`           | The JWT signing algorithm (e.g., "HS256").                                  | [desa_db/auth.py:11]()                              |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | Duration for which JWTs are valid.                                      | [desa_db/auth.py:12]()                              |
 
@@ -3005,7 +3543,7 @@ The authentication module relies on several configuration elements:
 
 The `APP_SECRET_KEY` is crucial for JWT security and must be set in the environment. It is used to sign and verify JWTs.
 
-Sources: [desa_db/auth.py:8-10]() , [README.md:20-27]()
+Sources: [desa_db/auth.py:8-10]() , [README.md:26-37]()
 
 ## Testing
 
@@ -3050,7 +3588,6 @@ Related topics: [Login Page](#page-login-page), [User Dashboard](#page-user-dash
 - [front_end/router.py](https://github.com/anbe-on/integrasi_data_skor_rekomendasi_desa/blob/main/front_end/router.py)
 - [front_end/tailwind.config.js](https://github.com/anbe-on/integrasi_data_skor_rekomendasi_desa/blob/main/front_end/tailwind.config.js)
 - [front_end/package.json](https://github.com/anbe-on/integrasi_data_skor_rekomendasi_desa/blob/main/front_end/package.json)
-- [run_system.py](https://github.com/anbe-on/integrasi_data_skor_rekomendasi_desa/blob/main/run_system.py)
 - [desa_db/server.py](https://github.com/anbe-on/integrasi_data_skor_rekomendasi_desa/blob/main/desa_db/server.py)
 - [front_end/static/css/output.css](https://github.com/anbe-on/integrasi_data_skor_rekomendasi_desa/blob/main/front_end/static/css/output.css)
 </details>
@@ -3069,28 +3606,7 @@ The frontend application is structured to serve HTML templates and handle routin
 
 The frontend application is initiated and configured in `front_end/router.py`. It uses `FastAPI` for web serving and `uvicorn` to run the application. The application is set to run on port `8001` to avoid conflicts with the backend API, which typically runs on port `8000`.
 
-The `run_system.py` script orchestrates the startup of both the backend and frontend services. It defines the command to run the frontend application, specifying the Python executable and the `front_end/router.py` script. It also sets environment variables like `API_BASE_URL` to ensure the frontend can correctly communicate with the backend.
-
-```python
-# run_system.py
-FRONTEND_CONFIGS = {
-    "fastapi": {
-        "cmd": [sys.executable, "front_end/router.py"],
-        "port": 8001,
-        "path": "front_end/router.py"
-    },
-    # ... other configurations
-}
-
-# ... later in main()
-frontend_config = FRONTEND_CONFIGS.get(FRONTEND_TYPE)
-# ...
-frontend = subprocess.Popen(frontend_config['cmd'], cwd=frontend_cwd, env=os.environ.copy())
-# ...
-print(f"Frontend: http://localhost:{frontend_config['port']}")
-```
-
-Sources: [run_system.py:57-60]() , [run_system.py:75]() , [run_system.py:96]()
+Within the Docker setup, the frontend service is started automatically by `docker-compose.yml` alongside the backend, with `API_BASE_URL` configured via environment variables so the frontend can correctly communicate with the backend.
 
 ### Dependencies and Styling
 
@@ -3153,7 +3669,7 @@ Sources: [front_end/router.py:17]() , [front_end/router.py:48]() , [front_end/ro
 
 ### API Integration
 
-The frontend communicates with the backend API for data retrieval and processing. The `api_url` variable is configured to point to the backend service. In a production or Dockerized environment, this might be an empty string, relying on Nginx routing. For local development, it would typically point to the backend's address (e.g., `http://localhost:8000`).
+The frontend communicates with the backend API for data retrieval and processing. The `api_url` variable is set to an empty string so that Nginx correctly routes all API calls to the backend service.
 
 ```python
 # front_end/router.py
@@ -3190,19 +3706,7 @@ The frontend development workflow involves setting up dependencies, configuring 
 
 ### Development Server
 
-The `run_system.py` script is used to launch the development environment, which includes starting both the backend and frontend services. The frontend is configured to run on port `8001`.
-
-```python
-# run_system.py
-print(f"🎨 Frontend starting...\n")
-frontend_cwd = frontend_config.get('cwd', None)
-frontend = subprocess.Popen(frontend_config['cmd'], cwd=frontend_cwd, env=os.environ.copy())
-processes.append(frontend)
-# ...
-print(f"Frontend: http://localhost:{frontend_config['port']}")
-```
-
-Sources: [run_system.py:95-98]() , [run_system.py:106]()
+The recommended way to launch the full stack is with Docker: `docker compose up -d --build`. This starts the backend, frontend, and Nginx services together in the correct order.
 
 ### Styling with Tailwind CSS
 
@@ -3219,7 +3723,7 @@ npx tailwindcss init
 npx tailwindcss -i ./static/css/input.css -o ./static/css/output.css --watch
 ```
 
-Sources: [README.md:48-56]()
+Sources: [README.md:47-66]()
 
 ## Data Flow and Interaction
 
@@ -3255,7 +3759,7 @@ Sources: [front_end/router.py:23-26]() , [front_end/router.py:30-42]() , [front_
 
 1.  The frontend loads a page requiring data (e.g., `/admin` or `/user`).
 2.  The frontend makes API requests to the backend (e.g., `/api/data`, `/api/recommendations`). These requests include the `session_token` cookie for authentication.
-3.  The backend processes the request, retrieves data from the database, and returns it in a structured format (likely JSON).
+3.  The backend processes the request, retrieves data from the database, and returns it in a structured format in JSON.
 4.  The frontend receives the data and dynamically renders it within the HTML templates, often using data attributes and JavaScript to manage presentation and interactivity.
 
 ```mermaid
@@ -3278,15 +3782,9 @@ The frontend's behavior and appearance are influenced by configuration files and
 
 ### Environment Variables
 
-The `run_system.py` script sets crucial environment variables for the frontend, such as `API_BROWSER_URL` and `API_BASE_URL`, to define how the frontend communicates with the backend.
+In the Docker deployment, `API_BASE_URL` are set via `docker-compose.yml` to configure how the frontend communicates with the backend internally.
 
-```python
-# run_system.py
-os.environ["API_BROWSER_URL"] = "http://localhost:8000"
-os.environ["API_BASE_URL"] = "http://localhost:8000"
-```
-
-Sources: [run_system.py:51-52]()
+Sources: [docker-compose.yml:33]()
 
 ### Frontend Configuration in `router.py`
 
@@ -3480,7 +3978,7 @@ Example structure:
   }
 }
 ```
-Sources: [desa_db/auth.py:14-16](), [README.md:11-17]()
+Sources: [desa_db/auth.py:14-16](), [README.md:13-17]()
 
 ## Security Considerations
 
@@ -3492,8 +3990,8 @@ Sources: [desa_db/auth.py:14-16](), [README.md:11-17]()
 
 ## Configuration
 
-*   **`APP_SECRET_KEY`**: An environment variable that must be set with a securely generated random string for JWT signing. Sources: [front_end/router.py:45](), [README.md:30-35]()
-*   **`API_INTERNAL_URL`**: An environment variable specifying the base URL for backend API calls, crucial for frontend-backend communication. Defaults to `http://localhost:8000`. Sources: [front_end/router.py:51]()
+*   **`APP_SECRET_KEY`**: An environment variable that must be set with a securely generated random string for JWT signing. Sources: [front_end/router.py:45](), [README.md:33-36]()
+*   **`API_INTERNAL_URL`**: An environment variable specifying the base URL for backend API calls. In the Docker setup this is set via `docker-compose.yml` to the internal service URL. Sources: [front_end/router.py:51]()
 *   **User Database**: The `auth_users.json` file located in the `.config/` directory stores user credentials. Sources: [README.md:6]()
 
 ## User Redirection
@@ -3599,7 +4097,7 @@ Sources: [front_end/templates/user.html:2-3]()
 
 ### Data Grid Integration (`ag-grid-community.min.js`)
 
-The presence of `ag-grid-community.min.js` indicates that the dashboard likely utilizes the AG-Grid library for displaying tabular data. AG-Grid is a powerful JavaScript data grid that offers features such as sorting, filtering, pagination, column resizing, and more, making it suitable for presenting large datasets like village scores and recommendations.
+The presence of `ag-grid-community.min.js` dashboard utilizes the AG-Grid library for displaying tabular data. AG-Grid is a powerful JavaScript data grid that offers features such as sorting, filtering, pagination, column resizing, and more, making it suitable for presenting large datasets like village scores and recommendations.
 
 Sources: [front_end/templates/user.html:21]()
 
@@ -3620,7 +4118,7 @@ Based on the project's context, potential API endpoints that the User Dashboard 
 -   Endpoints to retrieve recommendation details.
 -   Endpoints to fetch data for the IKU Dashboard.
 
-These endpoints would likely be defined in `desa_db/server.py` and potentially routed through `front_end/router.py`.
+These endpoints is defined in `desa_db/server.py` and routed through `front_end/router.py`.
 
 Sources: [desa_db/server.py]()
 
@@ -3655,7 +4153,7 @@ Sources: [front_end/templates/user.html:2-3]()
 
 While specific data visualization components are not explicitly detailed in `user.html`, the presence of AG-Grid and the context of "score recommendation" and "IKU dashboard" imply that the dashboard will feature:
 
--   **Data Grids:** Interactive tables displaying village scores, recommendation metrics, and IKU performance indicators. These grids will likely support sorting, filtering, and searching.
+-   **Data Grids:** Interactive tables displaying village scores, recommendation metrics, and IKU performance indicators. These grids support sorting, filtering, and searching.
 -   **Summary Statistics:** Key metrics and aggregated scores presented in a clear and concise manner.
 -   **Visualizations (Potential):** Although not directly evident in `user.html`, a comprehensive dashboard might include charts or graphs to visualize trends and comparisons.
 
@@ -3748,7 +4246,7 @@ Related topics: [Nginx Configuration](#page-nginx-configuration), [Environment V
 
 This document outlines the Docker deployment strategy for the "integrasi_data_skor_rekomendasi_desa" project. It details the services, configurations, and commands necessary to containerize and run the application, ensuring a consistent and reproducible environment across different stages of development and deployment. The deployment leverages Docker Compose to manage multiple services, including a backend API, a frontend application, and a reverse proxy.
 
-Sources: [docker-compose.yml:1-31](), [README.md:34-111]()
+Sources: [docker-compose.yml:1-31](), [README.md:67-73]()
 
 ## Architecture Overview
 
@@ -3810,7 +4308,7 @@ Configuration is managed through several files and environment variables.
 
 An `.env` file is used to store sensitive or environment-specific variables, such as the `APP_SECRET_KEY`. This key should be generated using `openssl rand -hex 32`.
 
-Sources: [README.md:23-28](), [docker-compose.yml:17, 27]()
+Sources: [README.md:17-24](), [docker-compose.yml:17, 27]()
 
 ### Configuration Directory (`.config/`)
 
@@ -3827,7 +4325,7 @@ The `.config` directory contains essential configuration files:
 
 These files are mounted into the Docker containers to be accessible by the application.
 
-Sources: [README.md:1-10](), [docker-compose.yml:14, 25]()
+Sources: [README.md:1-11](), [docker-compose.yml:14, 25]()
 
 ### `tailwind.config.js`
 
@@ -3856,12 +4354,13 @@ docker compose up -d --build
 
 This command builds the Docker images (if not already built) and starts all defined services in detached mode (`-d`).
 
-Sources: [README.md:57-60]()
+Sources: [README.md:67-71]()
 
 ### Development vs. Production
 
-*   **Development**: The `README.md` suggests using `docker compose up -d --build` for development.
-*   **Production**: While not explicitly detailed for production, the `docker-compose.yml` structure with separate services for backend, frontend, and Nginx, along with volume mounts for configuration and data, is suitable for production environments. The `ALLOWED_ORIGINS` in `desa_db/server.py` would need to be configured for production.
+*   **Development**: For Development he has dev branch make sure to `git switch dev` then run `docker compose up -d --build` for development.
+*   **Production**: The `docker-compose.yml` structure - with separate services for backend, frontend, and Nginx, plus volume mounts for configuration and data - is suitable for production. Make sure `ALLOWED_ORIGINS` in `desa_db/server.py` is configured appropriately for the target domain.
+
 
 Sources: [docker-compose.yml:1-38](), [desa_db/server.py:15-36]()
 
@@ -3873,21 +4372,10 @@ Unit and integration tests can be run using pytest. The command provided is:
 pytest tests/server_test.py
 ```
 
-This command executes tests defined in `tests/server_test.py`, which likely includes setup for mock configurations and API endpoint testing.
+This command executes tests defined in `tests/server_test.py`, which includes setup for mock configurations and API endpoint testing.
 
-Sources: [README.md:62-64]()
+Sources: [README.md:75-78]()
 
-## Deprecated Methods
-
-The `README.md` mentions a deprecated method for running a mock frontend using Streamlit:
-
-```bash
-streamlit run tests/serverSheets_test.py
-```
-
-This method is not recommended for current development or deployment.
-
-Sources: [README.md:66-69]()
 
 ## `.dockerignore` File
 
@@ -3918,7 +4406,6 @@ Related topics: [Docker Deployment](#page-docker-deployment)
 - [nginx.conf](https://github.com/anbe-on/integrasi_data_skor_rekomendasi_desa/blob/main/nginx.conf)
 - [docker-compose.yml](https://github.com/anbe-on/integrasi_data_skor_rekomendasi_desa/blob/main/docker-compose.yml)
 - [README.md](https://github.com/anbe-on/integrasi_data_skor_rekomendasi_desa/blob/main/README.md)
-- [run_system.py](https://github.com/anbe-on/integrasi_data_skor_rekomendasi_desa/blob/main/run_system.py)
 - [front_end/router.py](https://github.com/anbe-on/integrasi_data_skor_rekomendasi_desa/blob/main/front_end/router.py)
 - [front_end/package.json](https://github.com/anbe-on/integrasi_data_skor_rekomendasi_desa/blob/main/front_end/package.json)
 - [desa_db/server.py](https://github.com/anbe-on/integrasi_data_skor_rekomendasi_desa/blob/main/desa_db/server.py)
@@ -4003,14 +4490,12 @@ The `docker-compose.yml` file orchestrates the deployment of Nginx along with ot
 
 The `depends_on` directive in `docker-compose.yml` establishes a startup order. Nginx will only start after the frontend and backend services are running. This is critical for the proxy configurations to function correctly.
 
-## Deployment and Runtime (`run_system.py`, `README.md`)
+## Deployment and Runtime (`README.md`)
 
-The `run_system.py` script and `README.md` provide context on how Nginx is used in the deployment.
+The `README.md` outlines how Nginx fits into the deployment.
 
--   **`run_system.py`**: This script is used to launch the entire application stack, including the backend, frontend, and potentially Nginx if it were managed as a separate process. In the context of `docker-compose`, Nginx is started by Docker Compose itself. However, `run_system.py` might be used in non-Docker environments or for orchestrating the startup of services that Nginx will proxy to.
-    Sources: [run_system.py]()
--   **`README.md`**: The `README.md` file outlines the recommended Docker setup, which includes running `docker compose up -d --build`. This command will start all services defined in `docker-compose.yml`, including the Nginx service.
-    Sources: [README.md:38]()
+-   **`README.md`**: The recommended setup is Docker-based. Running `docker compose up -d --build` starts all services defined in `docker-compose.yml`, including the Nginx service automatically.
+    Sources: [README.md:67-73]()
 
 ## Frontend Routing (`front_end/router.py`)
 
@@ -4076,7 +4561,6 @@ Related topics: [Docker Deployment](#page-docker-deployment)
 - [.env](https://github.com/anbe-on/integrasi_data_skor_rekomendasi_desa/blob/.env)
 - [README.md](https://github.com/anbe-on/integrasi_data_skor_rekomendasi_desa/blob/main/README.md)
 - [docker-compose.yml](https://github.com/anbe-on/integrasi_data_skor_rekomendasi_desa/blob/main/docker-compose.yml)
-- [run_system.py](https://github.com/anbe-on/integrasi_data_skor_rekomendasi_desa/blob/main/run_system.py)
 - [front_end/tailwind.config.js](https://github.com/anbe-on/integrasi_data_skor_rekomendasi_desa/blob/main/front_end/tailwind.config.js)
 
 </details>
@@ -4085,7 +4569,7 @@ Related topics: [Docker Deployment](#page-docker-deployment)
 
 Environment variables are crucial for configuring the behavior and connectivity of the `integrasi_data_skor_rekomendasi_desa` project. They allow for flexible deployment across different environments (development, staging, production) without modifying the core codebase. This system utilizes environment variables for application secrets, API base URLs, and other runtime configurations.
 
-The primary mechanism for managing these variables is through a `.env` file, which is referenced by `docker-compose.yml` and loaded into the application environment. The `run_system.py` script also directly sets some environment variables when starting the backend and frontend services.
+The primary mechanism for managing these variables is through a `.env` file, which is referenced by `docker-compose.yml` and loaded into the application environment.
 
 ## Configuration Management
 
@@ -4103,7 +4587,7 @@ Sources:
 
 ### `APP_SECRET_KEY`
 
-This is a critical secret key used for application security, likely for session management or signing tokens. It must be generated and provided in the `.env` file. The `README.md` provides instructions on how to generate this key.
+This is a critical secret key used for application security for session management or signing tokens. It must be generated and provided in the `.env` file. The `README.md` provides instructions on how to generate this key.
 
 **Generation Command:**
 ```bash
@@ -4112,8 +4596,8 @@ openssl rand -hex 32
 
 Sources:
 - [.env:3]()
-- [README.md:28]()
-- [README.md:29]()
+- [README.md:27-28]()
+- [README.md:71]()
 
 ### `API_BASE_URL`
 
@@ -4121,65 +4605,13 @@ This environment variable defines the base URL for the backend API. It is used b
 
 In the `docker-compose.yml`, the `frontend_id_srd_iku` service sets `API_BASE_URL` to `http://backend_id_srd_iku:8000`. This is an internal Docker network URL.
 
-The `run_system.py` script sets `API_BASE_URL` to `http://localhost:8000` when running the system locally.
-
 Sources:
 - [docker-compose.yml:77]()
-- [run_system.py:19]()
 
-### `API_BROWSER_URL`
-
-This environment variable specifies the URL of the API as accessible from a browser. The `run_system.py` script sets this to `http://localhost:8000`.
-
-Sources:
-- [run_system.py:18]()
 
 ## System Startup and Environment Variable Injection
 
-The `run_system.py` script orchestrates the startup of the backend and frontend services, ensuring that necessary environment variables are available to them.
-
-### `run_system.py` Logic
-
-When `run_system.py` is executed, it performs the following actions related to environment variables:
-
-1.  **Loads `.env`:** It implicitly relies on the environment where it's run having the `.env` file loaded (e.g., when run directly or via Docker Compose).
-2.  **Sets `APP_SECRET_KEY`:** It reads `APP_SECRET_KEY` from the environment.
-3.  **Sets `API_BASE_URL`:** It sets `API_BASE_URL` to `http://localhost:8000`.
-4.  **Sets `API_BROWSER_URL`:** It sets `API_BROWSER_URL` to `http://localhost:8000`.
-5.  **Starts Backend:** The backend process (`desa_db/server.py`) inherits the environment, including these variables.
-6.  **Starts Frontend:** The frontend process (`front_end/router.py`) also inherits the environment. If the frontend type is "fastapi", it also sets the `FRONTEND_PORT` environment variable.
-
-```mermaid
-graph TD
-    A[Start run_system.py] --> B{Load .env};
-    B --> C[Set APP_SECRET_KEY];
-    C --> D[Set API_BASE_URL];
-    D --> E[Set API_BROWSER_URL];
-    E --> F{Start Backend Process};
-    F --> G{Start Frontend Process};
-    G --> H[System Running];
-    H --> I[Press Ctrl+C to Stop];
-
-    subgraph Environment Variables
-        C
-        D
-        E
-    end
-
-    subgraph Processes
-        F
-        G
-    end
-```
-
-Sources:
-- [run_system.py:15]()
-- [run_system.py:18]()
-- [run_system.py:19]()
-- [run_system.py:20]()
-- [run_system.py:23]()
-- [run_system.py:33]()
-- [run_system.py:37]()
+With Docker Compose, all services are started together and environment variables are injected automatically.
 
 ### Docker Compose Environment Variable Handling
 
@@ -4228,7 +4660,7 @@ Sources:
 
 ## Summary
 
-Environment variables are fundamental to the deployment and operation of the `integrasi_data_skor_rekomendasi_desa` project. They provide a flexible mechanism for managing sensitive information like `APP_SECRET_KEY` and for configuring inter-service communication via `API_BASE_URL`. The project leverages `.env` files and Docker Compose for robust environment management, ensuring that the application can be deployed and scaled effectively across different environments. The `run_system.py` script further simplifies local development by setting these variables and launching the integrated services.
+Environment variables are fundamental to the deployment and operation of the `integrasi_data_skor_rekomendasi_desa` project. They provide a flexible mechanism for managing sensitive information like `APP_SECRET_KEY` and for configuring inter-service communication via `API_BASE_URL`. The project leverages `.env` files and Docker Compose for robust environment management, ensuring that the application can be deployed and scaled effectively across different environments.
 
 ---
 
@@ -4264,7 +4696,7 @@ Sources: [desa_db/server.py:25-32]()
 
 The project utilizes several configuration files, each serving a distinct purpose in defining the system's behavior. These files are typically stored in the `.config/` directory.
 
-Sources: [README.md:3-7]()
+Sources: [README.md:5-10]()
 
 ### `headers.json`
 
@@ -4529,10 +4961,10 @@ Sources: [front_end/templates/login.html]()
 ## System Requirements for User Management
 
 - **Python 3.11.9:** The backend services and scripts are developed in Python.
-- **bcrypt library:** Required for secure password hashing. This is typically installed via `pip install -r .config/requirements.txt`.
-- **Docker (Recommended):** For deploying the application, including the backend services that handle user authentication.
+- **bcrypt library:** Required for secure password hashing. This is installed automatically when building the Docker image.
+- **Docker:** Used for deploying the application, including the backend services that handle user authentication.
 
-Sources: [README.md:7-9]()
+Sources: [README.md:14-15]()
 
 ## Testing User Management
 
