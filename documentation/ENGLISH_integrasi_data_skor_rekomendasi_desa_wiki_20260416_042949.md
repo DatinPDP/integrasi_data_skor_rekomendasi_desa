@@ -1132,7 +1132,6 @@ Sources: [front_end/templates/login.html]()
 
 This summary covers the essential system requirements, including software dependencies, runtime environment, configuration, installation, execution, and frontend styling, as derived from the provided source files.
 
-
 ---
 
 <a id='page-architecture-overview'></a>
@@ -4358,9 +4357,8 @@ Sources: [README.md:67-71]()
 
 ### Development vs. Production
 
-*   **Development**: For Development he has dev branch make sure to `git switch dev` then run `docker compose up -d --build` for development.
+*   **Development**: For Development it has dev branch make sure to `git switch dev` then run `docker compose up -d --build` for development.
 *   **Production**: The `docker-compose.yml` structure - with separate services for backend, frontend, and Nginx, plus volume mounts for configuration and data - is suitable for production. Make sure `ALLOWED_ORIGINS` in `desa_db/server.py` is configured appropriately for the target domain.
-
 
 Sources: [docker-compose.yml:1-38](), [desa_db/server.py:15-36]()
 
@@ -4375,7 +4373,6 @@ pytest tests/server_test.py
 This command executes tests defined in `tests/server_test.py`, which includes setup for mock configurations and API endpoint testing.
 
 Sources: [README.md:75-78]()
-
 
 ## `.dockerignore` File
 
