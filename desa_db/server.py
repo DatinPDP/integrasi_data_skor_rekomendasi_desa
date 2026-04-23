@@ -154,6 +154,8 @@ try:
         helpers_render_dashboard_html,
         helpers_render_iku_dashboard,
         helpers_get_public_iku_json,
+        helpers_calculate_dashboard_initial_payload,
+        helpers_calculate_dashboard_by_filters,
         helpers_generate_excel_workbook,
         helpers_background_task_generate_pre_render_excel,
         ID_COL,
@@ -167,8 +169,8 @@ except ImportError:
     from desa_db.middleware import helpers_read_excel_preview, helpers_generate_header_mapping
     from desa_db.middleware import helpers_init_db, helpers_internal_process_temp_file
     from desa_db.middleware import helpers_build_dynamic_query, helpers_get_cache_path
-    from desa_db.middleware import helpers_build_dynamic_query, helpers_get_cache_path
     from desa_db.middleware import helpers_generate_excel_workbook, helpers_get_public_iku_json
+    from desa_db.middleware import helpers_calculate_dashboard_initial_payload, helpers_calculate_dashboard_by_filters
     from desa_db.middleware import helpers_background_task_generate_pre_render_excel
     from desa_db.middleware import ID_COL, BASE_DIR as MW_BASE_DIR, CONFIG_DIR
 
@@ -226,6 +228,56 @@ def endpoint_get_public_iku_json(request: Request, year: str, metric: str = Quer
     try:
         data = helpers_get_public_iku_json(year, metric_filter=metric)
         return JSONResponse(content=data)
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+
+@app.get("/public/dashboard/overview/{year}")
+@limiter.limit("60/minute")
+def endpoint_get_public_dashboard_overview(request: Request, year: str):
+    """
+    Lightweight public dashboard bootstrap payload.
+    Returns only summary + filter options to keep first render small.
+    """
+    try:
+        payload = helpers_calculate_dashboard_initial_payload(year)
+        response = JSONResponse(
+            content={
+                "server_route": "server_public_dashboard_overview",
+                "middleware_result": payload
+            }
+        )
+        response.headers["Cache-Control"] = "public, max-age=120"
+        return response
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+
+@app.get("/public/dashboard/filter/{year}")
+@limiter.limit("90/minute")
+def endpoint_get_public_dashboard_filter(
+    request: Request,
+    year: str,
+    iku_metric: str = Query(None),
+    province: str = Query(None)
+):
+    """
+    On-demand public dashboard payload for selected IKU/province.
+    """
+    try:
+        payload = helpers_calculate_dashboard_by_filters(
+            year,
+            province=province,
+            iku_metric=iku_metric
+        )
+        response = JSONResponse(
+            content={
+                "server_route": "server_public_dashboard_filter",
+                "middleware_result": payload
+            }
+        )
+        response.headers["Cache-Control"] = "public, max-age=60"
+        return response
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
 

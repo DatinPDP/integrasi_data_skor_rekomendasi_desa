@@ -1,1548 +1,881 @@
 <!DOCTYPE html>
-<html lang="id" x-data="PublicExecutiveDashboard()">
+<html lang="id" x-data="HomeDashboardApp()">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard Eksekutif Publik - Data Skor Rekomendasi Desa</title>
+  <title>Dashboard Publik Data Skor Rekomendasi Desa</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/css/output.css">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/output.css" />
   <script defer src="/static/js/alpine.min.js"></script>
   <style>
     :root {
-      --bg-0: #eef2ff;
-      --bg-1: #f8fafc;
-      --bg-2: #e6f0ff;
-      --ink: #1f2937;
-      --muted: #5b6472;
-      --line: #d8dee9;
-      --card: rgba(255, 255, 255, 0.84);
+      --mono-stack: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --bg: #f4f7fb;
+      --line: #d9e2ef;
+      --ink: #0f172a;
+      --muted: #5f6b80;
+      --card: #ffffff;
       --blue: #1d4ed8;
-      --cyan: #0284c7;
       --teal: #0f766e;
       --amber: #b45309;
       --rose: #be123c;
-      --slate: #334155;
-      --emerald: #065f46;
-      --shadow: 0 12px 34px rgba(15, 23, 42, 0.12);
-      --radius: 18px;
+      --emerald: #166534;
     }
 
     * {
       box-sizing: border-box;
+      font-family: var(--mono-stack);
     }
 
     body {
       margin: 0;
-      font-family: "Atkinson Hyperlegible", sans-serif;
       color: var(--ink);
       background:
-        radial-gradient(900px 320px at 10% -15%, rgba(30, 64, 175, 0.15), transparent 62%),
-        radial-gradient(800px 280px at 90% 0%, rgba(14, 116, 144, 0.16), transparent 58%),
-        linear-gradient(155deg, var(--bg-0), var(--bg-1) 55%, var(--bg-2));
-      min-height: 100vh;
+        radial-gradient(900px 300px at 8% -10%, rgba(59, 130, 246, 0.14), transparent 60%),
+        radial-gradient(760px 260px at 92% -8%, rgba(45, 212, 191, 0.12), transparent 58%),
+        var(--bg);
     }
 
-    .dot-grid {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      opacity: 0.38;
-      background-image: radial-gradient(#98a6ba 0.95px, transparent 0.95px);
-      background-size: 22px 22px;
-      mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.66), transparent 92%);
-      z-index: 0;
-    }
-
-    .layout {
-      position: relative;
-      z-index: 1;
-      width: min(1380px, 95vw);
-      margin: 18px auto 36px;
+    .server_home_shell {
+      width: min(1320px, 94vw);
+      margin: 20px auto 30px;
       display: grid;
-      gap: 16px;
-      grid-template-rows: auto auto auto auto auto;
-    }
-
-    .glass-card {
-      background: var(--card);
-      border: 1px solid rgba(255, 255, 255, 0.85);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(10px);
-    }
-
-    .topbar {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 10px;
-      align-items: center;
-      padding: 14px 18px;
-    }
-
-    .brand-block {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      min-width: 0;
-    }
-
-    .logo {
-      width: 44px;
-      height: 44px;
-      border-radius: 10px;
-      background: linear-gradient(145deg, #ffffff, #dbeafe);
-      border: 1px solid #cbd5e1;
-      display: grid;
-      place-items: center;
-      flex-shrink: 0;
-    }
-
-    .logo img {
-      width: 34px;
-      height: 34px;
-      object-fit: contain;
-    }
-
-    .brand-title {
-      font-family: "Space Grotesk", sans-serif;
-      font-size: 1.12rem;
-      letter-spacing: 0.02em;
-      margin: 0;
-      color: #0f172a;
-      text-transform: uppercase;
-    }
-
-    .brand-subtitle {
-      margin: 3px 0 0;
-      color: var(--muted);
-      font-size: 0.84rem;
-    }
-
-    .topbar-actions {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      justify-content: flex-end;
-      flex-wrap: wrap;
-    }
-
-    .year-chip {
-      border: 1px solid #cad8ee;
-      background: #f0f7ff;
-      color: #0f3f80;
-      font-weight: 700;
-      border-radius: 999px;
-      padding: 7px 11px;
-      font-size: 0.8rem;
-      transition: 0.2s ease;
-      cursor: pointer;
-    }
-
-    .year-chip:hover {
-      transform: translateY(-1px);
-    }
-
-    .year-chip.active {
-      background: linear-gradient(130deg, #1d4ed8, #0e7490);
-      color: #fff;
-      border-color: transparent;
-      box-shadow: 0 8px 16px rgba(29, 78, 216, 0.26);
-    }
-
-    .btn-login {
-      background: #0f172a;
-      color: #fff;
-      text-decoration: none;
-      border-radius: 12px;
-      padding: 9px 14px;
-      font-size: 0.83rem;
-      font-weight: 700;
-      border: 1px solid #1e293b;
-      transition: 0.2s ease;
-      white-space: nowrap;
-    }
-
-    .btn-login:hover {
-      background: #ffffff;
-      color: #0f172a;
-    }
-
-    .hero {
-      display: grid;
-      grid-template-columns: 1.35fr 1fr;
       gap: 14px;
-      padding: 18px;
     }
 
-    .hero-heading {
-      margin: 0;
-      font-family: "Space Grotesk", sans-serif;
-      font-size: clamp(1.28rem, 2.4vw, 2rem);
-      line-height: 1.15;
-      color: #0f172a;
-    }
-
-    .hero-copy {
-      margin: 12px 0 0;
-      color: #3c4656;
-      line-height: 1.52;
-      max-width: 70ch;
-    }
-
-    .signal-grid {
-      margin-top: 16px;
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 10px;
-    }
-
-    .signal-item {
-      border: 1px dashed #c5d2e6;
-      border-radius: 12px;
-      background: rgba(255, 255, 255, 0.8);
-      padding: 10px;
-    }
-
-    .signal-label {
-      color: #66748a;
-      font-size: 0.72rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-bottom: 5px;
-    }
-
-    .signal-value {
-      font-size: 1.12rem;
-      font-weight: 700;
-      color: #0f172a;
-    }
-
-    .method-box {
-      border: 1px solid #c8d8f0;
+    .server_card {
+      background: var(--card);
+      border: 1px solid var(--line);
       border-radius: 14px;
-      background: linear-gradient(135deg, #eaf4ff, #f4fbff);
-      padding: 14px;
+      box-shadow: 0 6px 20px rgba(15, 23, 42, 0.08);
+    }
+
+    .server_header {
+      padding: 16px 18px;
       display: grid;
       gap: 8px;
-      align-content: start;
     }
 
-    .method-title {
+    .server_title {
       margin: 0;
-      font-family: "Space Grotesk", sans-serif;
-      font-size: 0.96rem;
+      font-size: clamp(1rem, 1.8vw, 1.45rem);
       text-transform: uppercase;
-      letter-spacing: 0.03em;
-      color: #0f3f80;
+      letter-spacing: 0.04em;
+      color: #0b3b84;
+      font-weight: 800;
     }
 
-    .method-list {
+    .server_subtitle {
       margin: 0;
-      padding-left: 18px;
-      color: #38506b;
-      font-size: 0.85rem;
+      color: var(--muted);
+      font-size: 0.84rem;
       line-height: 1.45;
     }
 
-    .kpi-grid {
-      display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
-      gap: 12px;
-      padding: 0 4px;
-    }
-
-    .kpi-card {
-      padding: 14px 14px 12px;
-      border-radius: 15px;
-      border: 1px solid #d9e1ef;
-      background: linear-gradient(175deg, #ffffff, #f9fbff);
-      box-shadow: 0 10px 18px rgba(15, 23, 42, 0.08);
-      min-height: 110px;
-      display: grid;
-      align-content: start;
-    }
-
-    .kpi-label {
-      font-size: 0.72rem;
-      color: #67748b;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-
-    .kpi-value {
-      margin-top: 8px;
-      font-size: 1.36rem;
-      font-weight: 700;
-      color: #111827;
-      line-height: 1.12;
-      font-family: "Space Grotesk", sans-serif;
-    }
-
-    .kpi-foot {
-      margin-top: 8px;
-      font-size: 0.8rem;
-      color: #445268;
-    }
-
-    .warning-ribbon {
-      margin: 0 4px;
-      border: 1px solid #f3ca9f;
-      background: linear-gradient(130deg, #fff7ed, #ffedd5);
-      border-radius: 12px;
-      padding: 10px 12px;
-      color: #92400e;
-      font-size: 0.86rem;
-    }
-
-    .board-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 14px;
-      align-items: start;
-    }
-
-    .panel {
-      padding: 16px;
+    .server_control_panel {
+      padding: 14px 16px;
       display: grid;
       gap: 12px;
-      align-content: start;
     }
 
-    .panel-title {
-      margin: 0;
-      font-family: "Space Grotesk", sans-serif;
-      font-size: 0.95rem;
-      text-transform: uppercase;
-      letter-spacing: 0.045em;
-      color: #0f172a;
-    }
-
-    .panel-subtitle {
-      margin: 0;
-      color: #5a687e;
-      font-size: 0.83rem;
-      line-height: 1.38;
-    }
-
-    .insight-strip {
+    .server_control_grid {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 10px;
     }
 
-    .metric-columns {
+    .server_control_block {
+      display: grid;
+      gap: 6px;
+    }
+
+    .server_control_label {
+      font-size: 0.74rem;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: #475569;
+      font-weight: 700;
+    }
+
+    .server_control_hint {
+      font-size: 0.77rem;
+      color: #64748b;
+      line-height: 1.3;
+    }
+
+    .server_select {
+      width: 100%;
+      border: 1px solid #c6d3e8;
+      border-radius: 10px;
+      background: #fff;
+      padding: 8px 10px;
+      font-size: 0.84rem;
+      color: #0f172a;
+      outline: none;
+    }
+
+    .server_select:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.18);
+    }
+
+    .server_context_bar {
+      border: 1px dashed #bfd0ea;
+      background: #f8fbff;
+      border-radius: 10px;
+      padding: 9px 11px;
+      color: #0f3f80;
+      font-size: 0.8rem;
+      line-height: 1.35;
+    }
+
+    .middleware_summary_grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      padding: 0 2px 2px;
+    }
+
+    .middleware_summary_card {
+      border: 1px solid #d8e2ef;
+      border-radius: 12px;
+      padding: 12px;
+      background: linear-gradient(180deg, #ffffff, #f7fbff);
+      display: grid;
+      gap: 5px;
+    }
+
+    .middleware_summary_label {
+      font-size: 0.7rem;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 700;
+    }
+
+    .middleware_summary_value {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .middleware_summary_note {
+      font-size: 0.76rem;
+      color: #55657d;
+      line-height: 1.35;
+    }
+
+    .middleware_main_grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 12px;
     }
 
-    .metric-list-block {
+    .middleware_panel {
+      padding: 14px;
       display: grid;
-      gap: 8px;
+      gap: 10px;
       align-content: start;
     }
 
-    .metric-list {
-      display: grid;
-      gap: 9px;
-      align-content: start;
-    }
-
-    .metric-item {
-      border: 1px solid #d6deea;
-      border-radius: 12px;
-      background: #fff;
-      padding: 9px 10px;
-      display: grid;
-      gap: 6px;
-    }
-
-    .metric-item-head {
-      display: flex;
-      justify-content: space-between;
-      gap: 8px;
-      align-items: baseline;
-    }
-
-    .metric-name {
-      font-size: 0.78rem;
-      color: #1f2937;
-      line-height: 1.35;
-      font-weight: 700;
-    }
-
-    .metric-score {
-      font-size: 0.82rem;
-      font-weight: 700;
-      white-space: nowrap;
+    .middleware_panel_title {
+      margin: 0;
+      font-size: 0.92rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
       color: #0f172a;
+      font-weight: 800;
     }
 
-    .bar-shell {
-      width: 100%;
-      height: 9px;
-      border-radius: 999px;
-      background: #e5ebf5;
-      overflow: hidden;
+    .middleware_panel_subtitle {
+      margin: 0;
+      font-size: 0.79rem;
+      color: #64748b;
+      line-height: 1.45;
     }
 
-    .bar-fill {
-      height: 100%;
-      border-radius: 999px;
-      background: linear-gradient(90deg, #0ea5e9, #1d4ed8);
+    .middleware_list_shell {
+      display: grid;
+      gap: 8px;
     }
 
-    .metric-foot {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.72rem;
-      color: #6a768b;
-    }
-
-    .metric-select {
+    .middleware_list_item {
+      border: 1px solid #d7e2f2;
       border-radius: 10px;
-      border: 1px solid #c8d4e6;
-      background: #fff;
-      color: #0f172a;
-      font-size: 0.84rem;
-      padding: 9px 10px;
-      width: 100%;
-    }
-
-    .province-list {
-      display: grid;
-      gap: 8px;
-      align-content: start;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .province-row {
-      border: 1px solid #d8e1ef;
-      border-radius: 12px;
       background: #fff;
       padding: 8px 10px;
       display: grid;
-      gap: 6px;
+      gap: 5px;
     }
 
-    .province-head {
+    .middleware_list_head {
       display: flex;
       justify-content: space-between;
+      align-items: baseline;
       gap: 8px;
-      align-items: center;
     }
 
-    .province-name {
+    .middleware_item_name {
       font-size: 0.78rem;
       font-weight: 700;
       color: #1f2937;
-      line-height: 1.2;
+      line-height: 1.3;
     }
 
-    .province-meta {
-      font-size: 0.74rem;
-      color: #5f6b80;
+    .middleware_item_score {
+      font-size: 0.78rem;
+      color: #0f172a;
+      font-weight: 800;
+      white-space: nowrap;
     }
 
-    .rank-chip {
+    .middleware_item_meta {
+      font-size: 0.72rem;
+      color: #64748b;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .middleware_priority_badge {
       display: inline-flex;
       align-items: center;
-      justify-content: center;
-      min-width: 34px;
-      border-radius: 999px;
-      padding: 2px 9px;
-      border: 1px solid #cfe0f4;
-      background: #eff6ff;
-      color: #1d4ed8;
-      font-size: 0.7rem;
-      font-weight: 700;
-    }
-
-    .recommendation-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 12px;
-      margin-top: 2px;
-    }
-
-    .rec-card {
-      border: 1px solid #d5deea;
-      background: linear-gradient(165deg, #ffffff, #f9fbff);
-      border-radius: 14px;
-      padding: 12px;
-      box-shadow: 0 8px 16px rgba(30, 41, 59, 0.08);
-      display: grid;
-      gap: 8px;
-    }
-
-    .rec-pill {
-      display: inline-block;
       width: fit-content;
       border-radius: 999px;
-      padding: 4px 9px;
-      font-size: 0.7rem;
-      font-weight: 700;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
+      padding: 2px 8px;
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      border: 1px solid transparent;
     }
 
-    .severity-high {
+    .priority-high {
+      color: var(--rose);
       background: #ffe4e6;
-      color: #be123c;
-      border: 1px solid #fecdd3;
+      border-color: #fecdd3;
     }
 
-    .severity-medium {
-      background: #fef3c7;
-      color: #9a3412;
-      border: 1px solid #fde68a;
+    .priority-medium {
+      color: var(--amber);
+      background: #fff7ed;
+      border-color: #fed7aa;
     }
 
-    .severity-low {
+    .priority-low {
+      color: var(--emerald);
       background: #dcfce7;
-      color: #166534;
-      border: 1px solid #bbf7d0;
+      border-color: #bbf7d0;
     }
 
-    .rec-title {
-      margin: 0;
-      font-size: 0.88rem;
-      line-height: 1.35;
-      color: #111827;
-      font-weight: 700;
-    }
-
-    .rec-copy {
-      margin: 0;
-      font-size: 0.8rem;
-      color: #49566e;
-      line-height: 1.45;
-    }
-
-    .rec-action {
-      margin: 0;
-      font-size: 0.8rem;
-      color: #0f3f80;
-      line-height: 1.42;
-    }
-
-    .province-rec-grid {
+    .middleware_recommendation_grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
-      margin-top: 2px;
+      gap: 10px;
     }
 
-    .province-action-list {
+    .middleware_recommendation_card {
+      border: 1px solid #d7e2f2;
+      border-radius: 12px;
+      background: linear-gradient(180deg, #ffffff, #f8fbff);
+      padding: 12px;
+      display: grid;
+      gap: 7px;
+    }
+
+    .middleware_recommendation_title {
       margin: 0;
-      padding-left: 18px;
+      font-size: 0.84rem;
+      line-height: 1.35;
+      color: #0f172a;
+      font-weight: 800;
+    }
+
+    .middleware_recommendation_copy {
+      margin: 0;
+      font-size: 0.77rem;
+      color: #475569;
+      line-height: 1.4;
+    }
+
+    .middleware_recommendation_actions {
+      margin: 0;
+      padding-left: 17px;
+      font-size: 0.75rem;
       color: #334155;
-      font-size: 0.79rem;
-      line-height: 1.45;
+      line-height: 1.4;
       display: grid;
       gap: 4px;
     }
 
-    .detail-table-wrap {
-      margin-top: 2px;
+    .middleware_table_wrap {
+      border: 1px solid #d8e2ef;
+      border-radius: 12px;
       overflow-x: auto;
-      border-radius: 13px;
-      border: 1px solid #d9e0ec;
       background: #fff;
     }
 
-    table {
+    .middleware_table {
       width: 100%;
       border-collapse: collapse;
+      min-width: 820px;
     }
 
-    thead th {
-      position: sticky;
-      top: 0;
-      z-index: 1;
-      background: #f6f9ff;
-      border-bottom: 1px solid #d8dfeb;
-      color: #334155;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      font-size: 0.69rem;
-      padding: 10px;
+    .middleware_table th {
       text-align: left;
+      padding: 10px 10px;
+      background: #f5f9ff;
+      border-bottom: 1px solid #d8e2ef;
+      font-size: 0.68rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: #475569;
       white-space: nowrap;
     }
 
-    tbody td {
-      border-bottom: 1px solid #edf2f9;
+    .middleware_table td {
       padding: 9px 10px;
-      font-size: 0.79rem;
+      border-bottom: 1px solid #edf2f9;
+      font-size: 0.77rem;
       color: #1f2937;
       vertical-align: top;
     }
 
-    tbody tr:hover {
+    .middleware_table tr:hover td {
       background: #f8fbff;
     }
 
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      border-radius: 999px;
-      padding: 3px 8px;
-      font-size: 0.72rem;
-      font-weight: 700;
-      border: 1px solid #d4deeb;
-      background: #f8fafc;
-      color: #334155;
-      white-space: nowrap;
+    .middleware_status_message {
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid #f4d2a3;
+      background: #fff7ed;
+      color: #9a3412;
+      font-size: 0.78rem;
+      line-height: 1.4;
     }
 
-    .loading-shell {
-      min-height: 220px;
-      display: grid;
-      place-items: center;
-      color: #475569;
-      font-weight: 700;
-      font-size: 0.95rem;
-    }
-
-    .empty-shell {
-      min-height: 220px;
-      display: grid;
-      place-items: center;
-      text-align: center;
-      color: #5b677d;
-      padding: 16px;
-      font-size: 0.9rem;
-    }
-
-    @media (max-width: 1220px) {
-      .hero {
-        grid-template-columns: 1fr;
-      }
-
-      .kpi-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-      }
-
-      .board-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .insight-strip {
+    @media (max-width: 1100px) {
+      .middleware_summary_grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
-      .metric-columns {
+      .middleware_main_grid {
         grid-template-columns: 1fr;
       }
 
-      .province-list {
-        grid-template-columns: 1fr;
-      }
-
-      .recommendation-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-
-      .province-rec-grid {
+      .middleware_recommendation_grid {
         grid-template-columns: 1fr;
       }
     }
 
     @media (max-width: 760px) {
-      .layout {
-        width: min(1380px, 96vw);
+      .server_home_shell {
+        width: min(1320px, 96vw);
       }
 
-      .topbar {
-        grid-template-columns: 1fr;
-      }
-
-      .topbar-actions {
-        justify-content: flex-start;
-      }
-
-      .signal-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .kpi-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-
-      .recommendation-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .insight-strip {
+      .server_control_grid {
         grid-template-columns: 1fr;
       }
     }
   </style>
 </head>
 <body>
-  <div class="dot-grid"></div>
-
-  <div class="layout">
-    <header class="topbar glass-card">
-      <div class="brand-block">
-        <div class="logo">
-          <img src="/static/images/logo.svg" alt="Kemendesa PDT Logo">
-        </div>
-        <div>
-          <h1 class="brand-title">Dashboard Eksekutif Publik</h1>
-          <p class="brand-subtitle">
-            Direktorat Jenderal Pembangunan Desa dan Perdesaan · Data Skor Rekomendasi Desa
-          </p>
-        </div>
-      </div>
-
-      <div class="topbar-actions">
-        <template x-for="y in years" :key="`year-${y}`">
-          <button
-            type="button"
-            class="year-chip"
-            :class="{ 'active': String(year) === String(y) }"
-            @click="setYear(y)">
-            <span x-text="y"></span>
-          </button>
-        </template>
-        <a href="/login" class="btn-login">Login Aman</a>
-      </div>
+  <div class="server_home_shell">
+    <header class="server_card server_header">
+      <h1 class="server_title">Dashboard Publik Data Skor Rekomendasi Desa</h1>
+      <p class="server_subtitle">
+        Direktorat Jenderal Pembangunan Desa dan Perdesaan · Tampilan ringkas untuk publik dan pimpinan.
+      </p>
+      <a
+        href="/login"
+        class="inline-flex w-fit items-center rounded-md border border-slate-300 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-colors"
+      >Masuk Sistem</a>
     </header>
 
-    <section class="hero glass-card">
-      <div>
-        <h2 class="hero-heading">
-          Tampilan eksekutif satu halaman untuk transparansi publik, pemantauan kinerja, dan fokus intervensi.
-        </h2>
-        <p class="hero-copy">
-          Halaman ini menggabungkan kinerja IKU, konteks Rekomendasi ID, dan analitik skor desa dalam satu dashboard publik. Desainnya ditujukan untuk briefing pimpinan secara cepat sambil tetap menyediakan detail tingkat provinsi.
-        </p>
+    <!-- Backend dependency: GET /public/dashboard/overview/{year}
+         Data source: middleware.helpers_calculate_dashboard_initial_payload()
+         Purpose: deliver small initial payload (<1MB) with summary and dropdown options. -->
+    <section class="server_card server_control_panel">
+      <div class="server_control_grid">
+        <div class="server_control_block">
+          <label class="server_control_label" for="server_year_select">Select Year</label>
+          <select
+            id="server_year_select"
+            class="server_select"
+            x-model="server_selectedYear"
+            @change="action_change_year()"
+          >
+            <template x-for="year in server_availableYears" :key="`year-${year}`">
+              <option :value="year" x-text="year"></option>
+            </template>
+          </select>
+          <p class="server_control_hint">Pilih tahun data aktif yang ingin ditinjau.</p>
+        </div>
 
-        <div class="signal-grid">
-          <div class="signal-item">
-            <div class="signal-label">Tahun Portofolio</div>
-            <div class="signal-value" x-text="year"></div>
-          </div>
-          <div class="signal-item">
-            <div class="signal-label">Jumlah Metrik</div>
-            <div class="signal-value" x-text="formatNumber(metricCount)"></div>
-          </div>
-          <div class="signal-item">
-            <div class="signal-label">Pembaruan Terakhir</div>
-            <div class="signal-value" x-text="lastRefreshLabel"></div>
-          </div>
-          <div class="signal-item">
-            <div class="signal-label">Status</div>
-            <div class="signal-value" x-text="isLoading ? 'Memuat' : 'Aktif'"></div>
-          </div>
+        <div class="server_control_block">
+          <label class="server_control_label" for="middleware_select_province">Select Province</label>
+          <select
+            id="middleware_select_province"
+            class="server_select"
+            x-model="server_selectedProvince"
+            @change="action_apply_filter_from_dropdowns()"
+          >
+            <option value="">Pilih Provinsi...</option>
+            <template x-for="option in middleware_province_options" :key="`province-${option.value}`">
+              <option :value="option.value" x-text="`${option.label} (${format_number(option.village_count)} desa)`"></option>
+            </template>
+          </select>
+          <p class="server_control_hint">Bandingkan provinsi lain dengan memilih ulang dropdown ini.</p>
+        </div>
+
+        <div class="server_control_block">
+          <label class="server_control_label" for="middleware_select_iku">Select IKU</label>
+          <select
+            id="middleware_select_iku"
+            class="server_select"
+            x-model="server_selectedIkuMetric"
+            @change="action_apply_filter_from_dropdowns()"
+          >
+            <option value="">Pilih IKU...</option>
+            <template x-for="option in middleware_iku_options" :key="`iku-${option.value}`">
+              <option :value="option.value" x-text="option.label"></option>
+            </template>
+          </select>
+          <p class="server_control_hint">Setiap IKU akan menampilkan peringkat provinsi yang berbeda.</p>
         </div>
       </div>
 
-      <aside class="method-box">
-        <h3 class="method-title">Ringkasan Metode</h3>
-        <ul class="method-list">
-          <li>Sumber data publik: <code>/public/dashboard/iku/{year}</code>.</li>
-          <li>Skala penilaian mengikuti Likert 1-5 pada seluruh indikator.</li>
-          <li>Nilai IKU diagregasi per provinsi agar mudah dibaca tingkat eksekutif.</li>
-          <li>Prioritas rekomendasi diturunkan dari tema IKU dengan performa terendah.</li>
-          <li>Peringatan kualitas data ditampilkan agar interpretasi tidak menyesatkan.</li>
-        </ul>
-      </aside>
+      <div class="server_context_bar">
+        <strong>Konteks aktif:</strong>
+        Tahun <span x-text="server_selectedYear || '-'"></span> ·
+        Provinsi <span x-text="server_selectedProvince || '-'"></span> ·
+        IKU <span x-text="server_selectedIkuMetric || '-'"></span> ·
+        Pembaruan <span x-text="middleware_last_loaded_at"></span>
+      </div>
     </section>
 
-    <section class="kpi-grid">
-      <article class="kpi-card">
-        <div class="kpi-label">Desa Aktif</div>
-        <div class="kpi-value" x-text="formatNumber(summary.villages)"></div>
-        <div class="kpi-foot">Jumlah record aktif pada tahun terpilih.</div>
-      </article>
-
-      <article class="kpi-card">
-        <div class="kpi-label">Cakupan Provinsi</div>
-        <div class="kpi-value" x-text="formatNumber(summary.provinces)"></div>
-        <div class="kpi-foot">Jumlah provinsi unik pada portofolio aktif.</div>
-      </article>
-
-      <article class="kpi-card">
-        <div class="kpi-label">Rata-rata IKU Portofolio</div>
-        <div class="kpi-value" x-text="formatScore(summary.portfolioMean)"></div>
-        <div class="kpi-foot">Rata-rata dari seluruh total IKU yang tersedia.</div>
-      </article>
-
-      <article class="kpi-card">
-        <div class="kpi-label">Skor Tema Tertinggi</div>
-        <div class="kpi-value" x-text="formatScore(summary.bestMetricScore)"></div>
-        <div class="kpi-foot" x-text="summary.bestMetricName || 'Metrik belum tersedia'"></div>
-      </article>
-
-      <article class="kpi-card">
-        <div class="kpi-label">Skor Tema Terendah</div>
-        <div class="kpi-value" x-text="formatScore(summary.lowestMetricScore)"></div>
-        <div class="kpi-foot" x-text="summary.lowestMetricName || 'Metrik belum tersedia'"></div>
-      </article>
+    <!-- Backend dependency: GET /public/dashboard/overview/{year}
+         Data source: middleware.helpers_calculate_dashboard_summary() -->
+    <section class="server_card" style="padding:14px;">
+      <div class="middleware_summary_grid">
+        <article class="middleware_summary_card">
+          <div class="middleware_summary_label">Total Desa Aktif</div>
+          <div class="middleware_summary_value" x-text="format_number(middleware_summary.total_villages)"></div>
+          <div class="middleware_summary_note">Jumlah desa pada data aktif tahun terpilih.</div>
+        </article>
+        <article class="middleware_summary_card">
+          <div class="middleware_summary_label">Total Provinsi</div>
+          <div class="middleware_summary_value" x-text="format_number(middleware_summary.total_provinces)"></div>
+          <div class="middleware_summary_note">Cakupan provinsi yang tersedia pada data aktif.</div>
+        </article>
+        <article class="middleware_summary_card">
+          <div class="middleware_summary_label">Total IKU</div>
+          <div class="middleware_summary_value" x-text="format_number(middleware_summary.total_metrics)"></div>
+          <div class="middleware_summary_note">Jumlah indikator IKU yang dapat dipilih.</div>
+        </article>
+        <article class="middleware_summary_card">
+          <div class="middleware_summary_label">Update Data Terakhir</div>
+          <div class="middleware_summary_value" style="font-size:0.96rem;" x-text="middleware_summary.last_update || 'N/A'"></div>
+          <div class="middleware_summary_note">Informasi waktu pembaruan data dari backend.</div>
+        </article>
+      </div>
     </section>
 
-    <div
-      class="warning-ribbon"
-      x-show="!isLoading && quality.allCapaianZero"
-      x-transition>
-      <strong>Peringatan kualitas data:</strong>
-      Seluruh nilai <code>capaian</code> IKU saat ini bernilai <code>0.00%</code> pada payload publik. Kondisi ini biasanya menunjukkan field klasifikasi status belum tersedia pada dataset aktif. Gunakan nilai rata-rata IKU untuk pembacaan komparatif sampai cakupan klasifikasi dipulihkan.
-    </div>
+    <div class="middleware_status_message" x-show="middleware_error_message" x-text="middleware_error_message"></div>
 
-    <section class="board-grid">
-      <article class="panel glass-card">
-        <div>
-          <h3 class="panel-title">Tema IKU Tertinggi dan Terendah</h3>
-          <p class="panel-subtitle">
-            Peringkat dihitung dari rata-rata total per metrik berdasarkan API publik, ditampilkan lebih luas untuk pemetaan tema kuat dan tema yang perlu percepatan.
-          </p>
-        </div>
+    <!-- Backend dependency: GET /public/dashboard/filter/{year}?province=...&iku_metric=...
+         Data source: middleware.helpers_calculate_dashboard_by_filters()
+         Purpose: on-demand payload after dropdown changes (no large full-dataset transfer). -->
+    <section class="middleware_main_grid">
+      <article class="server_card middleware_panel">
+        <h3 class="middleware_panel_title">Peringkat Provinsi untuk IKU Terpilih</h3>
+        <p class="middleware_panel_subtitle">
+          Ringkasan ini menampilkan performa IKU terpilih lintas provinsi, termasuk capaian dan level prioritas intervensi.
+        </p>
 
-        <div class="insight-strip">
-          <div class="signal-item">
-            <div class="signal-label">Total Metrik IKU</div>
-            <div class="signal-value" x-text="formatNumber(metricCount)"></div>
-          </div>
-          <div class="signal-item">
-            <div class="signal-label">Gap Tertinggi-Terendah</div>
-            <div class="signal-value" x-text="formatScore(metricGap)"></div>
-          </div>
-          <div class="signal-item">
-            <div class="signal-label">Tema Perlu Percepatan</div>
-            <div class="signal-value" x-text="formatNumber(lowMetricCount)"></div>
-          </div>
-        </div>
-
-        <div class="metric-columns">
-          <div class="metric-list-block">
-            <div class="badge">8 Tema Dengan Kinerja Tertinggi</div>
-            <div class="metric-list">
-              <template x-for="m in topMetrics" :key="`top-${m.name}`">
-                <div class="metric-item">
-                  <div class="metric-item-head">
-                    <div class="metric-name" x-text="m.name"></div>
-                    <div class="metric-score" x-text="formatScore(m.average)"></div>
-                  </div>
-                  <div class="bar-shell">
-                    <div class="bar-fill" :style="`width:${scoreToPercent(m.average)}%`"></div>
-                  </div>
-                  <div class="metric-foot">
-                    <span x-text="`Desa: ${formatNumber(m.villages)}`"></span>
-                    <span x-text="`Capaian: ${formatPercent(m.capaian)}`"></span>
-                  </div>
-                </div>
-              </template>
+        <div class="middleware_list_shell">
+          <div class="middleware_list_item">
+            <div class="middleware_list_head">
+              <span class="middleware_item_name">Ringkasan Nasional</span>
+              <span class="middleware_item_score" x-text="format_score(middleware_metric_totals.avg_score)"></span>
             </div>
-          </div>
-
-          <div class="metric-list-block">
-            <div class="badge">8 Tema Prioritas Perbaikan</div>
-            <div class="metric-list">
-              <template x-for="m in bottomMetrics" :key="`bot-${m.name}`">
-                <div class="metric-item">
-                  <div class="metric-item-head">
-                    <div class="metric-name" x-text="m.name"></div>
-                    <div class="metric-score" x-text="formatScore(m.average)"></div>
-                  </div>
-                  <div class="bar-shell">
-                    <div class="bar-fill" :style="`width:${scoreToPercent(m.average)}%; background: linear-gradient(90deg,#fb7185,#e11d48);`"></div>
-                  </div>
-                  <div class="metric-foot">
-                    <span x-text="`Desa: ${formatNumber(m.villages)}`"></span>
-                    <span x-text="`Capaian: ${formatPercent(m.capaian)}`"></span>
-                  </div>
-                </div>
-              </template>
+            <div class="middleware_item_meta">
+              <span x-text="`Desa: ${format_number(middleware_metric_totals.total_villages)}`"></span>
+              <span x-text="`Capaian: ${format_percent(middleware_metric_totals.avg_capaian)}`"></span>
+              <span x-text="`Provinsi: ${format_number(middleware_metric_totals.province_count)}`"></span>
             </div>
           </div>
         </div>
-      </article>
 
-      <article class="panel glass-card">
-        <div>
-          <h3 class="panel-title">Eksplorasi Kinerja Provinsi</h3>
-          <p class="panel-subtitle">
-            Telusuri metrik IKU terpilih untuk membandingkan hasil antar provinsi, melihat tingkat capaian, dan menandai prioritas tindak lanjut.
-          </p>
-        </div>
-
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-          <select class="metric-select" x-model="selectedMetric">
-            <option value="">Pilih metrik IKU</option>
-            <template x-for="m in metricScores" :key="`metric-${m.name}`">
-              <option :value="m.name" x-text="m.name"></option>
-            </template>
-          </select>
-          <input
-            class="metric-select"
-            type="text"
-            x-model.trim="provinceQuery"
-            placeholder="Filter nama provinsi...">
-        </div>
-
-        <div class="insight-strip">
-          <div class="signal-item">
-            <div class="signal-label">Metrik Aktif</div>
-            <div class="signal-value" x-text="selectedMetricLabel"></div>
-          </div>
-          <div class="signal-item">
-            <div class="signal-label">Rata-rata Provinsi</div>
-            <div class="signal-value" x-text="formatScore(selectedProvinceStats.avgScore)"></div>
-          </div>
-          <div class="signal-item">
-            <div class="signal-label">Rata-rata Capaian</div>
-            <div class="signal-value" x-text="formatPercent(selectedProvinceStats.avgCapaian)"></div>
-          </div>
-        </div>
-
-        <div class="metric-list-block">
-          <div class="badge">Peringkat Provinsi Pada Metrik Terpilih</div>
-          <div class="province-list">
-            <template x-for="row in filteredProvinceRows()" :key="`prov-${row.provinsi}`">
-              <div class="province-row">
-                <div class="province-head">
-                  <div style="display:flex; gap:8px; align-items:center; min-width:0;">
-                    <span class="rank-chip" x-text="`#${row.rank}`"></span>
-                    <div class="province-name" x-text="row.provinsi"></div>
-                  </div>
-                  <div class="province-meta" x-text="formatScore(row.rata_rata)"></div>
-                </div>
-                <div class="bar-shell">
-                  <div class="bar-fill" :style="`width:${scoreToPercent(row.rata_rata)}%; background: linear-gradient(90deg,#06b6d4,#0f766e);`"></div>
-                </div>
-                <div class="metric-foot">
-                  <span x-text="`Desa: ${formatNumber(row.jlh_desa)}`"></span>
-                  <span x-text="`Capaian: ${formatPercent(row.capaian)}`"></span>
-                </div>
-                <div>
-                  <span
-                    class="rec-pill"
-                    :class="{
-                      'severity-high': row.severity === 'High',
-                      'severity-medium': row.severity === 'Medium',
-                      'severity-low': row.severity === 'Low'
-                    }"
-                    x-text="row.severityLabel"></span>
-                </div>
+        <div class="middleware_list_shell">
+          <template x-for="item in middleware_top_provinces" :key="`top-prov-${item.provinsi}`">
+            <div class="middleware_list_item">
+              <div class="middleware_list_head">
+                <span class="middleware_item_name" x-text="`#${item.rank} ${item.provinsi}`"></span>
+                <span class="middleware_item_score" x-text="format_score(item.rata_rata)"></span>
               </div>
-            </template>
+              <div class="middleware_item_meta">
+                <span x-text="`Desa: ${format_number(item.jlh_desa)}`"></span>
+                <span x-text="`Capaian: ${format_percent(item.capaian)}`"></span>
+              </div>
+            </div>
+          </template>
+        </div>
+      </article>
 
-            <div class="empty-shell" x-show="!isLoading && filteredProvinceRows().length === 0">
-              Tidak ada data provinsi untuk metrik dan filter yang dipilih.
+      <article class="server_card middleware_panel">
+        <h3 class="middleware_panel_title">Potret IKU Pada Provinsi Terpilih</h3>
+        <p class="middleware_panel_subtitle">
+          Gunakan panel ini untuk menilai tema IKU terkuat dan tema prioritas perbaikan pada provinsi yang Anda pilih.
+        </p>
+
+        <div class="middleware_list_shell">
+          <div class="middleware_list_item">
+            <div class="middleware_list_head">
+              <span class="middleware_item_name" x-text="middleware_selected_province || '-'"></span>
+              <span class="middleware_item_score" x-text="format_score(middleware_province_totals.avg_score)"></span>
+            </div>
+            <div class="middleware_item_meta">
+              <span x-text="`Jumlah IKU: ${format_number(middleware_province_totals.metric_count)}`"></span>
+              <span x-text="`Rata-rata Capaian: ${format_percent(middleware_province_totals.avg_capaian)}`"></span>
             </div>
           </div>
+        </div>
+
+        <div class="middleware_list_shell">
+          <template x-for="item in middleware_bottom_metrics" :key="`bottom-metric-${item.metric}`">
+            <div class="middleware_list_item">
+              <div class="middleware_list_head">
+                <span class="middleware_item_name" x-text="item.metric"></span>
+                <span class="middleware_item_score" x-text="format_score(item.rata_rata)"></span>
+              </div>
+              <div class="middleware_item_meta">
+                <span x-text="`Capaian: ${format_percent(item.capaian)}`"></span>
+                <span
+                  class="middleware_priority_badge"
+                  :class="priority_class(item.priority)"
+                  x-text="item.priority_label"
+                ></span>
+              </div>
+            </div>
+          </template>
         </div>
       </article>
     </section>
 
-    <section class="glass-card" style="padding: 14px;">
-      <h3 class="panel-title">Rekomendasi IKU Per Provinsi</h3>
-      <p class="panel-subtitle" style="margin-bottom: 12px;">
-        Setiap provinsi pada metrik terpilih dilengkapi capaian IKU, tingkat prioritas, dan rekomendasi tindakan yang dapat langsung diturunkan menjadi rencana kerja.
+    <!-- Backend dependency: selected province recommendation payload
+         Data source: middleware.helpers_calculate_dashboard_by_province()
+         Update trigger: dropdown province/IKU changes via /public/dashboard/filter/{year}. -->
+    <section class="server_card" style="padding:14px;">
+      <h3 class="middleware_panel_title">Rekomendasi Intervensi Provinsi</h3>
+      <p class="middleware_panel_subtitle" style="margin: 6px 0 10px;">
+        Setiap kartu memuat tema IKU prioritas, level urgensi, dan langkah tindak lanjut yang dapat langsung dipakai dalam rapat koordinasi.
       </p>
 
-      <div class="province-rec-grid">
-        <template x-for="rec in filteredProvinceRecommendations()" :key="`prov-rec-${rec.provinsi}`">
-          <article class="rec-card">
+      <div class="middleware_recommendation_grid">
+        <template x-for="rec in middleware_province_recommendations" :key="`rec-${rec.metric}`">
+          <article class="middleware_recommendation_card">
             <span
-              class="rec-pill"
-              :class="{
-                'severity-high': rec.priority === 'High',
-                'severity-medium': rec.priority === 'Medium',
-                'severity-low': rec.priority === 'Low'
-              }"
-              x-text="`${rec.priorityLabel} · ${rec.provinsi}`"></span>
-
-            <h4 class="rec-title" x-text="rec.metric"></h4>
-            <p class="rec-copy" x-text="`Capaian ${formatPercent(rec.capaian)} · Rata-rata IKU ${formatScore(rec.rata_rata)} · Desa ${formatNumber(rec.jlh_desa)}`"></p>
-            <p class="rec-copy" x-text="rec.summary"></p>
-            <ul class="province-action-list">
-              <template x-for="(action, idx) in rec.actions" :key="`act-${rec.provinsi}-${idx}`">
+              class="middleware_priority_badge"
+              :class="priority_class(rec.priority)"
+              x-text="`${rec.priority_label} · ${rec.theme}`"
+            ></span>
+            <h4 class="middleware_recommendation_title" x-text="rec.metric"></h4>
+            <p class="middleware_recommendation_copy" x-text="`Skor ${format_score(rec.score)} · Capaian ${format_percent(rec.capaian)}`"></p>
+            <p class="middleware_recommendation_copy" x-text="rec.summary"></p>
+            <ul class="middleware_recommendation_actions">
+              <template x-for="(action, idx) in rec.actions" :key="`action-${rec.metric}-${idx}`">
                 <li x-text="action"></li>
               </template>
             </ul>
           </article>
         </template>
       </div>
-
-      <div class="empty-shell" x-show="!isLoading && filteredProvinceRecommendations().length === 0">
-        Data rekomendasi per provinsi belum tersedia. Silakan pilih metrik IKU terlebih dahulu.
-      </div>
     </section>
 
-    <section class="glass-card" style="padding: 14px;">
-      <h3 class="panel-title">Mesin Prioritas Rekomendasi ID (Tema Nasional)</h3>
-      <p class="panel-subtitle" style="margin-bottom: 12px;">
-        Kartu aksi di bawah ini menerjemahkan tema IKU dengan performa rendah menjadi arah intervensi tingkat eksekutif untuk tata kelola Rekomendasi ID.
+    <!-- Backend dependency: metric_payload.province_rows
+         Source endpoint: /public/dashboard/filter/{year}
+         Purpose: transparent per-province metric table with backend-computed recommendation summary. -->
+    <section class="server_card" style="padding:14px;">
+      <h3 class="middleware_panel_title">Tabel Detail Provinsi Pada IKU Terpilih</h3>
+      <p class="middleware_panel_subtitle" style="margin: 6px 0 10px;">
+        Tabel ini memudahkan pengguna non-teknis untuk melihat perbandingan provinsi satu per satu dan meninjau rekomendasi ringkas.
       </p>
 
-      <div class="recommendation-grid">
-        <template x-for="rec in recommendationCards" :key="`rec-${rec.metric}`">
-          <article class="rec-card">
-            <span
-              class="rec-pill"
-              :class="{
-                'severity-high': rec.severity === 'High',
-                'severity-medium': rec.severity === 'Medium',
-                'severity-low': rec.severity === 'Low'
-              }"
-              x-text="`${rec.severityLabel} · ${rec.theme}`"></span>
-
-            <h4 class="rec-title" x-text="rec.metric"></h4>
-            <p class="rec-copy" x-text="rec.rationale"></p>
-            <p class="rec-action"><strong>Aksi yang direkomendasikan:</strong> <span x-text="rec.action"></span></p>
-          </article>
-        </template>
-      </div>
-    </section>
-
-    <section class="glass-card" style="padding: 14px;">
-      <h3 class="panel-title">Tabel Eksekutif Detail</h3>
-      <p class="panel-subtitle" style="margin-bottom: 10px;">
-        Rekor tingkat provinsi untuk metrik terpilih. Tabel ini dioptimalkan untuk transparansi publik dan telaah pimpinan.
-      </p>
-
-      <div class="detail-table-wrap" x-show="!isLoading && selectedProvinceRows.length > 0">
-        <table>
+      <div class="middleware_table_wrap">
+        <table class="middleware_table">
           <thead>
             <tr>
+              <th>Ranking</th>
               <th>Provinsi</th>
-              <th>Desa</th>
-              <th>Rata-rata IKU</th>
-              <th>Capaian (%)</th>
+              <th>Jumlah Desa</th>
+              <th>Skor IKU</th>
+              <th>Capaian</th>
               <th>Prioritas</th>
-              <th>Rekomendasi Singkat</th>
+              <th>Rekomendasi Ringkas</th>
             </tr>
           </thead>
           <tbody>
-            <template x-for="row in selectedProvinceRows" :key="`tbl-${row.provinsi}`">
+            <template x-for="row in middleware_metric_rows" :key="`table-row-${row.provinsi}`">
               <tr>
+                <td x-text="`#${row.rank}`"></td>
                 <td x-text="row.provinsi"></td>
-                <td x-text="formatNumber(row.jlh_desa)"></td>
-                <td x-text="formatScore(row.rata_rata)"></td>
-                <td x-text="formatPercent(row.capaian)"></td>
-                <td x-text="row.severityLabel"></td>
-                <td x-text="getProvinceRecommendationSummary(row.provinsi)"></td>
+                <td x-text="format_number(row.jlh_desa)"></td>
+                <td x-text="format_score(row.rata_rata)"></td>
+                <td x-text="format_percent(row.capaian)"></td>
+                <td x-text="row.priority_label"></td>
+                <td x-text="row.recommendation_summary"></td>
               </tr>
             </template>
           </tbody>
         </table>
       </div>
-
-      <div class="loading-shell" x-show="isLoading">
-        Memuat data dashboard eksekutif...
-      </div>
-
-      <div class="empty-shell" x-show="!isLoading && selectedProvinceRows.length === 0">
-        Data detail belum tersedia. Silakan pilih tahun atau metrik lain.
-      </div>
     </section>
   </div>
 
   <script>
-    function PublicExecutiveDashboard() {
+    function HomeDashboardApp() {
+      const currentYear = new Date().getFullYear();
+      const yearOptions = [];
+      for (let y = currentYear; y >= 2025; y--) {
+        yearOptions.push(String(y));
+      }
+      if (!yearOptions.length) yearOptions.push("2025");
+
+      const defaultYear = String(currentYear - 1);
+
       return {
-        year: String(new Date().getFullYear() - 1),
-        years: [],
-        isLoading: true,
-        lastRefreshLabel: "-",
-        metrics: [],
-        metricScores: [],
-        selectedMetric: "",
-        selectedProvinceRows: [],
-        selectedProvinceStats: {
-          provinceCount: 0,
-          avgScore: 0,
-          avgCapaian: 0,
-          highPriorityCount: 0,
-          mediumPriorityCount: 0,
-          lowPriorityCount: 0
-        },
-        topMetrics: [],
-        bottomMetrics: [],
-        recommendationCards: [],
-        provinceRecommendationRows: [],
-        provinceQuery: "",
-        summary: {
-          villages: 0,
-          provinces: 0,
-          portfolioMean: 0,
-          bestMetricScore: 0,
-          lowestMetricScore: 0,
-          bestMetricName: "",
-          lowestMetricName: ""
-        },
-        quality: {
-          allCapaianZero: false
-        },
-        cache: {},
+        server_availableYears: yearOptions,
+        server_selectedYear: yearOptions.includes(defaultYear) ? defaultYear : yearOptions[0],
+        server_selectedProvince: "",
+        server_selectedIkuMetric: "",
+        middleware_overview_payload: null,
+        middleware_filter_payload: null,
+        middleware_error_message: "",
+        middleware_last_loaded_at: "-",
+        middleware_is_loading_overview: false,
+        middleware_is_loading_filter: false,
+        middleware_overview_cache_ttl_ms: 5 * 60 * 1000,
 
-        get metricCount() {
-          return this.metricScores.length;
+        get middleware_summary() {
+          return this.middleware_overview_payload?.summary || {
+            total_villages: 0,
+            total_provinces: 0,
+            total_metrics: 0,
+            last_update: "N/A"
+          };
         },
 
-        get metricGap() {
-          if (!this.metricScores.length) return 0;
-          const maxScore = this.metricScores[0].average || 0;
-          const minScore = this.metricScores[this.metricScores.length - 1].average || 0;
-          return maxScore - minScore;
+        get middleware_iku_options() {
+          return this.middleware_overview_payload?.iku_options || [];
         },
 
-        get lowMetricCount() {
-          return this.metricScores.filter((metric) => metric.average < 3).length;
+        get middleware_province_options() {
+          return this.middleware_overview_payload?.province_options || [];
         },
 
-        get selectedMetricLabel() {
-          return this.selectedMetric ? this.truncateMetric(this.selectedMetric, 32) : "Belum dipilih";
+        get middleware_metric_payload() {
+          return this.middleware_filter_payload?.metric_payload || { province_rows: [], totals: {}, top_provinces: [], bottom_provinces: [] };
+        },
+
+        get middleware_province_payload() {
+          return this.middleware_filter_payload?.province_payload || { metric_rows: [], totals: {}, recommendations: [], top_metrics: [], bottom_metrics: [] };
+        },
+
+        get middleware_metric_rows() {
+          return this.middleware_metric_payload.province_rows || [];
+        },
+
+        get middleware_metric_totals() {
+          return this.middleware_metric_payload.totals || { total_villages: 0, avg_score: 0, avg_capaian: 0, province_count: 0 };
+        },
+
+        get middleware_top_provinces() {
+          return this.middleware_metric_payload.top_provinces || [];
+        },
+
+        get middleware_bottom_provinces() {
+          return this.middleware_metric_payload.bottom_provinces || [];
+        },
+
+        get middleware_selected_province() {
+          return this.middleware_filter_payload?.selected_filters?.province || this.server_selectedProvince || "";
+        },
+
+        get middleware_province_totals() {
+          return this.middleware_province_payload.totals || { metric_count: 0, avg_score: 0, avg_capaian: 0 };
+        },
+
+        get middleware_bottom_metrics() {
+          return this.middleware_province_payload.bottom_metrics || [];
+        },
+
+        get middleware_province_recommendations() {
+          return this.middleware_province_payload.recommendations || [];
         },
 
         async init() {
-          this.generateYears();
-          await this.loadPortfolioForYear(this.year);
-
-          this.$watch("selectedMetric", (val) => {
-            this.setSelectedMetricData(val);
-          });
+          await this.middleware_fetch_overview_payload();
+          await this.middleware_fetch_filter_payload();
         },
 
-        generateYears() {
-          const currentYear = new Date().getFullYear();
-          this.years = [];
-          for (let y = currentYear; y >= 2025; y--) {
-            this.years.push(String(y));
-          }
-
-          if (!this.years.includes(String(this.year))) {
-            this.year = this.years[0];
-          }
+        async action_change_year() {
+          await this.middleware_fetch_overview_payload();
+          await this.middleware_fetch_filter_payload();
         },
 
-        async setYear(nextYear) {
-          if (String(this.year) === String(nextYear)) return;
-          this.year = String(nextYear);
-          await this.loadPortfolioForYear(this.year);
+        async action_apply_filter_from_dropdowns() {
+          this.middleware_persist_user_state();
+          await this.middleware_fetch_filter_payload();
         },
 
-        async loadPortfolioForYear(year) {
-          const cacheKey = `portfolio_${year}`;
-          this.isLoading = true;
-          this.metrics = [];
-          this.metricScores = [];
-          this.selectedProvinceRows = [];
-          this.selectedProvinceStats = {
-            provinceCount: 0,
-            avgScore: 0,
-            avgCapaian: 0,
-            highPriorityCount: 0,
-            mediumPriorityCount: 0,
-            lowPriorityCount: 0
-          };
-          this.topMetrics = [];
-          this.bottomMetrics = [];
-          this.recommendationCards = [];
-          this.provinceRecommendationRows = [];
-          this.quality.allCapaianZero = false;
-          this.summary = {
-            villages: 0,
-            provinces: 0,
-            portfolioMean: 0,
-            bestMetricScore: 0,
-            lowestMetricScore: 0,
-            bestMetricName: "",
-            lowestMetricName: ""
-          };
-
+        middleware_get_cached_overview(year) {
           try {
-            if (this.cache[cacheKey]) {
-              this.applyPortfolio(this.cache[cacheKey]);
-              this.isLoading = false;
-              return;
-            }
-
-            const metricsResponse = await fetch(`/public/dashboard/iku/${year}`);
-            if (!metricsResponse.ok) throw new Error("Failed to load metrics list");
-
-            const metricsPayload = await metricsResponse.json();
-            const metrics = metricsPayload.metrics || [];
-            this.metrics = metrics;
-
-            if (metrics.length === 0) {
-              this.lastRefreshLabel = this.buildRefreshLabel();
-              this.isLoading = false;
-              return;
-            }
-
-            const metricRequests = metrics.map(async (metricName) => {
-              const url = `/public/dashboard/iku/${year}?metric=${encodeURIComponent(metricName)}`;
-              const res = await fetch(url);
-              if (!res.ok) {
-                return {
-                  name: metricName,
-                  average: 0,
-                  capaian: 0,
-                  villages: 0,
-                  data: [],
-                  totals: {}
-                };
-              }
-
-              const payload = await res.json();
-              const wrapper = payload[metricName] || {};
-              const dataRows = wrapper.data || [];
-              const totals = wrapper.totals || {};
-
-              return {
-                name: metricName,
-                average: this.parseNumber(totals.rata_rata),
-                capaian: this.parseNumber(totals.capaian),
-                villages: this.parseNumber(totals.jlh_desa),
-                data: dataRows.map((row) => ({
-                  provinsi: row.provinsi || "Tidak Diketahui",
-                  jlh_desa: this.parseNumber(row.jlh_desa),
-                  rata_rata: this.parseNumber(row.rata_rata),
-                  capaian: this.parseNumber(row.capaian)
-                })),
-                totals
-              };
-            });
-
-            const bundles = await Promise.all(metricRequests);
-            const cleanBundles = bundles.filter((b) => !!b.name);
-
-            const portfolio = {
-              year,
-              metrics,
-              bundles: cleanBundles
-            };
-
-            this.cache[cacheKey] = portfolio;
-            this.applyPortfolio(portfolio);
-          } catch (error) {
-            console.error("Public dashboard load error:", error);
-          } finally {
-            this.lastRefreshLabel = this.buildRefreshLabel();
-            this.isLoading = false;
+            const raw = localStorage.getItem(`middleware_overview_payload_${year}`);
+            if (!raw) return null;
+            const parsed = JSON.parse(raw);
+            if (!parsed.cached_at || !parsed.data) return null;
+            if (Date.now() - parsed.cached_at > this.middleware_overview_cache_ttl_ms) return null;
+            return parsed.data;
+          } catch (_) {
+            return null;
           }
         },
 
-        applyPortfolio(portfolio) {
-          this.metrics = portfolio.metrics || [];
-          this.metricScores = (portfolio.bundles || []).slice().sort((a, b) => b.average - a.average);
-
-          const rankingSize = Math.min(8, this.metricScores.length);
-          this.topMetrics = this.metricScores.slice(0, rankingSize);
-          this.bottomMetrics = this.metricScores.slice().sort((a, b) => a.average - b.average).slice(0, rankingSize);
-
-          const first = this.metricScores[0];
-          const villages = first ? first.villages : 0;
-          const provinces = first && Array.isArray(first.data) ? first.data.length : 0;
-
-          const mean = this.metricScores.length
-            ? this.metricScores.reduce((acc, x) => acc + x.average, 0) / this.metricScores.length
-            : 0;
-
-          const best = this.metricScores.length ? this.metricScores[0] : null;
-          const low = this.metricScores.length ? this.metricScores[this.metricScores.length - 1] : null;
-
-          this.summary = {
-            villages,
-            provinces,
-            portfolioMean: mean,
-            bestMetricScore: best ? best.average : 0,
-            lowestMetricScore: low ? low.average : 0,
-            bestMetricName: best ? this.truncateMetric(best.name, 52) : "",
-            lowestMetricName: low ? this.truncateMetric(low.name, 52) : ""
-          };
-
-          this.quality.allCapaianZero = this.metricScores.length > 0
-            && this.metricScores.every((m) => Number(m.capaian) === 0);
-
-          const previousMetric = this.selectedMetric;
-          this.selectedMetric = this.pickMetric(previousMetric);
-          this.setSelectedMetricData(this.selectedMetric);
-
-          this.recommendationCards = this.buildRecommendations(this.bottomMetrics);
+        middleware_set_cached_overview(year, data) {
+          try {
+            localStorage.setItem(
+              `middleware_overview_payload_${year}`,
+              JSON.stringify({ cached_at: Date.now(), data })
+            );
+          } catch (_) {}
         },
 
-        pickMetric(previousMetric) {
-          if (previousMetric && this.metricScores.some((m) => m.name === previousMetric)) {
-            return previousMetric;
+        middleware_read_cookie(name) {
+          const key = `${name}=`;
+          const parts = document.cookie.split(";").map((item) => item.trim());
+          for (const part of parts) {
+            if (part.startsWith(key)) return decodeURIComponent(part.slice(key.length));
           }
-          return this.metricScores.length ? this.metricScores[0].name : "";
+          return "";
         },
 
-        setSelectedMetricData(metricName) {
-          if (!metricName) {
-            this.selectedProvinceRows = [];
-            this.provinceRecommendationRows = [];
-            this.selectedProvinceStats = {
-              provinceCount: 0,
-              avgScore: 0,
-              avgCapaian: 0,
-              highPriorityCount: 0,
-              mediumPriorityCount: 0,
-              lowPriorityCount: 0
-            };
-            return;
-          }
-
-          const bundle = this.metricScores.find((m) => m.name === metricName);
-          const rows = bundle && Array.isArray(bundle.data) ? bundle.data : [];
-          const rankedRows = rows
-            .slice()
-            .sort((a, b) => b.rata_rata - a.rata_rata)
-            .map((row, index) => {
-              const severity = this.deriveSeverity(row.rata_rata, row.capaian);
-              return {
-                ...row,
-                rank: index + 1,
-                severity,
-                severityLabel: this.toSeverityLabel(severity)
-              };
-            });
-
-          this.selectedProvinceRows = rankedRows;
-          this.selectedProvinceStats = this.computeProvinceStats(rankedRows);
-          this.provinceRecommendationRows = this.buildProvinceRecommendations(rankedRows, metricName);
+        middleware_write_cookie(name, value) {
+          document.cookie = `${name}=${encodeURIComponent(value)}; path=/; max-age=2592000; SameSite=Lax`;
         },
 
-        filteredProvinceRows() {
-          const q = (this.provinceQuery || "").trim().toLowerCase();
-          if (!q) return this.selectedProvinceRows;
-          return this.selectedProvinceRows.filter((r) => (r.provinsi || "").toLowerCase().includes(q));
-        },
-
-        filteredProvinceRecommendations() {
-          const q = (this.provinceQuery || "").trim().toLowerCase();
-          if (!q) return this.provinceRecommendationRows;
-          return this.provinceRecommendationRows.filter((r) => (r.provinsi || "").toLowerCase().includes(q));
-        },
-
-        computeProvinceStats(rows) {
-          if (!rows.length) {
-            return {
-              provinceCount: 0,
-              avgScore: 0,
-              avgCapaian: 0,
-              highPriorityCount: 0,
-              mediumPriorityCount: 0,
-              lowPriorityCount: 0
-            };
-          }
-
-          const totals = rows.reduce((acc, row) => {
-            acc.sumScore += row.rata_rata || 0;
-            acc.sumCapaian += row.capaian || 0;
-            if (row.severity === "High") acc.high += 1;
-            if (row.severity === "Medium") acc.medium += 1;
-            if (row.severity === "Low") acc.low += 1;
-            return acc;
-          }, { sumScore: 0, sumCapaian: 0, high: 0, medium: 0, low: 0 });
-
+        middleware_load_user_state() {
+          const selectedProvince =
+            localStorage.getItem("dashboard_last_province") || this.middleware_read_cookie("dashboard_last_province");
+          const selectedIku =
+            localStorage.getItem("dashboard_last_iku") || this.middleware_read_cookie("dashboard_last_iku");
           return {
-            provinceCount: rows.length,
-            avgScore: totals.sumScore / rows.length,
-            avgCapaian: totals.sumCapaian / rows.length,
-            highPriorityCount: totals.high,
-            mediumPriorityCount: totals.medium,
-            lowPriorityCount: totals.low
+            province: selectedProvince || "",
+            iku_metric: selectedIku || ""
           };
         },
 
-        buildProvinceRecommendations(rows, metricName) {
-          const theme = this.inferTheme(metricName);
-          return rows.map((row) => {
-            const priority = row.severity || this.deriveSeverity(row.rata_rata, row.capaian);
-            const actions = this.buildProvinceActionChecklist(theme, priority, row.provinsi);
-            const summary = `${row.provinsi} berada pada capaian ${this.formatPercent(row.capaian)} dengan rata-rata IKU ${this.formatScore(row.rata_rata)}. Intervensi ${this.toSeverityLabel(priority).toLowerCase()} perlu dijalankan agar tema ${theme.toLowerCase()} membaik.`;
-
-            return {
-              ...row,
-              metric: metricName,
-              theme,
-              priority,
-              priorityLabel: this.toSeverityLabel(priority),
-              summary,
-              actions
-            };
-          });
-        },
-
-        deriveSeverity(score, capaian) {
-          const safeScore = Number(score) || 0;
-          const safeCapaian = Number(capaian) || 0;
-          if (safeScore < 2.5 || safeCapaian < 45) return "High";
-          if (safeScore < 3.5 || safeCapaian < 70) return "Medium";
-          return "Low";
-        },
-
-        buildProvinceActionChecklist(theme, severity, provinceName) {
-          const actionMap = {
-            "Layanan Kesehatan": [
-              "Percepat pemetaan desa dengan keterbatasan layanan kesehatan dasar.",
-              "Pastikan ketersediaan tenaga layanan dan jadwal pelayanan rutin.",
-              "Sinkronkan dukungan lintas kabupaten untuk intervensi prioritas."
-            ],
-            "Pendidikan": [
-              "Identifikasi hambatan akses belajar per desa secara detail.",
-              "Perkuat kolaborasi sekolah-desa untuk menekan ketidakhadiran.",
-              "Pantau indikator pendidikan desa secara bulanan."
-            ],
-            "Air dan Sanitasi": [
-              "Fokuskan perbaikan sanitasi dasar pada desa dengan capaian terendah.",
-              "Jaga keberlanjutan layanan air bersih melalui pemeliharaan rutin.",
-              "Aktifkan edukasi perilaku higienis berbasis komunitas."
-            ],
-            "Aksesibilitas": [
-              "Prioritaskan konektivitas desa dengan dampak sosial-ekonomi terbesar.",
-              "Susun jadwal pemeliharaan akses dan infrastruktur secara bertahap.",
-              "Koordinasikan hambatan teknis lintas wilayah agar tidak berulang."
-            ],
-            "Akses Digital": [
-              "Perluas akses internet stabil untuk kantor dan layanan desa.",
-              "Dorong pemanfaatan layanan digital dasar oleh operator desa.",
-              "Pantau utilisasi layanan digital agar investasi tepat guna."
-            ],
-            "Ekonomi Lokal": [
-              "Perkuat pendampingan usaha desa berbasis potensi lokal.",
-              "Perluas akses pasar untuk produk unggulan desa.",
-              "Integrasikan dukungan permodalan dan peningkatan kapasitas usaha."
-            ],
-            "Lingkungan": [
-              "Percepat program pengelolaan sampah berbasis komunitas.",
-              "Bangun disiplin pemantauan kualitas lingkungan tingkat desa.",
-              "Pastikan akuntabilitas pelaksanaan intervensi lingkungan."
-            ],
-            "Tata Kelola Kelembagaan": [
-              "Perkuat standardisasi layanan administrasi tingkat desa.",
-              "Tingkatkan transparansi pelaporan dan tindak lanjut program.",
-              "Pastikan ritme eksekusi dan evaluasi antar perangkat desa konsisten."
-            ]
-          };
-
-          const baseActions = actionMap[theme] || actionMap["Tata Kelola Kelembagaan"];
-          if (severity === "High") {
-            return [
-              `Tetapkan rencana percepatan 90 hari untuk provinsi ${provinceName}.`,
-              baseActions[0],
-              baseActions[1]
-            ];
+        middleware_persist_user_state() {
+          if (this.server_selectedProvince) {
+            localStorage.setItem("dashboard_last_province", this.server_selectedProvince);
+            this.middleware_write_cookie("dashboard_last_province", this.server_selectedProvince);
           }
-          if (severity === "Medium") {
-            return [
-              `Jalankan penguatan terukur pada semester berjalan di ${provinceName}.`,
-              baseActions[0],
-              baseActions[2]
-            ];
+          if (this.server_selectedIkuMetric) {
+            localStorage.setItem("dashboard_last_iku", this.server_selectedIkuMetric);
+            this.middleware_write_cookie("dashboard_last_iku", this.server_selectedIkuMetric);
           }
-          return [
-            `Pertahankan performa dan lakukan monitoring triwulan di ${provinceName}.`,
-            baseActions[1],
-            baseActions[2]
-          ];
         },
 
-        getProvinceRecommendationSummary(provinsi) {
-          const hit = this.provinceRecommendationRows.find((row) => row.provinsi === provinsi);
-          return hit ? hit.summary : "-";
+        middleware_apply_default_filters() {
+          const defaults = this.middleware_overview_payload?.defaults || {};
+          const saved = this.middleware_load_user_state();
+
+          const provinceValues = new Set(this.middleware_province_options.map((option) => option.value));
+          const ikuValues = new Set(this.middleware_iku_options.map((option) => option.value));
+
+          this.server_selectedProvince =
+            provinceValues.has(saved.province) ? saved.province : (defaults.province || "");
+          this.server_selectedIkuMetric =
+            ikuValues.has(saved.iku_metric) ? saved.iku_metric : (defaults.iku_metric || "");
+
+          this.middleware_persist_user_state();
         },
 
-        buildRecommendations(bottomMetrics) {
-          return bottomMetrics.map((metric) => {
-            const theme = this.inferTheme(metric.name);
-            const severity = metric.average < 2.5 ? "High" : metric.average < 3.5 ? "Medium" : "Low";
-            const action = this.recommendationAction(theme, severity);
+        async middleware_fetch_overview_payload() {
+          this.middleware_error_message = "";
+          this.middleware_is_loading_overview = true;
+          try {
+            const cached = this.middleware_get_cached_overview(this.server_selectedYear);
+            if (cached) {
+              this.middleware_overview_payload = cached.middleware_result || cached;
+              this.middleware_apply_default_filters();
+              this.middleware_last_loaded_at = new Date().toLocaleString("id-ID");
+              return;
+            }
 
-            return {
-              metric: metric.name,
-              theme,
-              severity,
-              severityLabel: this.toSeverityLabel(severity),
-              rationale: `Rata-rata IKU saat ini ${this.formatScore(metric.average)}. Tema ini perlu diprioritaskan untuk meningkatkan hasil Rekomendasi ID dan ketahanan wilayah.`,
-              action
-            };
-          }).slice(0, 6);
+            const response = await fetch(`/public/dashboard/overview/${encodeURIComponent(this.server_selectedYear)}`);
+            if (!response.ok) throw new Error(`Gagal memuat overview (${response.status})`);
+            const payload = await response.json();
+            this.middleware_overview_payload = payload.middleware_result || null;
+            this.middleware_set_cached_overview(this.server_selectedYear, payload);
+            this.middleware_apply_default_filters();
+            this.middleware_last_loaded_at = new Date().toLocaleString("id-ID");
+          } catch (error) {
+            this.middleware_error_message = `Terjadi kendala saat memuat ringkasan awal: ${error.message}`;
+          } finally {
+            this.middleware_is_loading_overview = false;
+          }
         },
 
-        inferTheme(metricName) {
-          const name = (metricName || "").toLowerCase();
-          if (name.includes("kesehatan")) return "Layanan Kesehatan";
-          if (name.includes("pendidikan")) return "Pendidikan";
-          if (name.includes("air") || name.includes("sanitasi")) return "Air dan Sanitasi";
-          if (name.includes("jalan") || name.includes("akses")) return "Aksesibilitas";
-          if (name.includes("telekomunikasi") || name.includes("digital")) return "Akses Digital";
-          if (name.includes("ekonomi") || name.includes("tematik")) return "Ekonomi Lokal";
-          if (name.includes("sampah") || name.includes("lingkungan")) return "Lingkungan";
-          return "Tata Kelola Kelembagaan";
+        async middleware_fetch_filter_payload() {
+          if (!this.server_selectedIkuMetric && this.middleware_iku_options.length > 0) {
+            this.server_selectedIkuMetric = this.middleware_iku_options[0].value;
+          }
+          if (!this.server_selectedProvince && this.middleware_province_options.length > 0) {
+            this.server_selectedProvince = this.middleware_province_options[0].value;
+          }
+
+          this.middleware_error_message = "";
+          this.middleware_is_loading_filter = true;
+          try {
+            const params = new URLSearchParams();
+            if (this.server_selectedProvince) params.append("province", this.server_selectedProvince);
+            if (this.server_selectedIkuMetric) params.append("iku_metric", this.server_selectedIkuMetric);
+
+            const response = await fetch(
+              `/public/dashboard/filter/${encodeURIComponent(this.server_selectedYear)}?${params.toString()}`
+            );
+            if (!response.ok) throw new Error(`Gagal memuat detail filter (${response.status})`);
+            const payload = await response.json();
+            this.middleware_filter_payload = payload.middleware_result || null;
+            this.middleware_last_loaded_at = new Date().toLocaleString("id-ID");
+            this.middleware_persist_user_state();
+          } catch (error) {
+            this.middleware_error_message = `Terjadi kendala saat memuat detail IKU/Provinsi: ${error.message}`;
+          } finally {
+            this.middleware_is_loading_filter = false;
+          }
         },
 
-        recommendationAction(theme, severity) {
-          const actionMap = {
-            "Layanan Kesehatan": "Perkuat operasional pos layanan kesehatan desa, pastikan ketersediaan tenaga, dan sinkronkan dukungan lintas kabupaten.",
-            "Pendidikan": "Prioritaskan hambatan akses sekolah, insentif kehadiran, dan pemantauan layanan pendidikan di tingkat desa.",
-            "Air dan Sanitasi": "Percepat peningkatan sanitasi dasar dan jaga keberlanjutan layanan air bersih pada desa yang tertinggal.",
-            "Aksesibilitas": "Fokus pada konektivitas akses desa berdampak tinggi dan pemeliharaan infrastruktur secara bertahap.",
-            "Akses Digital": "Perluas konektivitas yang andal dan aktivasi layanan digital praktis di kantor desa.",
-            "Ekonomi Lokal": "Skalakan model desa produktif melalui pendampingan terarah, perluasan pasar, dan dukungan usaha lokal.",
-            "Lingkungan": "Terapkan intervensi pengelolaan sampah dan pelestarian lingkungan berbasis komunitas dengan akuntabilitas jelas.",
-            "Tata Kelola Kelembagaan": "Tingkatkan standardisasi layanan, kontrol transparansi, dan disiplin eksekusi tata kelola desa."
-          };
-
-          const base = actionMap[theme] || actionMap["Tata Kelola Kelembagaan"];
-          if (severity === "High") return `Fokus segera: ${base}`;
-          if (severity === "Medium") return `Fokus jangka dekat: ${base}`;
-          return `Fokus stabilisasi: ${base}`;
+        format_number(value) {
+          return new Intl.NumberFormat("id-ID").format(Number(value || 0));
         },
 
-        toSeverityLabel(severity) {
-          if (severity === "High") return "Prioritas Tinggi";
-          if (severity === "Medium") return "Prioritas Sedang";
-          return "Prioritas Rendah";
+        format_score(value) {
+          return Number(value || 0).toFixed(2);
         },
 
-        scoreToPercent(score) {
-          const s = Number(score) || 0;
-          return Math.max(0, Math.min(100, (s / 5) * 100));
+        format_percent(value) {
+          return `${Number(value || 0).toFixed(2)}%`;
         },
 
-        parseNumber(value) {
-          if (value === null || value === undefined) return 0;
-          if (typeof value === "number") return Number.isFinite(value) ? value : 0;
-          const cleaned = String(value).replace(/,/g, "").replace(/%/g, "").trim();
-          const n = Number(cleaned);
-          return Number.isFinite(n) ? n : 0;
-        },
-
-        formatNumber(n) {
-          return new Intl.NumberFormat("id-ID").format(Math.round(Number(n || 0)));
-        },
-
-        formatScore(n) {
-          const v = Number(n || 0);
-          return v.toFixed(2);
-        },
-
-        formatPercent(n) {
-          const v = Number(n || 0);
-          return `${v.toFixed(2)}%`;
-        },
-
-        truncateMetric(text, maxLen) {
-          if (!text) return "";
-          return text.length <= maxLen ? text : `${text.slice(0, maxLen - 1)}…`;
-        },
-
-        buildRefreshLabel() {
-          const d = new Date();
-          const hh = String(d.getHours()).padStart(2, "0");
-          const mm = String(d.getMinutes()).padStart(2, "0");
-          return `${d.toLocaleDateString("id-ID")} ${hh}:${mm}`;
+        priority_class(priority) {
+          if (priority === "High") return "priority-high";
+          if (priority === "Medium") return "priority-medium";
+          return "priority-low";
         }
       };
     }

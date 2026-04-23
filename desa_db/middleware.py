@@ -10,6 +10,7 @@ import io
 import time
 import traceback
 import gc
+import threading
 from difflib import SequenceMatcher
 from fastapi import Response
 from fastapi.responses import JSONResponse
@@ -75,6 +76,11 @@ IKU_TEMATIK_EXCEPTIONS = frozenset([
     "Persentase (%) Desa yang mengembangkan Model Tematik Bidang Pariwisata",
     "Persentase (%) desa yang mengembangkan desa model tematik yang berstatus mandiri"
 ])
+
+# Public dashboard cache (kept in-process for fast repeated reads).
+DASHBOARD_PUBLIC_CACHE_TTL_SECONDS = int(os.getenv("DASHBOARD_PUBLIC_CACHE_TTL_SECONDS", "300"))
+_DASHBOARD_PUBLIC_CACHE = {}
+_DASHBOARD_PUBLIC_CACHE_LOCK = threading.Lock()
 
 # ==========================================
 # LOGIC LOADER (Existing)
@@ -1607,7 +1613,7 @@ def helpers_render_dashboard_html(calculated_rows: list[dict]) -> str:
     html += """
     <table class="iku-table table-auto w-full text-left text-xs text-slate-700 dark:text-slate-300 border-collapse" 
         style="table-layout: fixed; width: 100%;">
-        <thead style="font-family: 'Atkinson Hyperlegible', sans-serif !important;">
+        <thead style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace !important;">
             <tr>
                 <th class="col-no relative" rowspan="2" data-col-idx="0" style="width: 40px; min-width: 40px;">
                     <span>NO</span><div class="resizer"></div>
@@ -1668,7 +1674,7 @@ def helpers_render_dashboard_html(calculated_rows: list[dict]) -> str:
                 </th>
             </tr>
         </thead>
-        <tbody style="font-family: 'Atkinson Hyperlegible', sans-serif !important;">
+        <tbody style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace !important;">
     """
 
     # --- CALCULATE ROW SPANS (Ported from JS) ---
@@ -1886,7 +1892,7 @@ def helpers_render_iku_dashboard(
     # --- Build HTML Header ---
     html = ""
     if not is_append:
-        html += "<thead style=\"font-family: 'Atkinson Hyperlegible', sans-serif !important;\"><tr>"
+        html += "<thead style=\"font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace !important;\"><tr>"
         
         colspans = []
         if row1:
@@ -1937,7 +1943,7 @@ def helpers_render_iku_dashboard(
                     f'<span>{val}</span><div class="resizer"></div></th>'
                 )
 
-        html += "</tr></thead><tbody style=\"font-family: 'Atkinson Hyperlegible', sans-serif !important;\">"
+        html += "</tr></thead><tbody style=\"font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace !important;\">"
 
     # --- Build HTML Body ---
     if df_filtered.height > 0:
@@ -2137,7 +2143,7 @@ def helpers_render_iku_dashboard(
         html += "</tbody>"
     return html
 
-def helpers_get_public_iku_json(year: str, metric_filter: str = None):
+def _helpers_get_public_iku_json_legacy(year: str, metric_filter: str = None):
     """
     Public simplified IKU dashboard data generator (used by homepage).
     
@@ -2310,3 +2316,658 @@ def helpers_get_public_iku_json(year: str, metric_filter: str = None):
         return {"error": str(e)}
     finally:
         con.close()
+
+
+def _helpers_dashboard_cache_key(*parts) -> str:
+    """
+    Builds a stable cache key for dashboard computations.
+    """
+    return "::".join([str(p) for p in parts])
+
+
+def _helpers_dashboard_cache_get(cache_key: str):
+    """
+    Reads a value from in-process cache with TTL validation.
+    """
+    now = time.time()
+    with _DASHBOARD_PUBLIC_CACHE_LOCK:
+        cached = _DASHBOARD_PUBLIC_CACHE.get(cache_key)
+        if not cached:
+            return None
+        if cached["expires_at"] <= now:
+            _DASHBOARD_PUBLIC_CACHE.pop(cache_key, None)
+            return None
+        return cached["value"]
+
+
+def _helpers_dashboard_cache_set(cache_key: str, value, ttl_seconds: int = DASHBOARD_PUBLIC_CACHE_TTL_SECONDS):
+    """
+    Writes a value to in-process cache with TTL.
+    """
+    expires_at = time.time() + max(1, int(ttl_seconds))
+    with _DASHBOARD_PUBLIC_CACHE_LOCK:
+        _DASHBOARD_PUBLIC_CACHE[cache_key] = {
+            "expires_at": expires_at,
+            "value": value
+        }
+    return value
+
+
+def _helpers_quote_identifier(identifier: str) -> str:
+    """
+    Safely quotes a SQL identifier for DuckDB.
+    """
+    return '"' + str(identifier).replace('"', '""') + '"'
+
+
+def _helpers_dashboard_priority(score: float, capaian: float) -> str:
+    """
+    Classifies score/capaian into High/Medium/Low priority.
+    """
+    safe_score = float(score or 0.0)
+    safe_capaian = float(capaian or 0.0)
+    if safe_score < 2.5 or safe_capaian < 45:
+        return "High"
+    if safe_score < 3.5 or safe_capaian < 70:
+        return "Medium"
+    return "Low"
+
+
+def helpers_dashboard_priority_label(priority: str) -> str:
+    """
+    Converts internal priority code to user-facing label.
+    """
+    if priority == "High":
+        return "Prioritas Tinggi"
+    if priority == "Medium":
+        return "Prioritas Sedang"
+    return "Prioritas Rendah"
+
+
+def helpers_dashboard_infer_theme(metric_name: str) -> str:
+    """
+    Maps IKU metric names to broad intervention themes.
+    """
+    metric = (metric_name or "").lower()
+    if "kesehatan" in metric:
+        return "Layanan Kesehatan"
+    if "pendidikan" in metric:
+        return "Pendidikan"
+    if "air" in metric or "sanitasi" in metric:
+        return "Air dan Sanitasi"
+    if "jalan" in metric or "akses" in metric:
+        return "Aksesibilitas"
+    if "telekomunikasi" in metric or "digital" in metric:
+        return "Akses Digital"
+    if "ekonomi" in metric or "tematik" in metric:
+        return "Ekonomi Lokal"
+    if "sampah" in metric or "lingkungan" in metric:
+        return "Lingkungan"
+    return "Tata Kelola Kelembagaan"
+
+
+def helpers_dashboard_actions(theme: str, priority: str, province_name: str = "") -> dict:
+    """
+    Returns compact recommendation bundle by theme and priority.
+    """
+    base_actions = {
+        "Layanan Kesehatan": [
+            "Perkuat operasional layanan kesehatan dasar di desa prioritas.",
+            "Pastikan ketersediaan tenaga layanan dan jadwal layanan rutin.",
+            "Sinkronkan dukungan lintas kabupaten untuk wilayah tertinggal."
+        ],
+        "Pendidikan": [
+            "Petakan hambatan akses sekolah di desa prioritas.",
+            "Perkuat kolaborasi sekolah-desa untuk menekan ketidakhadiran.",
+            "Pantau capaian layanan pendidikan secara bulanan."
+        ],
+        "Air dan Sanitasi": [
+            "Percepat intervensi sanitasi dasar pada desa berisiko tinggi.",
+            "Jaga keberlanjutan layanan air bersih dengan pemeliharaan rutin.",
+            "Aktifkan edukasi perilaku higienis berbasis komunitas."
+        ],
+        "Aksesibilitas": [
+            "Prioritaskan konektivitas desa dengan dampak sosial-ekonomi terbesar.",
+            "Susun pemeliharaan infrastruktur bertahap lintas wilayah.",
+            "Selesaikan bottleneck akses pada koridor desa utama."
+        ],
+        "Akses Digital": [
+            "Perluas konektivitas internet stabil untuk layanan desa.",
+            "Aktifkan layanan digital praktis di kantor desa.",
+            "Pantau utilisasi layanan digital agar intervensi tepat guna."
+        ],
+        "Ekonomi Lokal": [
+            "Skalakan pendampingan usaha desa berbasis potensi lokal.",
+            "Perluas akses pasar untuk produk unggulan desa.",
+            "Integrasikan dukungan permodalan dan penguatan kapasitas."
+        ],
+        "Lingkungan": [
+            "Percepat program pengelolaan sampah berbasis komunitas.",
+            "Bangun disiplin monitoring kualitas lingkungan desa.",
+            "Pastikan akuntabilitas pelaksanaan intervensi lingkungan."
+        ],
+        "Tata Kelola Kelembagaan": [
+            "Perkuat standardisasi layanan administrasi desa.",
+            "Tingkatkan transparansi pelaporan dan tindak lanjut program.",
+            "Pastikan ritme eksekusi dan evaluasi lintas perangkat desa."
+        ]
+    }
+
+    selected_actions = base_actions.get(theme, base_actions["Tata Kelola Kelembagaan"])
+    province_suffix = f" di {province_name}" if province_name else ""
+
+    if priority == "High":
+        lead = f"Fokus segera{province_suffix}: jalankan percepatan 90 hari."
+    elif priority == "Medium":
+        lead = f"Fokus jangka dekat{province_suffix}: kuatkan eksekusi semester berjalan."
+    else:
+        lead = f"Fokus stabilisasi{province_suffix}: pertahankan performa dan monitoring berkala."
+
+    return {
+        "summary": lead,
+        "actions": selected_actions[:3]
+    }
+
+
+def _helpers_load_iku_dashboard_config():
+    """
+    Loads IKU mapping and metric order from configuration files.
+    """
+    cache_key = _helpers_dashboard_cache_key("config", "iku_dashboard")
+    cached = _helpers_dashboard_cache_get(cache_key)
+    if cached is not None:
+        return cached
+
+    iku_csv_path = os.path.join(CONFIG_DIR, "table_structure_IKU.csv")
+    iku_mapping_path = os.path.join(CONFIG_DIR, "iku_mapping.json")
+
+    metrics = []
+    if os.path.exists(iku_csv_path):
+        with open(iku_csv_path, "r", encoding="utf-8-sig", errors="replace") as f:
+            rows = list(csv.reader(f, delimiter=";"))
+        if rows:
+            row1 = rows[0]
+            current_parent = ""
+            for idx, parent_val in enumerate(row1):
+                if parent_val.strip():
+                    current_parent = parent_val.strip()
+                if idx >= 2 and current_parent and current_parent not in metrics:
+                    metrics.append(current_parent)
+
+    iku_mapping = {}
+    if os.path.exists(iku_mapping_path):
+        with open(iku_mapping_path, "r", encoding="utf-8") as f:
+            iku_mapping = json.load(f)
+
+    config_payload = {
+        "metrics": metrics,
+        "mapping": iku_mapping
+    }
+    return _helpers_dashboard_cache_set(cache_key, config_payload)
+
+
+def helpers_prepare_dashboard_iku_options(year: str):
+    """
+    Prepares compact IKU dropdown options for public dashboard.
+    """
+    cache_key = _helpers_dashboard_cache_key("overview", year, "iku_options")
+    cached = _helpers_dashboard_cache_get(cache_key)
+    if cached is not None:
+        return cached
+
+    iku_config = _helpers_load_iku_dashboard_config()
+    options = [{"value": metric, "label": metric} for metric in iku_config.get("metrics", [])]
+    return _helpers_dashboard_cache_set(cache_key, options)
+
+
+def helpers_prepare_dashboard_province_options(year: str):
+    """
+    Prepares compact province dropdown options with village counts.
+    """
+    cache_key = _helpers_dashboard_cache_key("overview", year, "province_options")
+    cached = _helpers_dashboard_cache_get(cache_key)
+    if cached is not None:
+        return cached
+
+    con, _ = helpers_get_db_connection(year)
+    try:
+        df = con.execute(
+            """
+            SELECT
+                COALESCE("Provinsi", 'Tidak Diketahui') AS provinsi,
+                COUNT(*) AS jlh_desa
+            FROM master_data
+            WHERE valid_to IS NULL
+            GROUP BY 1
+            ORDER BY 1
+            """
+        ).pl()
+
+        options = []
+        for row in df.to_dicts():
+            province_name = row.get("provinsi") or "Tidak Diketahui"
+            village_count = int(row.get("jlh_desa") or 0)
+            options.append({
+                "value": province_name,
+                "label": province_name,
+                "village_count": village_count
+            })
+
+        return _helpers_dashboard_cache_set(cache_key, options)
+    finally:
+        con.close()
+
+
+def helpers_calculate_dashboard_summary(year: str):
+    """
+    Calculates lightweight summary cards for initial dashboard render.
+    """
+    cache_key = _helpers_dashboard_cache_key("overview", year, "summary")
+    cached = _helpers_dashboard_cache_get(cache_key)
+    if cached is not None:
+        return cached
+
+    con, _ = helpers_get_db_connection(year)
+    try:
+        row = con.execute(
+            """
+            SELECT
+                COUNT(*) AS total_villages,
+                COUNT(DISTINCT COALESCE("Provinsi", 'Tidak Diketahui')) AS total_provinces,
+                MAX(valid_from) AS last_update
+            FROM master_data
+            WHERE valid_to IS NULL
+            """
+        ).fetchone()
+
+        total_villages = int(row[0] or 0) if row else 0
+        total_provinces = int(row[1] or 0) if row else 0
+        last_update = row[2] if row else None
+
+        if isinstance(last_update, datetime):
+            last_update_label = last_update.strftime("%Y-%m-%d %H:%M:%S")
+        else:
+            last_update_label = str(last_update) if last_update else "N/A"
+
+        metric_count = len(helpers_prepare_dashboard_iku_options(year))
+
+        summary_payload = {
+            "total_villages": total_villages,
+            "total_provinces": total_provinces,
+            "total_metrics": metric_count,
+            "last_update": last_update_label
+        }
+        return _helpers_dashboard_cache_set(cache_key, summary_payload)
+    finally:
+        con.close()
+
+
+def _helpers_build_metric_sql_parts(metric_name: str, iku_mapping: dict, available_columns: set):
+    """
+    Builds SQL expressions for IKU average and capaian qualification.
+    """
+    child_columns = [c.strip() for c in iku_mapping.get(metric_name, []) if c and c.strip() in available_columns]
+    if not child_columns:
+        return None
+
+    numeric_terms = [f"COALESCE(CAST({_helpers_quote_identifier(col)} AS DOUBLE), 0.0)" for col in child_columns]
+    score_expr = f"(({' + '.join(numeric_terms)}) / {len(numeric_terms)})"
+
+    status_column_exists = "Status ID" in available_columns
+    threshold_expr = f"{score_expr} > 0" if metric_name in IKU_TEMATIK_EXCEPTIONS else f"{score_expr} >= 4"
+    if status_column_exists:
+        status_filter = "UPPER(COALESCE(\"Status ID\", '')) IN ('MANDIRI','MAJU','BERKEMBANG','TERTINGGAL','SANGAT TERTINGGAL')"
+        qualified_expr = f"({status_filter} AND ({threshold_expr}))"
+    else:
+        qualified_expr = f"({threshold_expr})"
+
+    return {
+        "child_count": len(child_columns),
+        "score_expr": score_expr,
+        "qualified_expr": qualified_expr
+    }
+
+
+def helpers_calculate_dashboard_by_iku(year: str, iku_metric: str, province_filter: str = None):
+    """
+    Calculates dashboard payload grouped by province for a selected IKU.
+    """
+    normalized_metric = (iku_metric or "").strip()
+    normalized_province = (province_filter or "").strip()
+    cache_key = _helpers_dashboard_cache_key("filter", year, "iku", normalized_metric, normalized_province or "__all__")
+    cached = _helpers_dashboard_cache_get(cache_key)
+    if cached is not None:
+        return cached
+
+    iku_config = _helpers_load_iku_dashboard_config()
+    metrics = iku_config.get("metrics", [])
+    iku_mapping = iku_config.get("mapping", {})
+
+    if normalized_metric not in metrics:
+        return {
+            "metric": normalized_metric,
+            "province_rows": [],
+            "top_provinces": [],
+            "bottom_provinces": [],
+            "totals": {
+                "total_villages": 0,
+                "avg_score": 0.0,
+                "avg_capaian": 0.0,
+                "province_count": 0
+            }
+        }
+
+    con, _ = helpers_get_db_connection(year)
+    try:
+        available_columns = {r[0] for r in con.execute("DESCRIBE master_data").fetchall()}
+        metric_sql = _helpers_build_metric_sql_parts(normalized_metric, iku_mapping, available_columns)
+        if not metric_sql:
+            empty_payload = {
+                "metric": normalized_metric,
+                "province_rows": [],
+                "top_provinces": [],
+                "bottom_provinces": [],
+                "totals": {
+                    "total_villages": 0,
+                    "avg_score": 0.0,
+                    "avg_capaian": 0.0,
+                    "province_count": 0
+                }
+            }
+            return _helpers_dashboard_cache_set(cache_key, empty_payload)
+
+        where_clause = "valid_to IS NULL"
+        values = []
+        if normalized_province:
+            where_clause += " AND COALESCE(\"Provinsi\", 'Tidak Diketahui') = ?"
+            values.append(normalized_province)
+
+        query = f"""
+            SELECT
+                COALESCE("Provinsi", 'Tidak Diketahui') AS provinsi,
+                COUNT(*) AS jlh_desa,
+                ROUND(AVG({metric_sql["score_expr"]}), 4) AS rata_rata,
+                SUM(CASE WHEN {metric_sql["qualified_expr"]} THEN 1 ELSE 0 END) AS qualified_total
+            FROM master_data
+            WHERE {where_clause}
+            GROUP BY 1
+            ORDER BY rata_rata DESC, provinsi ASC
+        """
+        df = con.execute(query, values).pl()
+
+        province_rows = []
+        total_villages = 0
+        total_qualified = 0
+        metric_theme = helpers_dashboard_infer_theme(normalized_metric)
+
+        for rank_idx, row in enumerate(df.to_dicts(), start=1):
+            villages = int(row.get("jlh_desa") or 0)
+            avg_score = float(row.get("rata_rata") or 0.0)
+            qualified_total = int(row.get("qualified_total") or 0)
+            capaian = round((qualified_total / villages * 100) if villages > 0 else 0.0, 2)
+            priority = _helpers_dashboard_priority(avg_score, capaian)
+            province_name = row.get("provinsi") or "Tidak Diketahui"
+            action_bundle = helpers_dashboard_actions(metric_theme, priority, province_name)
+
+            total_villages += villages
+            total_qualified += qualified_total
+
+            province_rows.append({
+                "rank": rank_idx,
+                "provinsi": province_name,
+                "jlh_desa": villages,
+                "rata_rata": round(avg_score, 2),
+                "capaian": capaian,
+                "theme": metric_theme,
+                "priority": priority,
+                "priority_label": helpers_dashboard_priority_label(priority),
+                "recommendation_summary": action_bundle["summary"]
+            })
+
+        avg_score_all = round(
+            sum([r["rata_rata"] for r in province_rows]) / len(province_rows), 2
+        ) if province_rows else 0.0
+        avg_capaian_all = round((total_qualified / total_villages * 100), 2) if total_villages else 0.0
+
+        top_provinces = province_rows[:5]
+        bottom_provinces = sorted(province_rows, key=lambda x: x["rata_rata"])[:5]
+
+        metric_payload = {
+            "metric": normalized_metric,
+            "province_rows": province_rows,
+            "top_provinces": top_provinces,
+            "bottom_provinces": bottom_provinces,
+            "totals": {
+                "total_villages": total_villages,
+                "avg_score": avg_score_all,
+                "avg_capaian": avg_capaian_all,
+                "province_count": len(province_rows)
+            }
+        }
+        return _helpers_dashboard_cache_set(cache_key, metric_payload)
+    finally:
+        con.close()
+
+
+def helpers_calculate_dashboard_by_province(year: str, province: str):
+    """
+    Calculates all IKU metrics for a single province.
+    """
+    normalized_province = (province or "").strip()
+    cache_key = _helpers_dashboard_cache_key("filter", year, "province", normalized_province or "__empty__")
+    cached = _helpers_dashboard_cache_get(cache_key)
+    if cached is not None:
+        return cached
+
+    if not normalized_province:
+        empty_payload = {
+            "province": "",
+            "metric_rows": [],
+            "top_metrics": [],
+            "bottom_metrics": [],
+            "recommendations": [],
+            "totals": {
+                "metric_count": 0,
+                "avg_score": 0.0,
+                "avg_capaian": 0.0
+            }
+        }
+        return _helpers_dashboard_cache_set(cache_key, empty_payload)
+
+    iku_config = _helpers_load_iku_dashboard_config()
+    metrics = iku_config.get("metrics", [])
+    iku_mapping = iku_config.get("mapping", {})
+
+    con, _ = helpers_get_db_connection(year)
+    try:
+        available_columns = {r[0] for r in con.execute("DESCRIBE master_data").fetchall()}
+
+        metric_rows = []
+        for metric_name in metrics:
+            metric_sql = _helpers_build_metric_sql_parts(metric_name, iku_mapping, available_columns)
+            if not metric_sql:
+                continue
+
+            row = con.execute(
+                f"""
+                SELECT
+                    COUNT(*) AS jlh_desa,
+                    ROUND(AVG({metric_sql["score_expr"]}), 4) AS rata_rata,
+                    SUM(CASE WHEN {metric_sql["qualified_expr"]} THEN 1 ELSE 0 END) AS qualified_total
+                FROM master_data
+                WHERE valid_to IS NULL
+                  AND COALESCE("Provinsi", 'Tidak Diketahui') = ?
+                """,
+                [normalized_province]
+            ).fetchone()
+
+            villages = int(row[0] or 0) if row else 0
+            avg_score = float(row[1] or 0.0) if row else 0.0
+            qualified_total = int(row[2] or 0) if row else 0
+            capaian = round((qualified_total / villages * 100) if villages > 0 else 0.0, 2)
+            priority = _helpers_dashboard_priority(avg_score, capaian)
+            theme = helpers_dashboard_infer_theme(metric_name)
+
+            metric_rows.append({
+                "metric": metric_name,
+                "theme": theme,
+                "jlh_desa": villages,
+                "rata_rata": round(avg_score, 2),
+                "capaian": capaian,
+                "priority": priority,
+                "priority_label": helpers_dashboard_priority_label(priority)
+            })
+
+        metric_rows.sort(key=lambda x: x["rata_rata"], reverse=True)
+        top_metrics = metric_rows[:5]
+        bottom_metrics = sorted(metric_rows, key=lambda x: x["rata_rata"])[:5]
+
+        recommendations = []
+        for item in bottom_metrics:
+            action_bundle = helpers_dashboard_actions(item["theme"], item["priority"], normalized_province)
+            recommendations.append({
+                "metric": item["metric"],
+                "theme": item["theme"],
+                "priority": item["priority"],
+                "priority_label": item["priority_label"],
+                "score": item["rata_rata"],
+                "capaian": item["capaian"],
+                "summary": action_bundle["summary"],
+                "actions": action_bundle["actions"]
+            })
+
+        totals = {
+            "metric_count": len(metric_rows),
+            "avg_score": round(sum([x["rata_rata"] for x in metric_rows]) / len(metric_rows), 2) if metric_rows else 0.0,
+            "avg_capaian": round(sum([x["capaian"] for x in metric_rows]) / len(metric_rows), 2) if metric_rows else 0.0
+        }
+
+        province_payload = {
+            "province": normalized_province,
+            "metric_rows": metric_rows,
+            "top_metrics": top_metrics,
+            "bottom_metrics": bottom_metrics,
+            "recommendations": recommendations,
+            "totals": totals
+        }
+        return _helpers_dashboard_cache_set(cache_key, province_payload)
+    finally:
+        con.close()
+
+
+def helpers_calculate_dashboard_by_filters(year: str, province: str = None, iku_metric: str = None):
+    """
+    Calculates combined metric + province dashboard payload.
+    """
+    iku_options = helpers_prepare_dashboard_iku_options(year)
+    province_options = helpers_prepare_dashboard_province_options(year)
+
+    default_metric = iku_options[0]["value"] if iku_options else ""
+    default_province = province_options[0]["value"] if province_options else ""
+
+    selected_metric = iku_metric if iku_metric else default_metric
+    selected_province = province if province else default_province
+
+    if iku_options and selected_metric not in {o["value"] for o in iku_options}:
+        selected_metric = default_metric
+    if province_options and selected_province not in {o["value"] for o in province_options}:
+        selected_province = default_province
+
+    metric_payload = helpers_calculate_dashboard_by_iku(year, selected_metric)
+    province_payload = helpers_calculate_dashboard_by_province(year, selected_province)
+
+    selected_metric_row = None
+    for row in metric_payload.get("province_rows", []):
+        if row.get("provinsi") == selected_province:
+            selected_metric_row = row
+            break
+
+    return {
+        "year": str(year),
+        "selected_filters": {
+            "province": selected_province,
+            "iku_metric": selected_metric
+        },
+        "metric_payload": metric_payload,
+        "province_payload": province_payload,
+        "selected_metric_for_province": selected_metric_row
+    }
+
+
+def helpers_calculate_dashboard_initial_payload(year: str):
+    """
+    Creates lightweight initial payload for public dashboard first render.
+    """
+    cache_key = _helpers_dashboard_cache_key("overview", year, "initial_payload")
+    cached = _helpers_dashboard_cache_get(cache_key)
+    if cached is not None:
+        return cached
+
+    summary = helpers_calculate_dashboard_summary(year)
+    province_options = helpers_prepare_dashboard_province_options(year)
+    iku_options = helpers_prepare_dashboard_iku_options(year)
+
+    defaults = {
+        "province": province_options[0]["value"] if province_options else "",
+        "iku_metric": iku_options[0]["value"] if iku_options else ""
+    }
+
+    payload = {
+        "year": str(year),
+        "summary": summary,
+        "defaults": defaults,
+        "province_options": province_options,
+        "iku_options": iku_options,
+        "user_guide": [
+            "Pilih Provinsi untuk melihat potret performa wilayah.",
+            "Pilih IKU untuk melihat peringkat provinsi pada indikator tersebut.",
+            "Gunakan hasil rekomendasi sebagai bahan tindak lanjut lintas level."
+        ],
+        "cache_ttl_seconds": DASHBOARD_PUBLIC_CACHE_TTL_SECONDS
+    }
+    return _helpers_dashboard_cache_set(cache_key, payload)
+
+
+def helpers_get_public_iku_json(year: str, metric_filter: str = None):
+    """
+    Compatibility wrapper for legacy public IKU endpoint.
+
+    New internal implementation reuses the optimized middleware computation engine.
+    """
+    try:
+        iku_options = helpers_prepare_dashboard_iku_options(year)
+        metrics = [item["value"] for item in iku_options]
+
+        if not metric_filter:
+            return {"metrics": metrics}
+
+        metric_payload = helpers_calculate_dashboard_by_iku(year, metric_filter)
+        rows = metric_payload.get("province_rows", [])
+        totals = metric_payload.get("totals", {})
+
+        legacy_rows = [
+            {
+                "provinsi": row.get("provinsi", "Tidak Diketahui"),
+                "jlh_desa": row.get("jlh_desa", 0),
+                "rata_rata": row.get("rata_rata", 0.0),
+                "capaian": row.get("capaian", 0.0)
+            }
+            for row in rows
+        ]
+
+        legacy_totals = {
+            "provinsi": "TOTAL",
+            "jlh_desa": f"{int(totals.get('total_villages', 0)):,}",
+            "rata_rata": f"{float(totals.get('avg_score', 0.0)):.2f}",
+            "capaian": f"{float(totals.get('avg_capaian', 0.0)):.2f} %"
+        }
+
+        return {
+            metric_filter: {
+                "data": legacy_rows,
+                "totals": legacy_totals
+            }
+        }
+    except Exception as e:
+        traceback.print_exc()
+        return {"error": str(e)}
