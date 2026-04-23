@@ -12,6 +12,7 @@
   <style>
     :root {
       --mono-stack: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sidebar-width: 320px;
       --bg: #eef4ff;
       --line: #d9e2ef;
       --ink: #0f172a;
@@ -56,8 +57,8 @@
     }
 
     .server_home_shell {
-      width: min(1320px, 94vw);
-      margin: 20px auto 30px;
+      width: min(1320px, calc(100vw - var(--sidebar-width) - 40px));
+      margin: 20px 20px 30px calc(var(--sidebar-width) + 20px);
       display: grid;
       gap: 14px;
     }
@@ -91,11 +92,148 @@
       padding: 14px;
     }
 
+    .server_quick_sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: var(--sidebar-width);
+      height: 100vh;
+      padding: 14px 12px;
+      border-right: 1px solid var(--border-secondary);
+      background: linear-gradient(180deg, #eef4ff 0%, #e7f1ff 46%, #eaf8f6 100%);
+      box-shadow: 8px 0 24px rgba(15, 23, 42, 0.12);
+      z-index: 30;
+      overflow-y: auto;
+    }
+
+    .server_quick_sidebar_stack {
+      display: grid;
+      gap: 12px;
+    }
+
+    .server_quick_control_card,
+    .server_quick_login_card {
+      display: grid;
+      gap: 10px;
+      padding: 12px;
+      border: 1px solid var(--border-secondary);
+      border-radius: 12px;
+      background: var(--surface-secondary);
+      box-shadow: 0 8px 18px rgba(15, 118, 110, 0.1);
+    }
+
+    .server_quick_control_card {
+      border-left: 4px solid var(--accent-secondary);
+    }
+
+    .server_quick_login_card {
+      border-left: 4px solid var(--accent-primary);
+      background: var(--surface-primary);
+    }
+
     .server_header {
       padding: 16px 18px;
       display: grid;
       gap: 8px;
       border-left: 4px solid var(--accent-primary);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .server_header::after {
+      content: "";
+      position: absolute;
+      right: -40px;
+      top: -36px;
+      width: 190px;
+      height: 190px;
+      background: radial-gradient(circle at center, rgba(37, 99, 235, 0.17), rgba(37, 99, 235, 0));
+      pointer-events: none;
+    }
+
+    .server_badge_row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .server_badge {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 0.67rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      border: 1px solid;
+      width: fit-content;
+    }
+
+    .server_badge_primary {
+      color: #1e3a8a;
+      background: #e7efff;
+      border-color: #b8cdf5;
+    }
+
+    .server_badge_secondary {
+      color: #0f766e;
+      background: #e8faf7;
+      border-color: #9adfd6;
+    }
+
+    .server_sidebar_title {
+      margin: 0;
+      font-size: 0.82rem;
+      text-transform: none;
+      letter-spacing: 0.02em;
+      color: #0f3f80;
+      font-weight: 800;
+    }
+
+    .server_sidebar_login_title {
+      margin: 0;
+      font-size: 0.78rem;
+      text-transform: none;
+      letter-spacing: 0.02em;
+      color: #0b3b84;
+      font-weight: 800;
+    }
+
+    .server_sidebar_copy {
+      margin: 0;
+      font-size: 0.73rem;
+      color: #4d607a;
+      line-height: 1.4;
+    }
+
+    .server_login_button {
+      display: inline-flex;
+      width: 100%;
+      justify-content: center;
+      align-items: center;
+      border-radius: 10px;
+      border: 1px solid #1e40af;
+      background: linear-gradient(140deg, #1e3a8a 0%, #1d4ed8 100%);
+      color: #f8fbff;
+      text-decoration: none;
+      padding: 9px 12px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease;
+      box-shadow: 0 8px 16px rgba(30, 64, 175, 0.25);
+    }
+
+    .server_login_button:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.04);
+      box-shadow: 0 10px 18px rgba(30, 64, 175, 0.3);
+    }
+
+    .server_sidebar_hint {
+      font-size: 0.69rem;
+      color: #5d6f88;
+      line-height: 1.35;
     }
 
     .server_title {
@@ -123,19 +261,20 @@
 
     .server_control_grid {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 10px;
     }
 
     .server_control_block {
       display: grid;
       gap: 6px;
+      min-width: 0;
     }
 
     .server_control_label {
       font-size: 0.74rem;
-      text-transform: uppercase;
-      letter-spacing: 0.07em;
+      text-transform: none;
+      letter-spacing: 0.02em;
       color: #475569;
       font-weight: 700;
     }
@@ -148,6 +287,7 @@
 
     .server_select {
       width: 100%;
+      min-width: 0;
       border: 1px solid #c6d3e8;
       border-radius: 10px;
       background: #fff;
@@ -155,6 +295,9 @@
       font-size: 0.84rem;
       color: #0f172a;
       outline: none;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .server_select:focus {
@@ -170,6 +313,8 @@
       color: #0f3f80;
       font-size: 0.8rem;
       line-height: 1.35;
+      overflow-wrap: anywhere;
+      word-break: break-word;
     }
 
     .middleware_summary_grid {
@@ -208,8 +353,8 @@
     .middleware_summary_label {
       font-size: 0.7rem;
       color: #64748b;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
+      text-transform: none;
+      letter-spacing: 0.02em;
       font-weight: 700;
     }
 
@@ -242,8 +387,8 @@
     .middleware_panel_title {
       margin: 0;
       font-size: 0.92rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
+      text-transform: none;
+      letter-spacing: 0.02em;
       color: #0f172a;
       font-weight: 800;
     }
@@ -267,6 +412,24 @@
       padding: 8px 10px;
       display: grid;
       gap: 7px;
+    }
+
+    /* Primary title card for selected province summary (parent of IKU list below). */
+    .middleware_list_item_primary {
+      background: linear-gradient(145deg, #eef5ff 0%, #e2ecff 100%);
+      border-color: #9ab7eb;
+      border-left: 4px solid #1d4ed8;
+      box-shadow: 0 8px 18px rgba(29, 78, 216, 0.14);
+    }
+
+    .middleware_list_item_primary .middleware_item_name,
+    .middleware_list_item_primary .middleware_item_score {
+      color: #0b3b84;
+    }
+
+    .middleware_list_item_primary .middleware_item_meta,
+    .middleware_list_item_primary .middleware_progress_meta {
+      color: #35507a;
     }
 
     .middleware_list_head {
@@ -429,8 +592,8 @@
       background: #f5f9ff;
       border-bottom: 1px solid #d8e2ef;
       font-size: 0.68rem;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      text-transform: none;
       color: #475569;
       white-space: nowrap;
     }
@@ -470,6 +633,27 @@
     }
 
     @media (max-width: 1100px) {
+      :root {
+        --sidebar-width: 0px;
+      }
+
+      .server_quick_sidebar {
+        position: static;
+        width: min(1320px, 96vw);
+        height: auto;
+        margin: 12px auto 0;
+        box-shadow: none;
+        border-right: none;
+        border: 1px solid var(--border-secondary);
+        border-radius: 14px;
+        padding: 10px;
+      }
+
+      .server_home_shell {
+        width: min(1320px, 96vw);
+        margin: 14px auto 24px;
+      }
+
       .middleware_summary_grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
@@ -495,16 +679,87 @@
   </style>
 </head>
 <body>
+  <aside class="server_quick_sidebar">
+    <div class="server_quick_sidebar_stack">
+      <section class="server_quick_control_card">
+        <h3 class="server_sidebar_title">Kontrol Cepat</h3>
+        <p class="server_sidebar_copy">
+          Atur filter utama dari panel ini kapan saja tanpa perlu kembali ke bagian atas halaman.
+        </p>
+
+        <div class="server_control_block">
+          <label class="server_control_label" for="quick_year_select">Pilih Tahun</label>
+          <select
+            id="quick_year_select"
+            class="server_select"
+            x-model="server_selectedYear"
+            @change="action_change_year()"
+          >
+            <template x-for="year in server_availableYears" :key="`quick-year-${year}`">
+              <option :value="year" x-text="year"></option>
+            </template>
+          </select>
+        </div>
+
+        <div class="server_control_block">
+          <label class="server_control_label" for="quick_province_select">Pilih Provinsi</label>
+          <select
+            id="quick_province_select"
+            class="server_select"
+            x-model="server_selectedProvince"
+            @change="action_apply_filter_from_dropdowns()"
+          >
+            <option value="">Pilih Provinsi...</option>
+            <template x-for="option in middleware_province_options" :key="`quick-province-${option.value}`">
+              <option :value="option.value" x-text="`${option.label} (${format_number(option.village_count)} desa)`"></option>
+            </template>
+          </select>
+        </div>
+
+        <div class="server_control_block">
+          <label class="server_control_label" for="quick_iku_select">Pilih IKU</label>
+          <select
+            id="quick_iku_select"
+            class="server_select"
+            x-model="server_selectedIkuMetric"
+            @change="action_apply_filter_from_dropdowns()"
+          >
+            <option value="">Pilih IKU...</option>
+            <template x-for="option in middleware_iku_options" :key="`quick-iku-${option.value}`">
+              <option :value="option.value" x-text="option.label"></option>
+            </template>
+          </select>
+        </div>
+
+        <div class="server_context_bar">
+          <strong>Konteks Aktif:</strong><br>
+          Tahun <span x-text="server_selectedYear || '-'"></span><br>
+          Provinsi <span x-text="server_selectedProvince || '-'"></span><br>
+          IKU <span x-text="server_selectedIkuMetric || '-'"></span><br>
+          Pembaruan <span x-text="middleware_last_loaded_at"></span>
+        </div>
+      </section>
+
+      <section class="server_quick_login_card">
+        <h3 class="server_sidebar_login_title">Akses Sistem</h3>
+        <a href="/login" class="server_login_button">Masuk Sistem</a>
+        <p class="server_sidebar_hint">
+          Akses akun internal untuk fitur pengelolaan data, upload, dan operasi lanjutan.
+        </p>
+      </section>
+    </div>
+  </aside>
+
   <div class="server_home_shell">
     <header class="server_card server_card_primary server_header">
+      <div class="server_badge_row">
+        <span class="server_badge server_badge_primary">Tampilan Publik Eksekutif</span>
+        <span class="server_badge server_badge_secondary">Monitoring Data Nasional</span>
+      </div>
       <h1 class="server_title">Dashboard Publik Data Skor Rekomendasi Desa</h1>
       <p class="server_subtitle">
         Direktorat Jenderal Pembangunan Desa dan Perdesaan · Tampilan ringkas untuk publik dan pimpinan.
       </p>
-      <a
-        href="/login"
-        class="inline-flex w-fit items-center rounded-md border border-slate-300 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-colors"
-      >Masuk Sistem</a>
     </header>
 
     <!-- Backend dependency: GET /public/dashboard/overview/{year}
@@ -513,50 +768,17 @@
     <section class="server_card server_card_secondary server_control_panel">
       <div class="server_control_grid">
         <div class="server_control_block">
-          <label class="server_control_label" for="server_year_select">Select Year</label>
-          <select
-            id="server_year_select"
-            class="server_select"
-            x-model="server_selectedYear"
-            @change="action_change_year()"
-          >
-            <template x-for="year in server_availableYears" :key="`year-${year}`">
-              <option :value="year" x-text="year"></option>
-            </template>
-          </select>
-          <p class="server_control_hint">Pilih tahun data aktif yang ingin ditinjau.</p>
+          <div class="server_control_label">Navigasi Cepat</div>
+          <p class="server_control_hint">
+            Gunakan sidebar kiri untuk mengganti Tahun, Provinsi, dan IKU kapan saja. Perubahan akan otomatis memperbarui seluruh panel.
+          </p>
         </div>
 
         <div class="server_control_block">
-          <label class="server_control_label" for="middleware_select_province">Select Province</label>
-          <select
-            id="middleware_select_province"
-            class="server_select"
-            x-model="server_selectedProvince"
-            @change="action_apply_filter_from_dropdowns()"
-          >
-            <option value="">Pilih Provinsi...</option>
-            <template x-for="option in middleware_province_options" :key="`province-${option.value}`">
-              <option :value="option.value" x-text="`${option.label} (${format_number(option.village_count)} desa)`"></option>
-            </template>
-          </select>
-          <p class="server_control_hint">Bandingkan provinsi lain dengan memilih ulang dropdown ini.</p>
-        </div>
-
-        <div class="server_control_block">
-          <label class="server_control_label" for="middleware_select_iku">Select IKU</label>
-          <select
-            id="middleware_select_iku"
-            class="server_select"
-            x-model="server_selectedIkuMetric"
-            @change="action_apply_filter_from_dropdowns()"
-          >
-            <option value="">Pilih IKU...</option>
-            <template x-for="option in middleware_iku_options" :key="`iku-${option.value}`">
-              <option :value="option.value" x-text="option.label"></option>
-            </template>
-          </select>
-          <p class="server_control_hint">Setiap IKU akan menampilkan peringkat provinsi yang berbeda.</p>
+          <div class="server_control_label">Arah Baca Dashboard</div>
+          <p class="server_control_hint">
+            Mulai dari ringkasan, lanjut ke peringkat provinsi, potret IKU, kemudian rekomendasi intervensi untuk analisis bertahap.
+          </p>
         </div>
       </div>
 
@@ -609,7 +831,7 @@
         </p>
 
         <div class="middleware_list_shell">
-          <div class="middleware_list_item">
+          <div class="middleware_list_item middleware_list_item_primary">
             <div class="middleware_list_head">
               <span class="middleware_item_name">Ringkasan Nasional</span>
               <span class="middleware_item_score" x-text="format_score(middleware_metric_totals.avg_score)"></span>
@@ -671,7 +893,7 @@
         </p>
 
         <div class="middleware_list_shell">
-          <div class="middleware_list_item">
+          <div class="middleware_list_item middleware_list_item_primary">
             <div class="middleware_list_head">
               <span class="middleware_item_name" x-text="middleware_selected_province || '-'"></span>
               <span class="middleware_item_score" x-text="format_score(middleware_province_totals.avg_score)"></span>
