@@ -12,7 +12,7 @@
   <style>
     :root {
       --mono-stack: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      --bg: #f4f7fb;
+      --bg: #eef4ff;
       --line: #d9e2ef;
       --ink: #0f172a;
       --muted: #5f6b80;
@@ -22,6 +22,22 @@
       --amber: #b45309;
       --rose: #be123c;
       --emerald: #166534;
+
+      /* Color hierarchy roles */
+      --surface-primary: linear-gradient(145deg, #f8fbff 0%, #edf4ff 100%);
+      --surface-secondary: linear-gradient(150deg, #ffffff 0%, #f6faff 100%);
+      --surface-tertiary: linear-gradient(160deg, #ffffff 0%, #fbfdff 100%);
+      --surface-tertiary-soft: linear-gradient(170deg, #fbfdff 0%, #f2f7ff 100%);
+      --border-primary: #9bb9ee;
+      --border-secondary: #c7d9f2;
+      --border-tertiary: #dde8f7;
+      --accent-primary: #1e40af;
+      --accent-secondary: #0f766e;
+      --accent-tertiary: #475569;
+      --progress-track: #dbe7f8;
+      --progress-high: linear-gradient(90deg, #15803d, #22c55e);
+      --progress-medium: linear-gradient(90deg, #d97706, #f59e0b);
+      --progress-low: linear-gradient(90deg, #c2410c, #ef4444);
     }
 
     * {
@@ -33,8 +49,9 @@
       margin: 0;
       color: var(--ink);
       background:
-        radial-gradient(900px 300px at 8% -10%, rgba(59, 130, 246, 0.14), transparent 60%),
-        radial-gradient(760px 260px at 92% -8%, rgba(45, 212, 191, 0.12), transparent 58%),
+        radial-gradient(920px 340px at 10% -8%, rgba(37, 99, 235, 0.16), transparent 60%),
+        radial-gradient(820px 300px at 90% -10%, rgba(15, 118, 110, 0.12), transparent 62%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.68)),
         var(--bg);
     }
 
@@ -46,16 +63,39 @@
     }
 
     .server_card {
-      background: var(--card);
-      border: 1px solid var(--line);
+      background: var(--surface-tertiary);
+      border: 1px solid var(--border-tertiary);
       border-radius: 14px;
-      box-shadow: 0 6px 20px rgba(15, 23, 42, 0.08);
+      box-shadow: 0 8px 22px rgba(15, 23, 42, 0.07);
+    }
+
+    .server_card_primary {
+      background: var(--surface-primary);
+      border-color: var(--border-primary);
+      box-shadow: 0 12px 28px rgba(30, 64, 175, 0.15);
+    }
+
+    .server_card_secondary {
+      background: var(--surface-secondary);
+      border-color: var(--border-secondary);
+      box-shadow: 0 10px 24px rgba(15, 118, 110, 0.1);
+    }
+
+    .server_card_tertiary {
+      background: var(--surface-tertiary);
+      border-color: var(--border-tertiary);
+      box-shadow: 0 8px 20px rgba(71, 85, 105, 0.1);
+    }
+
+    .server_section_pad {
+      padding: 14px;
     }
 
     .server_header {
       padding: 16px 18px;
       display: grid;
       gap: 8px;
+      border-left: 4px solid var(--accent-primary);
     }
 
     .server_title {
@@ -63,7 +103,7 @@
       font-size: clamp(1rem, 1.8vw, 1.45rem);
       text-transform: uppercase;
       letter-spacing: 0.04em;
-      color: #0b3b84;
+      color: var(--accent-primary);
       font-weight: 800;
     }
 
@@ -78,6 +118,7 @@
       padding: 14px 16px;
       display: grid;
       gap: 12px;
+      border-left: 4px solid var(--accent-secondary);
     }
 
     .server_control_grid {
@@ -122,8 +163,8 @@
     }
 
     .server_context_bar {
-      border: 1px dashed #bfd0ea;
-      background: #f8fbff;
+      border: 1px dashed #a7c2e6;
+      background: linear-gradient(160deg, rgba(239, 247, 255, 0.95), rgba(232, 244, 255, 0.92));
       border-radius: 10px;
       padding: 9px 11px;
       color: #0f3f80;
@@ -139,12 +180,29 @@
     }
 
     .middleware_summary_card {
-      border: 1px solid #d8e2ef;
+      border: 1px solid var(--border-tertiary);
       border-radius: 12px;
       padding: 12px;
-      background: linear-gradient(180deg, #ffffff, #f7fbff);
+      background: var(--surface-tertiary-soft);
       display: grid;
       gap: 5px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
+    }
+
+    .middleware_summary_card:nth-child(1) {
+      border-top: 3px solid #1d4ed8;
+    }
+
+    .middleware_summary_card:nth-child(2) {
+      border-top: 3px solid #0f766e;
+    }
+
+    .middleware_summary_card:nth-child(3) {
+      border-top: 3px solid #b45309;
+    }
+
+    .middleware_summary_card:nth-child(4) {
+      border-top: 3px solid #475569;
     }
 
     .middleware_summary_label {
@@ -178,6 +236,7 @@
       display: grid;
       gap: 10px;
       align-content: start;
+      border-left: 4px solid var(--accent-primary);
     }
 
     .middleware_panel_title {
@@ -202,12 +261,12 @@
     }
 
     .middleware_list_item {
-      border: 1px solid #d7e2f2;
+      border: 1px solid var(--border-tertiary);
       border-radius: 10px;
-      background: #fff;
+      background: var(--surface-tertiary);
       padding: 8px 10px;
       display: grid;
-      gap: 5px;
+      gap: 7px;
     }
 
     .middleware_list_head {
@@ -238,6 +297,47 @@
       justify-content: space-between;
       gap: 8px;
       flex-wrap: wrap;
+    }
+
+    .middleware_progress_group {
+      display: grid;
+      gap: 4px;
+    }
+
+    .middleware_progress_meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.69rem;
+      color: #4b5d75;
+      line-height: 1.2;
+    }
+
+    .middleware_progress_track {
+      height: 7px;
+      border-radius: 999px;
+      background: var(--progress-track);
+      border: 1px solid #c8d7ef;
+      overflow: hidden;
+    }
+
+    .middleware_progress_fill {
+      height: 100%;
+      border-radius: 999px;
+      width: 0%;
+      transition: width 0.25s ease-out;
+    }
+
+    .progress_state_high {
+      background: var(--progress-high);
+    }
+
+    .progress_state_medium {
+      background: var(--progress-medium);
+    }
+
+    .progress_state_low {
+      background: var(--progress-low);
     }
 
     .middleware_priority_badge {
@@ -277,9 +377,9 @@
     }
 
     .middleware_recommendation_card {
-      border: 1px solid #d7e2f2;
+      border: 1px solid var(--border-tertiary);
       border-radius: 12px;
-      background: linear-gradient(180deg, #ffffff, #f8fbff);
+      background: var(--surface-tertiary-soft);
       padding: 12px;
       display: grid;
       gap: 7px;
@@ -311,10 +411,10 @@
     }
 
     .middleware_table_wrap {
-      border: 1px solid #d8e2ef;
+      border: 1px solid var(--border-tertiary);
       border-radius: 12px;
       overflow-x: auto;
-      background: #fff;
+      background: var(--surface-tertiary);
     }
 
     .middleware_table {
@@ -341,6 +441,18 @@
       font-size: 0.77rem;
       color: #1f2937;
       vertical-align: top;
+    }
+
+    .middleware_table_progress_cell {
+      display: grid;
+      gap: 4px;
+      min-width: 140px;
+    }
+
+    .middleware_table_progress_value {
+      font-size: 0.73rem;
+      color: #334155;
+      line-height: 1.2;
     }
 
     .middleware_table tr:hover td {
@@ -384,7 +496,7 @@
 </head>
 <body>
   <div class="server_home_shell">
-    <header class="server_card server_header">
+    <header class="server_card server_card_primary server_header">
       <h1 class="server_title">Dashboard Publik Data Skor Rekomendasi Desa</h1>
       <p class="server_subtitle">
         Direktorat Jenderal Pembangunan Desa dan Perdesaan · Tampilan ringkas untuk publik dan pimpinan.
@@ -398,7 +510,7 @@
     <!-- Backend dependency: GET /public/dashboard/overview/{year}
          Data source: middleware.helpers_calculate_dashboard_initial_payload()
          Purpose: deliver small initial payload (<1MB) with summary and dropdown options. -->
-    <section class="server_card server_control_panel">
+    <section class="server_card server_card_secondary server_control_panel">
       <div class="server_control_grid">
         <div class="server_control_block">
           <label class="server_control_label" for="server_year_select">Select Year</label>
@@ -459,7 +571,7 @@
 
     <!-- Backend dependency: GET /public/dashboard/overview/{year}
          Data source: middleware.helpers_calculate_dashboard_summary() -->
-    <section class="server_card" style="padding:14px;">
+    <section class="server_card server_card_secondary server_section_pad">
       <div class="middleware_summary_grid">
         <article class="middleware_summary_card">
           <div class="middleware_summary_label">Total Desa Aktif</div>
@@ -490,7 +602,7 @@
          Data source: middleware.helpers_calculate_dashboard_by_filters()
          Purpose: on-demand payload after dropdown changes (no large full-dataset transfer). -->
     <section class="middleware_main_grid">
-      <article class="server_card middleware_panel">
+      <article class="server_card server_card_primary middleware_panel">
         <h3 class="middleware_panel_title">Peringkat Provinsi untuk IKU Terpilih</h3>
         <p class="middleware_panel_subtitle">
           Ringkasan ini menampilkan performa IKU terpilih lintas provinsi, termasuk capaian dan level prioritas intervensi.
@@ -507,6 +619,19 @@
               <span x-text="`Capaian: ${format_percent(middleware_metric_totals.avg_capaian)}`"></span>
               <span x-text="`Provinsi: ${format_number(middleware_metric_totals.province_count)}`"></span>
             </div>
+            <div class="middleware_progress_group">
+              <div class="middleware_progress_meta">
+                <span>Capaian Nasional</span>
+                <span x-text="format_percent(middleware_metric_totals.avg_capaian)"></span>
+              </div>
+              <div class="middleware_progress_track">
+                <div
+                  class="middleware_progress_fill"
+                  :class="progress_class_by_value(middleware_metric_totals.avg_capaian)"
+                  :style="progress_width_style(middleware_metric_totals.avg_capaian, 100)"
+                ></div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -521,12 +646,25 @@
                 <span x-text="`Desa: ${format_number(item.jlh_desa)}`"></span>
                 <span x-text="`Capaian: ${format_percent(item.capaian)}`"></span>
               </div>
+              <div class="middleware_progress_group">
+                <div class="middleware_progress_meta">
+                  <span>Progress Capaian</span>
+                  <span x-text="format_percent(item.capaian)"></span>
+                </div>
+                <div class="middleware_progress_track">
+                  <div
+                    class="middleware_progress_fill"
+                    :class="progress_class_by_value(item.capaian)"
+                    :style="progress_width_style(item.capaian, 100)"
+                  ></div>
+                </div>
+              </div>
             </div>
           </template>
         </div>
       </article>
 
-      <article class="server_card middleware_panel">
+      <article class="server_card server_card_primary middleware_panel">
         <h3 class="middleware_panel_title">Potret IKU Pada Provinsi Terpilih</h3>
         <p class="middleware_panel_subtitle">
           Gunakan panel ini untuk menilai tema IKU terkuat dan tema prioritas perbaikan pada provinsi yang Anda pilih.
@@ -541,6 +679,19 @@
             <div class="middleware_item_meta">
               <span x-text="`Jumlah IKU: ${format_number(middleware_province_totals.metric_count)}`"></span>
               <span x-text="`Rata-rata Capaian: ${format_percent(middleware_province_totals.avg_capaian)}`"></span>
+            </div>
+            <div class="middleware_progress_group">
+              <div class="middleware_progress_meta">
+                <span>Rata-rata Capaian Provinsi</span>
+                <span x-text="format_percent(middleware_province_totals.avg_capaian)"></span>
+              </div>
+              <div class="middleware_progress_track">
+                <div
+                  class="middleware_progress_fill"
+                  :class="progress_class_by_value(middleware_province_totals.avg_capaian)"
+                  :style="progress_width_style(middleware_province_totals.avg_capaian, 100)"
+                ></div>
+              </div>
             </div>
           </div>
         </div>
@@ -560,6 +711,19 @@
                   x-text="item.priority_label"
                 ></span>
               </div>
+              <div class="middleware_progress_group">
+                <div class="middleware_progress_meta">
+                  <span>Progress IKU</span>
+                  <span x-text="format_percent(item.capaian)"></span>
+                </div>
+                <div class="middleware_progress_track">
+                  <div
+                    class="middleware_progress_fill"
+                    :class="progress_class_by_value(item.capaian)"
+                    :style="progress_width_style(item.capaian, 100)"
+                  ></div>
+                </div>
+              </div>
             </div>
           </template>
         </div>
@@ -569,7 +733,7 @@
     <!-- Backend dependency: selected province recommendation payload
          Data source: middleware.helpers_calculate_dashboard_by_province()
          Update trigger: dropdown province/IKU changes via /public/dashboard/filter/{year}. -->
-    <section class="server_card" style="padding:14px;">
+    <section class="server_card server_card_secondary server_section_pad">
       <h3 class="middleware_panel_title">Rekomendasi Intervensi Provinsi</h3>
       <p class="middleware_panel_subtitle" style="margin: 6px 0 10px;">
         Setiap kartu memuat tema IKU prioritas, level urgensi, dan langkah tindak lanjut yang dapat langsung dipakai dalam rapat koordinasi.
@@ -586,6 +750,19 @@
             <h4 class="middleware_recommendation_title" x-text="rec.metric"></h4>
             <p class="middleware_recommendation_copy" x-text="`Skor ${format_score(rec.score)} · Capaian ${format_percent(rec.capaian)}`"></p>
             <p class="middleware_recommendation_copy" x-text="rec.summary"></p>
+            <div class="middleware_progress_group">
+              <div class="middleware_progress_meta">
+                <span>Progress Capaian Rekomendasi</span>
+                <span x-text="format_percent(rec.capaian)"></span>
+              </div>
+              <div class="middleware_progress_track">
+                <div
+                  class="middleware_progress_fill"
+                  :class="progress_class_by_value(rec.capaian)"
+                  :style="progress_width_style(rec.capaian, 100)"
+                ></div>
+              </div>
+            </div>
             <ul class="middleware_recommendation_actions">
               <template x-for="(action, idx) in rec.actions" :key="`action-${rec.metric}-${idx}`">
                 <li x-text="action"></li>
@@ -599,7 +776,7 @@
     <!-- Backend dependency: metric_payload.province_rows
          Source endpoint: /public/dashboard/filter/{year}
          Purpose: transparent per-province metric table with backend-computed recommendation summary. -->
-    <section class="server_card" style="padding:14px;">
+    <section class="server_card server_card_tertiary server_section_pad">
       <h3 class="middleware_panel_title">Tabel Detail Provinsi Pada IKU Terpilih</h3>
       <p class="middleware_panel_subtitle" style="margin: 6px 0 10px;">
         Tabel ini memudahkan pengguna non-teknis untuk melihat perbandingan provinsi satu per satu dan meninjau rekomendasi ringkas.
@@ -625,7 +802,18 @@
                 <td x-text="row.provinsi"></td>
                 <td x-text="format_number(row.jlh_desa)"></td>
                 <td x-text="format_score(row.rata_rata)"></td>
-                <td x-text="format_percent(row.capaian)"></td>
+                <td>
+                  <div class="middleware_table_progress_cell">
+                    <div class="middleware_table_progress_value" x-text="format_percent(row.capaian)"></div>
+                    <div class="middleware_progress_track">
+                      <div
+                        class="middleware_progress_fill"
+                        :class="progress_class_by_value(row.capaian)"
+                        :style="progress_width_style(row.capaian, 100)"
+                      ></div>
+                    </div>
+                  </div>
+                </td>
                 <td x-text="row.priority_label"></td>
                 <td x-text="row.recommendation_summary"></td>
               </tr>
@@ -870,6 +1058,26 @@
 
         format_percent(value) {
           return `${Number(value || 0).toFixed(2)}%`;
+        },
+
+        progress_width(value, maxValue = 100) {
+          const numericValue = Number(value || 0);
+          const numericMax = Number(maxValue || 100);
+          if (!Number.isFinite(numericValue) || !Number.isFinite(numericMax) || numericMax <= 0) return 0;
+          const ratio = (numericValue / numericMax) * 100;
+          return Math.max(0, Math.min(100, ratio));
+        },
+
+        progress_width_style(value, maxValue = 100) {
+          const width = this.progress_width(value, maxValue);
+          return `width:${width.toFixed(2)}%`;
+        },
+
+        progress_class_by_value(value) {
+          const numericValue = Number(value || 0);
+          if (numericValue >= 75) return "progress_state_high";
+          if (numericValue >= 50) return "progress_state_medium";
+          return "progress_state_low";
         },
 
         priority_class(priority) {
