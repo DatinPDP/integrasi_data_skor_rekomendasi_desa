@@ -679,6 +679,12 @@
   </style>
 </head>
 <body>
+  <!--
+    Fixed quick-control sidebar.
+    This block is mostly static layout, while the select options and active context
+    are populated by the lightweight overview payload from /public/dashboard/overview/{year}.
+    Users can change the year, province, and IKU here without scrolling back to the top.
+  -->
   <aside class="server_quick_sidebar">
     <div class="server_quick_sidebar_stack">
       <section class="server_quick_control_card">
@@ -740,6 +746,11 @@
         </div>
       </section>
 
+      <!--
+        Internal system entry point.
+        This card is intentionally separated from the public filters so public users can
+        inspect the dashboard while administrators still have a clear path to /login.
+      -->
       <section class="server_quick_login_card">
         <h3 class="server_sidebar_login_title">Akses Sistem</h3>
         <a href="/login" class="server_login_button">Masuk Sistem</a>
@@ -750,7 +761,17 @@
     </div>
   </aside>
 
+  <!--
+    Public dashboard page shell.
+    The main content is offset from the fixed sidebar on desktop and becomes a normal
+    single-column flow on smaller screens through the responsive rules above.
+  -->
   <div class="server_home_shell">
+    <!--
+      Public header / hero.
+      Static narrative content that identifies the dashboard audience and purpose;
+      no backend data is rendered in this block.
+    -->
     <header class="server_card server_card_primary server_header">
       <div class="server_badge_row">
         <span class="server_badge server_badge_primary">Tampilan Publik Eksekutif</span>
@@ -762,9 +783,13 @@
       </p>
     </header>
 
-    <!-- Backend dependency: GET /public/dashboard/overview/{year}
-         Data source: middleware.helpers_calculate_dashboard_initial_payload()
-         Purpose: deliver small initial payload (<1MB) with summary and dropdown options. -->
+    <!--
+      Guidance and active-filter context.
+      Backend dependency: GET /public/dashboard/overview/{year}
+      Data source: middleware.helpers_calculate_dashboard_initial_payload()
+      The copy is static, while the active year/province/IKU values are Alpine state
+      that update after dropdown changes.
+    -->
     <section class="server_card server_card_secondary server_control_panel">
       <div class="server_control_grid">
         <div class="server_control_block">
@@ -791,8 +816,13 @@
       </div>
     </section>
 
-    <!-- Backend dependency: GET /public/dashboard/overview/{year}
-         Data source: middleware.helpers_calculate_dashboard_summary() -->
+    <!--
+      National summary cards.
+      Backend dependency: GET /public/dashboard/overview/{year}
+      Data source: middleware.helpers_calculate_dashboard_summary()
+      This section renders only compact first-load totals, keeping the initial payload
+      small while still giving users quick national context.
+    -->
     <section class="server_card server_card_secondary server_section_pad">
       <div class="middleware_summary_grid">
         <article class="middleware_summary_card">
@@ -818,11 +848,20 @@
       </div>
     </section>
 
+    <!--
+      Shared data-loading error state.
+      Any overview or filter fetch failure writes to middleware_error_message, and this
+      single block shows the user-facing message without breaking the rest of the page.
+    -->
     <div class="middleware_status_message" x-show="middleware_error_message" x-text="middleware_error_message"></div>
 
-    <!-- Backend dependency: GET /public/dashboard/filter/{year}?province=...&iku_metric=...
-         Data source: middleware.helpers_calculate_dashboard_by_filters()
-         Purpose: on-demand payload after dropdown changes (no large full-dataset transfer). -->
+    <!--
+      Main comparison panels.
+      Backend dependency: GET /public/dashboard/filter/{year}?province=...&iku_metric=...
+      Data source: middleware.helpers_calculate_dashboard_by_filters()
+      This on-demand payload powers both panels: province ranking for the selected IKU
+      and IKU performance for the selected province.
+    -->
     <section class="middleware_main_grid">
       <article class="server_card server_card_primary middleware_panel">
         <h3 class="middleware_panel_title">Peringkat Provinsi untuk IKU Terpilih</h3>
@@ -831,6 +870,11 @@
         </p>
 
         <div class="middleware_list_shell">
+          <!--
+            National metric summary.
+            This parent card is dynamic and reads middleware_metric_totals, which is
+            derived from the filter payload for the currently selected IKU.
+          -->
           <div class="middleware_list_item middleware_list_item_primary">
             <div class="middleware_list_head">
               <span class="middleware_item_name">Ringkasan Nasional</span>
@@ -858,6 +902,11 @@
         </div>
 
         <div class="middleware_list_shell">
+          <!--
+            Ranked province list for the selected IKU.
+            Alpine repeats backend-computed rows, so the browser only formats and
+            renders values instead of recalculating rankings client-side.
+          -->
           <template x-for="item in middleware_top_provinces" :key="`top-prov-${item.provinsi}`">
             <div class="middleware_list_item">
               <div class="middleware_list_head">
@@ -893,6 +942,11 @@
         </p>
 
         <div class="middleware_list_shell">
+          <!--
+            Selected province summary.
+            This card uses middleware_province_totals from the filter payload and acts
+            as the visual title for the detailed IKU list below it.
+          -->
           <div class="middleware_list_item middleware_list_item_primary">
             <div class="middleware_list_head">
               <span class="middleware_item_name" x-text="middleware_selected_province || '-'"></span>
@@ -919,6 +973,11 @@
         </div>
 
         <div class="middleware_list_shell">
+          <!--
+            Priority IKU list for the selected province.
+            These rows show the lowest-performing metrics first, along with the
+            backend-provided priority label used by the recommendation workflow.
+          -->
           <template x-for="item in middleware_bottom_metrics" :key="`bottom-metric-${item.metric}`">
             <div class="middleware_list_item">
               <div class="middleware_list_head">
@@ -952,9 +1011,13 @@
       </article>
     </section>
 
-    <!-- Backend dependency: selected province recommendation payload
-         Data source: middleware.helpers_calculate_dashboard_by_province()
-         Update trigger: dropdown province/IKU changes via /public/dashboard/filter/{year}. -->
+    <!--
+      Recommendation section.
+      Backend dependency: selected province recommendation payload
+      Data source: middleware.helpers_calculate_dashboard_by_province()
+      Update trigger: dropdown province/IKU changes via /public/dashboard/filter/{year}
+      Each card explains a priority theme and recommended actions for leadership review.
+    -->
     <section class="server_card server_card_secondary server_section_pad">
       <h3 class="middleware_panel_title">Rekomendasi Intervensi Provinsi</h3>
       <p class="middleware_panel_subtitle" style="margin: 6px 0 10px;">
@@ -995,9 +1058,12 @@
       </div>
     </section>
 
-    <!-- Backend dependency: metric_payload.province_rows
-         Source endpoint: /public/dashboard/filter/{year}
-         Purpose: transparent per-province metric table with backend-computed recommendation summary. -->
+    <!--
+      Detail table for the selected IKU.
+      Backend dependency: metric_payload.province_rows from /public/dashboard/filter/{year}
+      This table exposes the same backend-computed province rows in a dense format for
+      users who need transparent comparison beyond the summary cards.
+    -->
     <section class="server_card server_card_tertiary server_section_pad">
       <h3 class="middleware_panel_title">Tabel Detail Provinsi Pada IKU Terpilih</h3>
       <p class="middleware_panel_subtitle" style="margin: 6px 0 10px;">
@@ -1047,7 +1113,17 @@
   </div>
 
   <script>
+    /*
+      Alpine component for the public dashboard.
+      The backend owns heavy aggregation; this component owns small UI state, payload
+      caching, filter requests, and display formatting. Keeping those responsibilities
+      separate helps the page stay readable and keeps first-load data lightweight.
+    */
     function HomeDashboardApp() {
+      /*
+        Build the year dropdown from the browser clock. The default is previous year
+        because public reporting commonly displays the latest completed data year.
+      */
       const currentYear = new Date().getFullYear();
       const yearOptions = [];
       for (let y = currentYear; y >= 2025; y--) {
@@ -1058,6 +1134,12 @@
       const defaultYear = String(currentYear - 1);
 
       return {
+        /*
+          Core UI state.
+          server_* fields are controlled by dropdowns and determine which backend
+          payload is requested. middleware_* fields store backend responses and
+          loading/error state that drive the rendered dashboard sections.
+        */
         server_availableYears: yearOptions,
         server_selectedYear: yearOptions.includes(defaultYear) ? defaultYear : yearOptions[0],
         server_selectedProvince: "",
@@ -1070,6 +1152,12 @@
         middleware_is_loading_filter: false,
         middleware_overview_cache_ttl_ms: 5 * 60 * 1000,
 
+        /*
+          Overview payload getters.
+          These getters normalize access to nullable backend data so the template can
+          render stable fallback values before the first request finishes or after an
+          error occurs.
+        */
         get middleware_summary() {
           return this.middleware_overview_payload?.summary || {
             total_villages: 0,
@@ -1087,6 +1175,12 @@
           return this.middleware_overview_payload?.province_options || [];
         },
 
+        /*
+          Filter payload getters.
+          The filter endpoint returns two related views: metric_payload for province
+          ranking by selected IKU, and province_payload for IKU performance within the
+          selected province. These wrappers keep template bindings short and safe.
+        */
         get middleware_metric_payload() {
           return this.middleware_filter_payload?.metric_payload || { province_rows: [], totals: {}, top_provinces: [], bottom_provinces: [] };
         },
@@ -1127,11 +1221,23 @@
           return this.middleware_province_payload.recommendations || [];
         },
 
+        /*
+          Component initialization.
+          Alpine calls init() automatically after creating the component. The overview
+          request loads dropdown options and defaults first; the filter request then
+          loads the detailed cards using those resolved selections.
+        */
         async init() {
           await this.middleware_fetch_overview_payload();
           await this.middleware_fetch_filter_payload();
         },
 
+        /*
+          Filter actions called by dropdown change handlers.
+          Changing the year refreshes both option lists and detail data. Changing only
+          province or IKU can reuse the current overview payload and fetch just the
+          smaller filtered dataset.
+        */
         async action_change_year() {
           await this.middleware_fetch_overview_payload();
           await this.middleware_fetch_filter_payload();
@@ -1142,6 +1248,12 @@
           await this.middleware_fetch_filter_payload();
         },
 
+        /*
+          Overview cache helpers.
+          The overview payload is small but reused often because it contains dropdown
+          options and national summary totals. localStorage reduces repeated backend
+          work while the TTL prevents stale options from lingering too long.
+        */
         middleware_get_cached_overview(year) {
           try {
             const raw = localStorage.getItem(`middleware_overview_payload_${year}`);
@@ -1164,6 +1276,12 @@
           } catch (_) {}
         },
 
+        /*
+          Small persistent user state helpers.
+          localStorage is the primary store for the last selected province and IKU.
+          Cookies mirror the same small values so future server-side or SSR behavior
+          can read the preference if needed. Large datasets are never stored here.
+        */
         middleware_read_cookie(name) {
           const key = `${name}=`;
           const parts = document.cookie.split(";").map((item) => item.trim());
@@ -1188,6 +1306,11 @@
           };
         },
 
+        /*
+          Persist selected filters after a valid choice.
+          This is called after dropdown interaction and after default filters are
+          resolved so repeated visits can reopen the same province/IKU context.
+        */
         middleware_persist_user_state() {
           if (this.server_selectedProvince) {
             localStorage.setItem("dashboard_last_province", this.server_selectedProvince);
@@ -1199,6 +1322,12 @@
           }
         },
 
+        /*
+          Resolve initial province and IKU selections.
+          Saved user choices win only when they still exist in the current overview
+          option lists; otherwise backend defaults are used to avoid invalid filter
+          requests after a data-year change.
+        */
         middleware_apply_default_filters() {
           const defaults = this.middleware_overview_payload?.defaults || {};
           const saved = this.middleware_load_user_state();
@@ -1214,6 +1343,12 @@
           this.middleware_persist_user_state();
         },
 
+        /*
+          Fetch the lightweight overview payload.
+          This method powers dropdown options and summary cards. It checks the local
+          cache first, then falls back to /public/dashboard/overview/{year}, updates
+          defaults, and records the load time shown in the context bar.
+        */
         async middleware_fetch_overview_payload() {
           this.middleware_error_message = "";
           this.middleware_is_loading_overview = true;
@@ -1240,6 +1375,12 @@
           }
         },
 
+        /*
+          Fetch the detailed filtered payload.
+          This is the main lazy-loading path: province and IKU selections are sent as
+          query parameters, and the backend returns compact precomputed rows for the
+          comparison panels, recommendations, and detail table.
+        */
         async middleware_fetch_filter_payload() {
           if (!this.server_selectedIkuMetric && this.middleware_iku_options.length > 0) {
             this.server_selectedIkuMetric = this.middleware_iku_options[0].value;
@@ -1270,6 +1411,11 @@
           }
         },
 
+        /*
+          Display formatting helpers.
+          These functions keep number, score, percent, progress, and priority styling
+          consistent across cards and tables without changing backend values.
+        */
         format_number(value) {
           return new Intl.NumberFormat("id-ID").format(Number(value || 0));
         },

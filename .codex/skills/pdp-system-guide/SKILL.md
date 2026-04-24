@@ -26,6 +26,15 @@ Use this skill whenever work touches one of these areas:
 - For executive dashboard user-facing narrative content, use Indonesian.
 - Keep code syntax, identifiers, and technical notes in English.
 
+## Code Explanation Standard
+- Add developer-friendly explanation comments for important frontend sections, especially public dashboard templates such as `front_end/templates/home.html`.
+- Explain major HTML blocks by naming their purpose, data source, static-versus-dynamic responsibility, and user task supported.
+- Explain major JavaScript or Alpine.js blocks that manage state, computed data, async fetches, dropdown filters, localStorage, cookies, caching, formatting, or backend payload rendering.
+- Keep comments in simple technical English so junior and mid-level developers can follow the file without needing extra handoff notes.
+- Focus comments on purpose, backend data source, state flow, UI impact, and non-obvious reasoning.
+- Avoid noisy line-by-line comments or comments that only repeat what the code already says.
+- Preserve this explanation style when adding new features to `home.html` and related dashboard files.
+
 ## Quick workflow
 1. Confirm your working branch is `dev`.
 2. Run the local stack with `docker compose up -d --build` and rebuild on every change.
