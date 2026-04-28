@@ -449,7 +449,7 @@ def helpers_generate_header_mapping(file_path: str, header_row_idx: int):
 def helpers_sync_db_schema(con: duckdb.DuckDBPyConnection, year: str):
     """
     Synchronizes master_data table schema with headers.json.
-    Adds any missing columns (VARCHAR for text columns, TINYINT for scores).
+    Adds any missing columns (VARCHAR for text columns, SMALLINT for scores).
     """
     if not os.path.exists(HEADER_FILE): return
 
@@ -471,7 +471,7 @@ def helpers_sync_db_schema(con: duckdb.DuckDBPyConnection, year: str):
         if clean_h not in existing_cols:
             print(f"Schema Evolution: Adding column '{clean_h}' to {year}...")
             # Determine Type
-            dtype = "VARCHAR" if clean_h in TEXT_COLUMNS else "TINYINT"
+            dtype = "VARCHAR" if clean_h in TEXT_COLUMNS else "SMALLINT"
             try:
                 con.execute(f'ALTER TABLE master_data ADD COLUMN "{clean_h}" {dtype}')
             except Exception as e:
@@ -501,7 +501,7 @@ def helpers_internal_process_temp_file(
     - Drop fully null/empty columns
     - Strict Status ID validation
     - Filter 10-digit IDs
-    - Cast: text columns → String, scores → Int8 (strict=False)
+    - Cast: text columns → String, scores → Int16 (strict=False)
     - Write {temp_id}.parquet
     - CDC diff vs current master_data (valid_to IS NULL)
     Returns:
@@ -616,9 +616,9 @@ def helpers_internal_process_temp_file(
                 for idx in indices:
                     if idx < df.width:
                         col_name = df.columns[idx]
-                        # Cast to Int8 (strict=False turns text/invalid data to null). 
+                        # Cast to Int16 (strict=False turns text/invalid data to null). 
                         # If it has valid numbers, it is the correct score column.
-                        numeric_count = df[col_name].cast(pl.Int8, strict=False).is_not_null().sum()
+                        numeric_count = df[col_name].cast(pl.Int16, strict=False).is_not_null().sum()
                         if numeric_count > 0:
                             chosen_idx = idx
                             break 
@@ -681,13 +681,13 @@ def helpers_internal_process_temp_file(
             "Kode Wilayah Administrasi Desa", "Desa", "Status ID"
         }
 
-        # Cast, if non TEXT_COLUMNS return int8 (TINYINT)
+        # Cast, if non TEXT_COLUMNS return int16 (SMALLINT)
         exprs = []
         for col in df.columns:
             if col in TEXT_COLUMNS:
                 exprs.append(pl.col(col).cast(pl.String))
             else:
-                exprs.append(pl.col(col).cast(pl.Int8, strict=False))
+                exprs.append(pl.col(col).cast(pl.Int16, strict=False))
         
         df = df.with_columns(exprs)
 
@@ -788,7 +788,7 @@ def helpers_init_db(con: duckdb.DuckDBPyConnection, headers: list[str]):
 
     Initializes SCD Type 2 schema for master_data and commits tables.
     - Creates tables if they don't exist
-    - Uses TINYINT for score columns, VARCHAR for text/metadata
+    - Uses SMALLINT for score columns, VARCHAR for text/metadata
     - Adds index on ID_COL
     """
     # Construct column definitions for SQL (e.g., "Col1" VARCHAR, "Col2" VARCHAR...)
@@ -806,8 +806,8 @@ def helpers_init_db(con: duckdb.DuckDBPyConnection, headers: list[str]):
         if h in TEXT_COLUMNS:
             cols_def.append(f'"{h}" VARCHAR')
         else:
-            # OPTIMIZATION: Use TINYINT for 1-5 scores
-            cols_def.append(f'"{h}" TINYINT')
+            # OPTIMIZATION: Use SMALLINT
+            cols_def.append(f'"{h}" SMALLINT')
 
     cols_optimized = ", ".join(cols_def)
 
@@ -1337,7 +1337,13 @@ def helpers_generate_excel_workbook(con, df_grid: pl.DataFrame, do_translate: bo
                         elif sub == "total":
                             val_to_show = t_total
                         elif "capaian" in sub:
-                            val_to_show = f"{(t_total / total_jlh_desa) * 100:.2f}%" if total_jlh_desa > 0 else "0.0%"
+                            if parent in IKU_TEMATIK_EXCEPTIONS:
+                                val_to_show = f"{(t_total / t_total) * 100:.2f}%" if t_total > 0 else "0.0%"
+                                # Alternative (t_total / total_jlh_desa):
+                                # val_to_show = f"{(t_total / total_jlh_desa) * 100:.2f}%" if total_jlh_desa > 0 else "0.0%"
+                            else:
+                                val_to_show = f"{(t_total / total_jlh_desa) * 100:.2f}%" if total_jlh_desa > 0 else "0.0%"
+
                     total_row.append(val_to_show)
 
                 ws3.append(total_row)
@@ -1371,7 +1377,13 @@ def helpers_generate_excel_workbook(con, df_grid: pl.DataFrame, do_translate: bo
                                 val_to_show = t_total
                             elif "capaian" in sub:
                                 jlh_desa = row_data.get("JLH DESA", 0)
-                                val_to_show = f"{(t_total / jlh_desa) * 100:.2f}%" if jlh_desa > 0 else "0.0%"
+                                if parent in IKU_TEMATIK_EXCEPTIONS:
+                                    val_to_show = f"{(t_total / t_total) * 100:.2f}%" if t_total > 0 else "0.0%"
+                                    # Alternative (t_total / jlh_desa):
+                                    # val_to_show = f"{(t_total / jlh_desa) * 100:.2f}%" if jlh_desa > 0 else "0.0%"
+                                else:
+                                    val_to_show = f"{(t_total / jlh_desa) * 100:.2f}%" if jlh_desa > 0 else "0.0%"
+
                         data_row.append(val_to_show)
                     
                     ws3.append(data_row)
@@ -2042,10 +2054,12 @@ def helpers_render_iku_dashboard(
                         elif sub == "total":
                             val_to_show = f"{t_total:,}"
                         elif "capaian" in sub:
-                            if total_jlh_desa > 0:
-                                val_to_show = f"{(t_total / total_jlh_desa) * 100:.2f}%"
+                            if parent in IKU_TEMATIK_EXCEPTIONS:
+                                val_to_show = f"{(t_total / t_total) * 100:.2f}%" if t_total > 0 else "0.0%"
+                                # Alternative if using / total_jlh_desa
+                                # val_to_show = f"{(t_total / total_jlh_desa) * 100:.2f}%" if total_jlh_desa > 0 else "0.0%"
                             else:
-                                val_to_show = "0.0%"
+                                val_to_show = f"{(t_total / total_jlh_desa) * 100:.2f}%" if t_total > 0 else "0.0%"
 
                     html += (
                         f'<td class="p-3 border dark:border-slate-600 bg-gray-200 dark:bg-slate-700 text-center '
@@ -2105,15 +2119,16 @@ def helpers_render_iku_dashboard(
                         
                         # Apply Background Heatmap Calculation
                         if "capaian" in sub:
-                            if jlh_desa > 0:
-                                ratio = t_total / jlh_desa
-                                val_to_show = f"{ratio * 100:.2f}%"
-                                # Capaian heatmap: Hue ranges from 0 (Red) to 120 (Green)
-                                hue = int(ratio * 120)
-                                inline_style = f"background-color: hsla({hue}, 70%, 50%, 0.4);"
+                            if parent in IKU_TEMATIK_EXCEPTIONS:
+                                ratio = (t_total / t_total) if t_total > 0 else 0.0
+                                # Alternative (t_total / jlh_desa):
+                                # ratio = (t_total / jlh_desa) if jlh_desa > 0 else 0.0
                             else:
-                                val_to_show = "0.0%"
-                                inline_style = "background-color: hsla(0, 70%, 50%, 0.4);"
+                                ratio = (t_total / jlh_desa) if jlh_desa > 0 else 0.0
+                            val_to_show = f"{ratio * 100:.2f}%"
+                            hue = int(ratio * 120)
+                            inline_style = f"background-color: hsla({hue}, 70%, 50%, 0.4);"
+
                         else:
                             # Standard Data heatmap: Alpha transparency scales green intensity
                             if max_val and max_val > 0:
@@ -2265,7 +2280,13 @@ def helpers_get_public_iku_json(year: str, metric_filter: str = None):
             t_total = sum(
                 row.get(f"__iku_{s.replace(' ', '_')}_{parent}", 0) for s in target_statuses
             )
-            capaian = (t_total / jlh * 100) if jlh > 0 else 0
+            if parent in IKU_TEMATIK_EXCEPTIONS:
+                # capaian = 100.0 if t_total > 0 else 0.0
+                # Alternative (mandiri / t_total — shows only the mandiri slice):
+                mandiri_val = row.get(f"__iku_mandiri_{parent}", 0)
+                capaian = (mandiri_val / t_total * 100) if t_total > 0 else 0.0
+            else:
+                capaian = (t_total / jlh * 100) if jlh > 0 else 0
 
             # Inject ONLY the specified output_statuses into the payload
             metric_data.append({
@@ -2286,7 +2307,12 @@ def helpers_get_public_iku_json(year: str, metric_filter: str = None):
         # 3. Build Final Totals Dictionary (Pre-formatted with commas and percentages)
         num_prov = len(metric_data)
         final_total_avg = total_avg_sum / num_prov if num_prov > 0 else 0.0
-        final_total_capaian = (total_t_total / total_jlh * 100) if total_jlh > 0 else 0.0
+        if parent in IKU_TEMATIK_EXCEPTIONS:
+            # final_total_capaian = 100.0 if total_t_total > 0 else 0.0
+            # Alternative (total mandiri / total_t_total):
+            final_total_capaian = (totals_status.get("mandiri", 0) / total_t_total * 100) if total_t_total > 0 else 0.0
+        else:
+            final_total_capaian = (total_t_total / total_jlh * 100) if total_jlh > 0 else 0.0
 
         totals_dict = {
             "provinsi": "TOTAL",
