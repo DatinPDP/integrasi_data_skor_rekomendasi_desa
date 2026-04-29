@@ -15,6 +15,7 @@ services:
     command: python desa_db/server.py
     restart: always
     volumes:
+      - ./.logs:/app/.logs
       - ./.config:/app/.config
       - ./desa_db/dbs:/app/desa_db/dbs
       - ./desa_db/temp:/app/desa_db/temp

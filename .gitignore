@@ -35,6 +35,7 @@ _notes.md
 *.tmp
 *.bak
 .ignore/
+.logs/
 
 # ==========================
 # FRONTEND (Next.js / Node)

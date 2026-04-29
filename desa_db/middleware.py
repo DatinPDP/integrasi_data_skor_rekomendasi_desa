@@ -10,6 +10,7 @@ import io
 import time
 import traceback
 import gc
+import logging
 from difflib import SequenceMatcher
 from fastapi import Response
 from fastapi.responses import JSONResponse
@@ -17,6 +18,7 @@ from datetime import datetime, timedelta
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
+from logging.handlers import TimedRotatingFileHandler
 
 # ==========================================
 # CONFIGURATION
@@ -68,6 +70,10 @@ os.makedirs(EXPORT_FOLDER, exist_ok=True)
 # Point to ../.config/rekomendasi.json relative to this file
 os.makedirs(DB_FOLDER, exist_ok=True)
 
+# Logs folder (sibling of desa_db/)
+LOGS_DIR = os.path.abspath(os.path.join(BASE_DIR, "../.logs"))
+os.makedirs(LOGS_DIR, exist_ok=True)
+
 # Defined globally as a frozenset for O(1) instantaneous lookups.
 # Edit this list if tematik exceptions change.
 IKU_TEMATIK_EXCEPTIONS = frozenset([
@@ -75,6 +81,36 @@ IKU_TEMATIK_EXCEPTIONS = frozenset([
     "Persentase (%) Desa yang mengembangkan Model Tematik Bidang Pariwisata",
     "Persentase (%) desa yang mengembangkan desa model tematik yang berstatus mandiri"
 ])
+
+# ==========================================
+# API LOGGER
+# ==========================================
+def build_api_logger():
+    log_path = os.path.join(LOGS_DIR, "api_usage.log")
+    handler = TimedRotatingFileHandler(
+        log_path,
+        when="midnight",
+        interval=1,
+        backupCount=30,  # keep 30 days, delete older
+        encoding="utf-8",
+        utc=False
+    )
+    # Gzip rolled files automatically
+    import gzip, shutil
+    def _rotator(source, dest):
+        with open(source, "rb") as sf, gzip.open(dest + ".gz", "wb") as df:
+            shutil.copyfileobj(sf, df)
+        os.remove(source)
+    handler.rotator = _rotator
+    handler.namer = lambda name: name + ".gz"
+
+    logger = logging.getLogger("api_usage")
+    logger.setLevel(logging.INFO)
+    logger.addHandler(handler)
+    logger.propagate = False  # don't bleed into root logger
+    return logger
+
+API_LOGGER = build_api_logger()
 
 # ==========================================
 # LOGIC LOADER (Existing)

@@ -159,7 +159,8 @@ try:
         ID_COL,
         BASE_DIR as MW_BASE_DIR,
         CONFIG_DIR,
-        TEMP_FOLDER as MW_TEMP_FOLDER
+        TEMP_FOLDER as MW_TEMP_FOLDER,
+        API_LOGGER
     )
 except ImportError:
     # Fallback for different context import
@@ -315,6 +316,34 @@ async def root_redirect():
     Redirects root path to /admin.
     """
     return RedirectResponse(url="/admin")
+
+# ==========================================
+# API LOGGER
+# ==========================================
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    start = time.time()
+    response = await call_next(request)
+    duration_ms = int((time.time() - start) * 1000)
+
+    ip = request.headers.get("X-Real-IP", request.client.host)
+    try:
+        token = request.cookies.get("session_token", "")
+        if token:
+            import base64 as _b64, json as _json
+            seg = token.split(".")[1]
+            seg += "=" * (4 - len(seg) % 4)  # fix padding
+            user = _json.loads(_b64.urlsafe_b64decode(seg)).get("sub", "-")
+        else:
+            user = "-"
+    except Exception:
+        user = "-"
+
+    ts = datetime.now().strftime("%Y%m%dT%H%M%S")
+    API_LOGGER.info(f"{ts}|{request.method}|{request.url.path}|{response.status_code}|{duration_ms}|{ip}|{user}")
+
+    return response
 
 # ==========================================
 # API Endpoints
