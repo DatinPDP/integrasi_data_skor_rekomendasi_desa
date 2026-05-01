@@ -540,6 +540,7 @@ def helpers_internal_process_temp_file(
     - Cast: text columns → String, scores → Int16 (strict=False)
     - Write {temp_id}.parquet
     - CDC diff vs current master_data (valid_to IS NULL)
+
     Returns:
         dict: {
             "status": "staged",
@@ -881,6 +882,7 @@ def helpers_build_dynamic_query(con, base_query, request_params, base_values=Non
     - column ILIKE ? for any valid column
     - filterModel (AG Grid JSON) for server-side column sorting & filtering
     - Prepends base_values (e.g. for time-travel ?version)
+
     Returns:
         tuple[str, list]: (final_query_with_where, values_list_for_execution)
     """

@@ -1,6 +1,6 @@
 ---
 name: pdp-system-guide
-description: Use this skill when developing, operating, or updating data in integrasi_data_skor_rekomendasi_desa to stay aligned with the official architecture, upload-process-commit SOP, and dev-to-main release flow. It also enforces strict Python and FastAPI development standards.
+description: Use this skill when developing, operating, or updating data in integrasi_data_skor_rekomendasi_desa to stay aligned with the official architecture, upload-process-commit SOP, and dev-to-main release flow. It also enforces strict Python, FastAPI development standards, and strict resource limitations.
 ---
 
 # PDP System Guide
@@ -13,6 +13,7 @@ Use this skill whenever work touches one of these areas:
 - building or modifying REST APIs with FastAPI.
 - implementing async/await patterns for I/O operations.
 - setting up pytest suites or implementing Pydantic V2 validation.
+- optimizing performance for strict hardware limits (2 Cores, 4GB RAM, SSD).
 - only focused on `dev` branch.
 
 ## Core principles
@@ -21,6 +22,14 @@ Use this skill whenever work touches one of these areas:
 - Data updates must follow the official API flow: upload -> process -> commit.
 - Active databases are year-based: `desa_db/dbs/data_<year>.duckdb`.
 - Do not commit `.env` or `.duckdb` without explicit data release approval.
+
+## Resource & Architecture Constraints (2 Cores, 4GB RAM, SSD)
+- **No in-memory caching:** Do not store large dictionaries, dataframes, or use memory-based cache decorators for endpoints. It will exhaust the 4GB RAM limit.
+- **Disk-based pre-rendering:** Leverage the SSD. All heavy aggregations, public dashboards (e.g., IKU data), or complex `con.execute().pl()` transformations must be pre-rendered to static files in the `.cache/` directory during the data commit phase. Create `.cache/` if it does not exist.
+- **Serve from disk:** Public endpoints must read and return these pre-rendered static files from `.cache/` rather than dynamically calculating data on the fly.
+- **Static lists:** Data that rarely changes (e.g., Indonesian provinces) must not be queried from the backend database repeatedly. Serve them via a static JSON file or cache them directly on the frontend.
+- **Config logic:** Store static if/else mapping logic or configuration rules in the `.config/` directory.
+- **Recommendation logic:** Editing the logic behind helpers_get_public_iku_json is more preferable than creating new endpoints, unless something needed more logic to change (refactor, some part can be combined etc).
 
 ## Language policy
 - Use English for implementation work, code-related explanations, and development instructions.
@@ -45,6 +54,7 @@ Use this skill whenever work touches one of these areas:
 4. `POST /preview_excel/{year}`
 5. `POST /analyze_header/{year}`
 6. `POST /process_excel/{year}`
+   *Trigger pre-rendering functions here to update `.cache/` files.*
 7. Commit data through admin/backend flow, then verify query and dashboard outputs.
 
 ---
@@ -65,7 +75,7 @@ Use this skill whenever work touches one of these areas:
 ### MUST DO
 - Type hints for all function signatures and class attributes (FastAPI requires them).
 - PEP 8 compliance with `black` formatting.
-- Comprehensive docstrings (Google style).
+- Comprehensive docstrings (Google style). Triple double quotes SHOULD EXIST on functions, explaining what it does and what it outputs for Args, Returns, Raises.
 - Test coverage exceeding 90% with `pytest`.
 - Use `X | None` instead of `Optional[X]` (Python 3.10+).
 - Async/await for all I/O-bound operations.
@@ -74,12 +84,16 @@ Use this skill whenever work touches one of these areas:
 - Use Pydantic V2 syntax (`field_validator`, `model_validator`, `model_config`).
 - Use `Annotated` pattern for dependency injection.
 - Return proper HTTP status codes.
+- Pre-render heavy calculations to `.cache/` and serve the static files for public endpoints.
 
 ### MUST NOT DO
+- Execute heavy DuckDB/Polars aggregations dynamically on public-facing endpoints.
+- Store cache variables in backend RAM.
+- Query the database for static, non-growing lists.
 - Skip type annotations on public APIs.
 - Use mutable default arguments.
 - Mix sync and async code improperly.
-- Use synchronous database operations.
+- Use synchronous database operations (unless strictly constrained by DuckDB connection patterns, which must then be isolated).
 - Use bare `except` clauses.
 - Hardcode secrets or configuration values.
 - Use deprecated stdlib modules (use `pathlib` not `os.path`).
@@ -92,7 +106,6 @@ Use this skill whenever work touches one of these areas:
 # Code Examples
 
 ## Type-annotated function with error handling
-
 ```python
 from pathlib import Path
 
@@ -271,4 +284,3 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> str
 
 CurrentUser = Annotated[str, Depends(get_current_user)]
 ```
-

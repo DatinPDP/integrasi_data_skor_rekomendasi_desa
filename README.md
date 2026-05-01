@@ -76,3 +76,6 @@ the behaviour at start will always try to make excel files ready to download fro
 ```
 pytest tests/server_test.py
 ```
+
+# API Usage Logs
+Api usage logs are available on .logs/ the time format needs conversing to UTC +7
