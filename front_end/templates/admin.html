@@ -373,7 +373,7 @@
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     stroke-width="4"
-                    d="M19 9l-7 7-7-7"
+                    d="M19 9l-7-7-7-7"
                   />
                 </svg>
               </button>
@@ -2169,6 +2169,11 @@
           iku_limit: 100,
           iku_isLoadingMore: false,
           iku_hasMore: true,
+          iku_SortColIdx: -1,
+          iku_GroupDefs: null,
+          iku_H_SortState: 0,   // Horizontal (Group) Sort: 0=default, 1=desc, 2=asc
+          iku_V_SortColIdx: -1, // Vertical (Row) Sort: Target column
+          iku_V_SortDir: 0,     // Vertical (Row) Sort: 0=default, 1=desc, 2=asc
 
           // --- REUSABLE HELPERS ---
           util_Alert(title, message, type = 'info') {
@@ -2213,8 +2218,8 @@
             
             if (window.innerHeight > window.innerWidth && window.innerWidth < 1024) {
               this.util_Confirm(
-                "Portrait Mode Detected",
-                "For the best experience, rotate your device horizontally or click Confirm to force landscape mode.",
+                "Portrait Mode Terdeteksi",
+                "klik Confirm untuk landscape mode.",
                 () => {
                   this._orientationForced = true;
                   document.body.style.cssText = 'transform: rotate(-90deg); transform-origin: left top; ' +
@@ -3126,7 +3131,9 @@
               let htmlContent = await res.text();
               container.innerHTML = htmlContent;
 
+              this.iku_SortState = 0; // Reset sorting on new filter/load
               this.ui_InitResizers();
+              this.ui_InitIkuTableSorting();
               this.$nextTick(() => { this.ui_ApplyFreeze(); });
             } catch (e) {
               console.error(e);
@@ -3165,6 +3172,7 @@
                   const tbody = document.querySelector('#iku_table_element tbody');
                   if (tbody) {
                       tbody.insertAdjacentHTML('beforeend', htmlContent);
+                      if (this.iku_SortState !== 0) this.ui_SortIkuTableDOM();
                       this.$nextTick(() => { this.ui_ApplyFreeze(); });
                   }
               }
@@ -3273,6 +3281,292 @@
                 }
               }
             );
+          },
+
+          // ============================================
+          // IKU HORIZONTAL DOM SORTING
+          // ============================================
+          ui_InitIkuTableSorting() {
+            const table = document.getElementById('iku_table_element');
+            if (!table) return;
+
+            const headerRow1 = table.querySelector('thead tr:nth-child(1)');
+            const headerRow2 = table.querySelector('thead tr:nth-child(2)');
+            const tbody = table.querySelector('tbody');
+            if (!headerRow1 || !headerRow2 || !tbody) return;
+
+            const totalRow = tbody.querySelector('tr:first-child');
+            const hasTotal = totalRow && totalRow.textContent.includes('TOTAL');
+
+            // SETUP VERTICAL SORT (ROWS) ON SUB-HEADERS
+            // Tag original row order for resetting (Dir = 0)
+            let rowIdx = 0;
+            Array.from(tbody.children).forEach(tr => {
+                if (!tr.hasAttribute('data-orig-idx')) tr.setAttribute('data-orig-idx', rowIdx++);
+            });
+
+            const subHeaders = Array.from(headerRow2.querySelectorAll('th[data-col-idx]'));
+            subHeaders.forEach(th => {
+                const colIdx = parseInt(th.getAttribute('data-col-idx'), 10);
+                th.style.cursor = 'pointer';
+                th.title = 'Click to sort rows vertically';
+                th.classList.add('hover:bg-gray-200', 'dark:hover:bg-slate-600', 'transition-colors');
+                th.onclick = () => {
+                    if (this.iku_V_SortColIdx === colIdx) {
+                        this.iku_V_SortDir = (this.iku_V_SortDir + 1) % 3;
+                    } else {
+                        this.iku_V_SortColIdx = colIdx;
+                        this.iku_V_SortDir = 1; // Default to High-Low
+                    }
+                    this.ui_ApplyVerticalSort();
+                };
+            });
+
+            // SETUP HORIZONTAL SORT (COLUMNS) ON PARENT HEADERS & TOTAL ROW
+            const groups1 = Array.from(headerRow1.querySelectorAll('.iku-header-group'));
+            if (groups1.length > 0) {
+                let colOffset = Array.from(headerRow1.children).filter(th => !th.classList.contains('iku-header-group')).length;
+
+                this.iku_GroupDefs = groups1.map((th, index) => {
+                    const span = parseInt(th.getAttribute('colspan') || '1', 10);
+                    const startIdx = colOffset;
+                    const endIdx = colOffset + span - 1;
+                    colOffset += span;
+
+                    // Find specifically the "Capaian" column for horizontal sorting score
+                    let capaianColIdx = endIdx; 
+                    for (let i = startIdx; i <= endIdx; i++) {
+                        const subTh = headerRow2.querySelector(`th[data-col-idx="${i}"]`);
+                        if (subTh && subTh.textContent.toLowerCase().includes('capaian')) {
+                            capaianColIdx = i;
+                            break;
+                        }
+                    }
+
+                    let score = 0;
+                    if (hasTotal) {
+                        const td = totalRow.querySelector(`td[data-col-idx="${capaianColIdx}"]`);
+                        if (td) {
+                            score = parseFloat(td.textContent.replace('%', '').replace(/,/g, '')) || 0;
+                            // Bind Horizontal Sort to TOTAL Capaian cell
+                            td.style.cursor = 'pointer';
+                            td.title = 'Click to sort groups horizontally by Capaian %';
+                            td.classList.add('hover:bg-gray-300', 'dark:hover:bg-slate-600', 'transition-colors');
+                            td.onclick = () => {
+                                this.iku_H_SortState = (this.iku_H_SortState + 1) % 3;
+                                this.ui_ApplyHorizontalSort();
+                            };
+                        }
+                    }
+
+                    // Bind Horizontal Sort to Parent Header
+                    th.style.cursor = 'pointer';
+                    th.title = 'Click to sort groups horizontally by Capaian %';
+                    th.classList.add('hover:bg-gray-300', 'dark:hover:bg-slate-600', 'transition-colors');
+                    th.onclick = () => {
+                        this.iku_H_SortState = (this.iku_H_SortState + 1) % 3;
+                        this.ui_ApplyHorizontalSort();
+                    };
+
+                    return { id: index, th1: th, startIdx, endIdx, score, originalOrder: index };
+                });
+            }
+
+            // Re-apply sorts if table is reloaded (e.g. infinite scroll)
+            if (this.iku_H_SortState !== 0) this.ui_ApplyHorizontalSort();
+            if (this.iku_V_SortDir !== 0) this.ui_ApplyVerticalSort();
+          },
+
+          ui_ApplyHorizontalSort() {
+            if (!this.iku_GroupDefs) return;
+            const table = document.getElementById('iku_table_element');
+            if (!table) return;
+
+            const headerRow1 = table.querySelector('thead tr:nth-child(1)');
+            const headerRow2 = table.querySelector('thead tr:nth-child(2)');
+            const tbody = table.querySelector('tbody');
+            if (!headerRow1 || !headerRow2 || !tbody) return;
+
+            let groups = [...this.iku_GroupDefs];
+            if (this.iku_H_SortState === 1) groups.sort((a, b) => b.score - a.score);
+            else if (this.iku_H_SortState === 2) groups.sort((a, b) => a.score - b.score);
+            else groups.sort((a, b) => a.originalOrder - b.originalOrder);
+
+            // Update Arrows ONLY on Parent Headers
+            groups.forEach(g => {
+                const span = g.th1.querySelector('span') || g.th1;
+                span.textContent = span.textContent.replace(/ [▼▲]$/, '');
+                if (this.iku_H_SortState === 1) span.textContent += ' ▼';
+                else if (this.iku_H_SortState === 2) span.textContent += ' ▲';
+            });
+
+            // DOM Reorder
+            groups.forEach(g => headerRow1.appendChild(g.th1));
+
+            const headerRow2Children = Array.from(headerRow2.children);
+            groups.forEach(g => {
+                for (let i = g.startIdx; i <= g.endIdx; i++) {
+                    const th = headerRow2Children.find(el => parseInt(el.getAttribute('data-col-idx'), 10) === i);
+                    if (th) headerRow2.appendChild(th);
+                }
+            });
+
+            Array.from(tbody.children).forEach(tr => {
+                const tds = Array.from(tr.children);
+                groups.forEach(g => {
+                    for (let i = g.startIdx; i <= g.endIdx; i++) {
+                        const td = tds.find(el => parseInt(el.getAttribute('data-col-idx'), 10) === i);
+                        if (td) tr.appendChild(td);
+                    }
+                });
+            });
+
+            this.$nextTick(() => this.ui_ApplyFreeze());
+          },
+
+          ui_ApplyVerticalSort() {
+            const table = document.getElementById('iku_table_element');
+            if (!table) return;
+
+            const tbody = table.querySelector('tbody');
+            const headerRow2 = table.querySelector('thead tr:nth-child(2)');
+            if (!tbody || !headerRow2) return;
+
+            // Update Arrows ONLY on Sub-headers
+            Array.from(headerRow2.children).forEach(th => {
+                th.textContent = th.textContent.replace(/ [▼▲]$/, '');
+                if (this.iku_V_SortColIdx !== -1 && parseInt(th.getAttribute('data-col-idx')) === this.iku_V_SortColIdx) {
+                    if (this.iku_V_SortDir === 1) th.textContent += ' ▼';
+                    else if (this.iku_V_SortDir === 2) th.textContent += ' ▲';
+                }
+            });
+
+            const rows = Array.from(tbody.children);
+            const totalRows = [];
+            const dataRows = [];
+
+            // Isolate Total row
+            rows.forEach(tr => {
+                if (tr.textContent.includes('TOTAL') && (tr.getAttribute('data-orig-idx') === "0" || !tr.hasAttribute('data-orig-idx'))) {
+                    totalRows.push(tr);
+                } else {
+                    dataRows.push(tr);
+                }
+            });
+
+            // Sort Data Rows
+            if (this.iku_V_SortDir === 0) {
+                dataRows.sort((a, b) => parseInt(a.getAttribute('data-orig-idx')) - parseInt(b.getAttribute('data-orig-idx')));
+            } else {
+                dataRows.sort((a, b) => {
+                    const tdA = a.querySelector(`td[data-col-idx="${this.iku_V_SortColIdx}"]`);
+                    const tdB = b.querySelector(`td[data-col-idx="${this.iku_V_SortColIdx}"]`);
+                    
+                    const textA = tdA ? tdA.textContent.trim() : '';
+                    const textB = tdB ? tdB.textContent.trim() : '';
+                    
+                    const valA = parseFloat(textA.replace('%', '').replace(/,/g, ''));
+                    const valB = parseFloat(textB.replace('%', '').replace(/,/g, ''));
+                    
+                    const isNumA = !isNaN(valA) && textA !== '';
+                    const isNumB = !isNaN(valB) && textB !== '';
+
+                    if (isNumA && isNumB) return this.iku_V_SortDir === 1 ? valB - valA : valA - valB;
+                    return this.iku_V_SortDir === 1 ? textB.localeCompare(textA) : textA.localeCompare(textB);
+                });
+            }
+
+            // DOM Reorder
+            tbody.innerHTML = '';
+            totalRows.forEach(tr => tbody.appendChild(tr));
+            dataRows.forEach(tr => tbody.appendChild(tr));
+
+            this.$nextTick(() => this.ui_ApplyFreeze());
+          },
+
+          ui_SortIkuTableDOM() {
+            const table = document.getElementById('iku_table_element');
+            if (!table) return;
+
+            const tbody = table.querySelector('tbody');
+            const headerRow1 = table.querySelector('thead tr:nth-child(1)');
+            const headerRow2 = table.querySelector('thead tr:nth-child(2)');
+            if (!tbody || !headerRow1 || !headerRow2) return;
+
+            // Clean previous sort arrows
+            table.querySelectorAll('th span, th').forEach(el => {
+                if (el.tagName === 'SPAN') {
+                    el.textContent = el.textContent.replace(/ [▼▲]$/, '');
+                } else if (!el.querySelector('span')) {
+                    el.textContent = el.textContent.replace(/ [▼▲]$/, '');
+                }
+            });
+
+            const rows = Array.from(tbody.children);
+            const totalRows = [];
+            const dataRows = [];
+
+            // Isolate TOTAL row so it isn't sorted to the bottom
+            rows.forEach(tr => {
+                if (tr.textContent.includes('TOTAL') && (tr.getAttribute('data-orig-idx') === "0" || !tr.hasAttribute('data-orig-idx'))) {
+                    totalRows.push(tr);
+                } else {
+                    dataRows.push(tr);
+                }
+            });
+
+            // Add Sort Indicators
+            if (this.iku_SortDir !== 0 && this.iku_SortColIdx !== -1) {
+                const arrow = this.iku_SortDir === 1 ? ' ▼' : ' ▲';
+                
+                // Sub Header Arrow
+                const activeTh = headerRow2.querySelector(`th[data-col-idx="${this.iku_SortColIdx}"]`);
+                if (activeTh) activeTh.textContent += arrow;
+
+                // Parent Header Arrow
+                const groups1 = Array.from(headerRow1.querySelectorAll('.iku-header-group'));
+                let currentOffset = Array.from(headerRow1.children).filter(th => !th.classList.contains('iku-header-group')).length;
+                groups1.forEach(th => {
+                    const span = parseInt(th.getAttribute('colspan') || '1', 10);
+                    if (this.iku_SortColIdx >= currentOffset && this.iku_SortColIdx < currentOffset + span) {
+                        const spanEl = th.querySelector('span');
+                        if (spanEl) spanEl.textContent += arrow;
+                    }
+                    currentOffset += span;
+                });
+            }
+
+            // Sort Rows
+            if (this.iku_SortDir === 0) {
+                dataRows.sort((a, b) => parseInt(a.getAttribute('data-orig-idx')) - parseInt(b.getAttribute('data-orig-idx')));
+            } else {
+                dataRows.sort((a, b) => {
+                    const tdA = a.querySelector(`td[data-col-idx="${this.iku_SortColIdx}"]`);
+                    const tdB = b.querySelector(`td[data-col-idx="${this.iku_SortColIdx}"]`);
+
+                    const textA = tdA ? tdA.textContent.trim() : '';
+                    const textB = tdB ? tdB.textContent.trim() : '';
+
+                    let valA = parseFloat(textA.replace('%', '').replace(/,/g, ''));
+                    let valB = parseFloat(textB.replace('%', '').replace(/,/g, ''));
+
+                    const isNumA = !isNaN(valA) && textA !== '';
+                    const isNumB = !isNaN(valB) && textB !== '';
+
+                    if (isNumA && isNumB) {
+                        return this.iku_SortDir === 1 ? valB - valA : valA - valB;
+                    } else {
+                        return this.iku_SortDir === 1 ? textB.localeCompare(textA) : textA.localeCompare(textB);
+                    }
+                });
+            }
+
+            // Apply to DOM
+            tbody.innerHTML = '';
+            totalRows.forEach(tr => tbody.appendChild(tr));
+            dataRows.forEach(tr => tbody.appendChild(tr));
+
+            this.$nextTick(() => this.ui_ApplyFreeze());
           },
         }
       }

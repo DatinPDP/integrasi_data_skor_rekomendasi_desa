@@ -68,6 +68,25 @@ def _excel_worker(year):
     from middleware import helpers_background_task_generate_pre_render_excel
     helpers_background_task_generate_pre_render_excel(year)
 
+def _json_worker(year: str):
+    """
+    Runs in a separate process — pre-renders public_table.json for this year
+    at startup only if the year key is not already present in the file.
+    """
+    import json as _json
+    from middleware import helpers_generate_public_table_json, PUBLIC_TABLE_JSON, CONFIG_DIR
+
+    if os.path.exists(PUBLIC_TABLE_JSON):
+        try:
+            with open(PUBLIC_TABLE_JSON, "r", encoding="utf-8") as f:
+                if year in _json.load(f):
+                    print(f"[{year}] public_table.json already current. Skipping.")
+                    return
+        except Exception:
+            pass  # Corrupt file — fall through to regenerate
+
+    helpers_generate_public_table_json(year)
+
 @asynccontextmanager
 async def app_lifespan(app: FastAPI):
     # Cleanup stale temp files on startup (older than 24h)
@@ -88,6 +107,9 @@ async def app_lifespan(app: FastAPI):
                 year = filename.replace("data_", "").replace(".duckdb", "")
                 p = multiprocessing.Process(target=_excel_worker, args=(year,), daemon=True)
                 p.start()
+                # Also pre-render public JSON if stale/missing
+                pj = multiprocessing.Process(target=_json_worker, args=(year,), daemon=True)
+                pj.start()
     yield # Server runs here
     
     # Shutdown logic (if any) would go here
@@ -148,26 +170,27 @@ try:
         helpers_generate_header_mapping,
         helpers_internal_process_temp_file,
         helpers_build_dynamic_query,
-        helpers_get_cache_path,
         helpers_get_or_create_intervensi_kegiatan,
         helpers_calculate_dashboard_stats,
         helpers_render_dashboard_html,
         helpers_render_iku_dashboard,
         helpers_get_public_iku_json,
         helpers_generate_excel_workbook,
+        helpers_generate_public_table_json,
         helpers_background_task_generate_pre_render_excel,
         ID_COL,
         BASE_DIR as MW_BASE_DIR,
         CONFIG_DIR,
         TEMP_FOLDER as MW_TEMP_FOLDER,
-        API_LOGGER
+        API_LOGGER,
+        PUBLIC_TABLE_JSON
     )
 except ImportError:
     # Fallback for different context import
     from desa_db.middleware import apply_rekomendasis, make_json_response, helpers_get_db_connection
     from desa_db.middleware import helpers_read_excel_preview, helpers_generate_header_mapping
     from desa_db.middleware import helpers_init_db, helpers_internal_process_temp_file
-    from desa_db.middleware import helpers_build_dynamic_query, helpers_get_cache_path
+    from desa_db.middleware import helpers_build_dynamic_query, helpers_generate_public_table_json
     from desa_db.middleware import helpers_generate_excel_workbook, helpers_get_public_iku_json
     from desa_db.middleware import helpers_background_task_generate_pre_render_excel
     from desa_db.middleware import ID_COL, BASE_DIR as MW_BASE_DIR, CONFIG_DIR

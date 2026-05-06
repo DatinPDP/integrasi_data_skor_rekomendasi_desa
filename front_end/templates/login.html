@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
   <head>
     <meta charset="UTF-8">
     <title>Login data skor rekomendasi desa</title>
@@ -15,14 +14,13 @@
         margin: 0;
         display: flex;
         justify-content: center;
-        align-items: center;
+        align-items: flex-start;
         color: #333;
 
         /* Dot Matrix (Active) */
         background-color: #f0f2f5;
         background-image: radial-gradient(#cbd5e1 1.5px, transparent 1.5px);
         background-size: 24px 24px;
-
       }
 
       .login-box {
@@ -36,6 +34,56 @@
         box-shadow: 8px 8px 0px rgba(0, 0, 0, 0.1);
         border-radius: 16px;
         color: #323A45;
+        margin-top: 14rem;
+      }
+
+      /* --- BACK NAVIGATION --- */
+      .back-nav-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+        text-decoration: none;
+        cursor: pointer;
+        outline: none;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .back-icon-round {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #64748B;
+        background-color: white;
+        border: 1px solid rgba(100, 116, 139, 0.3);
+        transition: transform 0.1s, background-color 0.2s, color 0.2s, border-color 0.2s;
+      }
+
+      .back-link-text {
+        font-size: 1rem;
+        color: #64748B !important;
+        text-decoration: none !important;
+        letter-spacing: 0.5px;
+        transition: color 0.2s;
+      }
+
+      /* Unified Hover State Triggered by Parent */
+      .back-nav-btn:hover .back-icon-round {
+        background-color: #EFF1F3;
+        border-color: #EFF1F3;
+        color: #000;
+      }
+
+      .back-nav-btn:hover .back-link-text {
+        color: #000;
+      }
+
+      /* Unified Active State Triggered by Parent */
+      .back-nav-btn:active .back-icon-round {
+        transform: scale(0.95);
       }
 
       /* --- 2. SPLIT HEADER (40% Icon | 60% Text) --- */
@@ -120,7 +168,7 @@
         background: #fff;
       }
 
-      button {
+      button.submit-btn {
         width: 100%;
         padding: 12px;
         background-color: #64748B;
@@ -137,12 +185,12 @@
         transition: transform 0.1s, opacity 0.2s;
       }
 
-      button:hover {
+      button.submit-btn:hover {
         background-color: #EFF1F3;
         color: #000;
       }
 
-      button:active {
+      button.submit-btn:active {
         transform: scale(0.98);
         opacity: 0.9;
       }
@@ -162,6 +210,15 @@
   <body>
 
     <div class="login-box">
+
+      <a href="/" class="back-nav-btn">
+        <span class="back-icon-round">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path>
+          </svg>
+        </span>
+        <span class="back-link-text">Kembali</span>
+      </a>
 
       <div class="login-header">
         <div class="header-icon">
@@ -209,7 +266,7 @@
             placeholder="Enter Password..."
           >
         </div>
-        <button type="submit">Sign In</button>
+        <button type="submit" class="submit-btn">Sign In</button>
       </form>
     </div>
 

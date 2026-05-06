@@ -74,6 +74,9 @@ os.makedirs(DB_FOLDER, exist_ok=True)
 LOGS_DIR = os.path.abspath(os.path.join(BASE_DIR, "../.logs"))
 os.makedirs(LOGS_DIR, exist_ok=True)
 
+# Pre-rendered public IKU table (all years, all metrics)
+PUBLIC_TABLE_JSON = os.path.join(CONFIG_DIR, "public_table.json")
+
 # Defined globally as a frozenset for O(1) instantaneous lookups.
 # Edit this list if tematik exceptions change.
 IKU_TEMATIK_EXCEPTIONS = frozenset([
@@ -812,13 +815,6 @@ def helpers_get_db_connection(year: str, read_only: bool = True):
 
     return con, db_path
 
-def helpers_get_cache_path(year: str):
-    """
-    Returns the absolute path to the unique_cache JSON file for a specific year.
-    """
-    get_cache_path_clean_year = os.path.basename(year)
-    return os.path.join(CONFIG_DIR, f"unique_cache_{get_cache_path_clean_year}.json")
-
 def helpers_init_db(con: duckdb.DuckDBPyConnection, headers: list[str]):
     """
     SCD Type 2 Schema:
@@ -1511,6 +1507,9 @@ def helpers_background_task_generate_pre_render_excel(year: str):
         elapsed = round(time.time() - start_time, 2)
         print(f"[{datetime.now()}] ✅ Successfully compiled BOTH Translated & Raw files in {elapsed}s", flush=True)
 
+        # Invalidate + rebuild the public pre-render so homepage reflects new data
+        helpers_generate_public_table_json(year)
+
     except Exception as e:
         print(f"[{datetime.now()}] ❌ Failed to generate master excel: {e}", flush=True)
         traceback.print_exc() # Prints the exact line that crashed to Docker logs
@@ -2190,7 +2189,7 @@ def helpers_render_iku_dashboard(
         html += "</tbody>"
     return html
 
-def helpers_get_public_iku_json(year: str, metric_filter: str = None):
+def _compute_iku_json_raw(year: str, metric_filter: str = None):
     """
     Public simplified IKU dashboard data generator (used by homepage).
     
@@ -2335,14 +2334,14 @@ def helpers_get_public_iku_json(year: str, metric_filter: str = None):
                 "capaian": round(capaian, 2)
             })
 
-            # 2. Accumulate for Server-Side Totals
+            # Accumulate for Server-Side Totals
             total_jlh += jlh
             total_avg_sum += avg_val
             total_t_total += t_total
             for status in output_statuses:
                 totals_status[status] += row.get(f"__iku_{status.replace(' ', '_')}_{parent}", 0)
 
-        # 3. Build Final Totals Dictionary (Pre-formatted with commas and percentages)
+        # Build Final Totals Dictionary (Pre-formatted with commas and percentages)
         num_prov = len(metric_data)
         final_total_avg = total_avg_sum / num_prov if num_prov > 0 else 0.0
         if parent in IKU_TEMATIK_EXCEPTIONS:
@@ -2374,3 +2373,99 @@ def helpers_get_public_iku_json(year: str, metric_filter: str = None):
         return {"error": str(e)}
     finally:
         con.close()
+
+def helpers_generate_public_table_json(year: str):
+    """
+    Pre-renders all IKU metrics for a given year and writes them into
+    CONFIG_DIR/public_table.json (one file, all years keyed by year string).
+
+    Triggered:
+    - At server startup if the year key is absent from the file.
+    - Automatically at the end of helpers_background_task_generate_pre_render_excel.
+
+    Uses an atomic tmp-then-replace write so readers never see a partial file.
+    """
+    try:
+        print(f"[pre-render JSON] Building public_table.json for year {year} …")
+
+        # Load existing cache file (or start fresh)
+        existing: dict = {}
+        if os.path.exists(PUBLIC_TABLE_JSON):
+            try:
+                with open(PUBLIC_TABLE_JSON, "r", encoding="utf-8") as f:
+                    existing = json.load(f)
+            except Exception:
+                existing = {}
+
+        # Discover metrics
+        metrics_result = _compute_iku_json_raw(year, metric_filter=None)
+        metrics: list = metrics_result.get("metrics", [])
+        if not metrics:
+            print(f"[pre-render JSON] No metrics found for {year}. Skipping.")
+            return
+
+        year_data: dict = {"metrics": metrics}
+
+        # Compute and cache every metric
+        for metric in metrics:
+            result = _compute_iku_json_raw(year, metric_filter=metric)
+            if metric in result:
+                year_data[metric] = result[metric]
+
+        existing[year] = year_data
+
+        # Atomic write
+        os.makedirs(CONFIG_DIR, exist_ok=True)
+        tmp_path = PUBLIC_TABLE_JSON + ".tmp"
+        with open(tmp_path, "w", encoding="utf-8") as f:
+            json.dump(existing, f, ensure_ascii=False)
+        os.replace(tmp_path, PUBLIC_TABLE_JSON)
+
+        print(f"[pre-render JSON] Done — {len(metrics)} metrics saved for year {year}.")
+
+    except Exception:
+        traceback.print_exc()
+
+def helpers_get_public_iku_json(year: str, metric_filter: str = None):
+    """
+    Serves pre-rendered IKU data from public_table.json (CSR / serverless pattern).
+
+    - No metric_filter  → returns the FULL year payload so the client can cache
+                          all metrics in a single round-trip.
+    - metric_filter set → returns only that metric slice (backward-compat).
+
+    If the file or year key is absent it falls back to helpers_generate_public_table_json,
+    then reads the freshly-written file.
+
+    No database connection is opened here.
+    """
+    def _read_year(yr: str) -> dict:
+        with open(PUBLIC_TABLE_JSON, "r", encoding="utf-8") as f:
+            return json.load(f).get(yr)
+
+    # Attempt to read from pre-rendered file
+    year_data = None
+    if os.path.exists(PUBLIC_TABLE_JSON):
+        try:
+            year_data = _read_year(year)
+        except Exception:
+            pass
+
+    # Fallback: generate on-demand (first-ever call for this year)
+    if year_data is None:
+        helpers_generate_public_table_json(year)
+        try:
+            year_data = _read_year(year)
+        except Exception:
+            pass
+
+    year_data = year_data or {"metrics": []}
+
+    # Slice by metric if requested (endpoint backward-compat)
+    if metric_filter:
+        if metric_filter not in year_data:
+            return {metric_filter: {"data": [], "totals": None}}
+        return {metric_filter: year_data[metric_filter]}
+
+    # Return full year payload for CSR frontend one-shot fetch
+    return year_data

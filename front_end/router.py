@@ -53,7 +53,6 @@ def get_current_user_role(token: str):
     except JWTError:
         return None
 
-
 @app.get("/login", response_class=HTMLResponse)
 async def login_view(request: Request):
     """
@@ -164,7 +163,6 @@ async def user_dashboard(request: Request):
 
     if not token: return RedirectResponse(url="/login")
     
-
     return templates.TemplateResponse("user.html", {
         "request": request, 
         # API_BASE_URL is for non docker, uncomment when needed
@@ -181,12 +179,9 @@ async def logout():
 
 @app.get("/")
 async def root(request: Request):
-    token = request.cookies.get("session_token")
-    role = get_current_user_role(token)
-    
-    if role == "admin": return RedirectResponse(url="/admin")
-    if role == "user": return RedirectResponse(url="/user")
-    
+    # If they click Login from home.html, the existing /login route will 
+    # intercept the valid session_token and redirect them automatically.
+ 
     return templates.TemplateResponse("home.html", {
         "request": request,
         "api_url": "" 
