@@ -35,6 +35,7 @@ services:
     volumes:
       - ./.config:/app/.config
       - ./front_end:/app/front_end
+      - ./documentation:/app/documentation
     env_file:
       - .env
     depends_on:

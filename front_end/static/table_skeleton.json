@@ -1,0 +1,6871 @@
+{
+  "headers": [
+    "NO",
+    "DIMENSI",
+    "SUB DIMENSI",
+    "INDIKATOR",
+    "ITEM",
+    "INTERVENSI KEGIATAN",
+    "PELAKSANA KEGIATAN PUSAT",
+    "PELAKSANA KEGIATAN PROVINSI",
+    "PELAKSANA KEGIATAN KABUPATEN",
+    "PELAKSANA KEGIATAN DESA",
+    "PELAKSANA KEGIATAN Lainnya"
+  ],
+  "rows": [
+    [
+      {
+        "type": "text",
+        "value": "1",
+        "rowspan": 34,
+        "colspan": 1,
+        "class": "font-bold text-gray-800 align-top"
+      },
+      {
+        "type": "text",
+        "value": "LAYANAN DASAR",
+        "rowspan": 34,
+        "colspan": 1,
+        "class": "font-bold text-gray-800 align-top"
+      },
+      {
+        "type": "text",
+        "value": "SUB-DIMENSI PENDIDIKAN",
+        "rowspan": 9,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "AKSES TERHADAP PAUD/TK/Sederajat",
+        "rowspan": 3,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Keberadaan PAUD/TK/Sederajat di Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Ketersediaan PAUD/ TK/ Sederajat di Desa",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendikbud, Kemendagri, Kementerian PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PMD, Dinas Dikbud, Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Dikbud, Dinas PMD, Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Kemudahan Akses menuju PAUD/TK/Sederajat terdekat di Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Kemudahan Akses menuju PAUD/ TK/ Sederajat terdekat di Desa",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendikbud, Kemendagri, Kementerian PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PMD, Dinas Dikbud, Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Dikbud, Dinas PMD, Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Angka Partisipasi Murni (APM) anak usia 3 - 6 tahun yang bersekolah PAUD/TK/Sederajat di desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Angka Partisipasi Murni (APM) anak usia 3 - 6 tahun yang bersekolah PAUD/ TK/ Sederajat di desa",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendikbud, Kemendagri, Kementerian PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PMD, Dinas Dikbud, Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Dikbud, Dinas PMD, Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "AKSES TERHADAP SD/MI/Sederajat",
+        "rowspan": 2,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Kemudahan Akses menuju SD/MI/Sederajat terdekat di Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Kemudahan Akses menuju SD/ MI/ Sederajat terdekat di Desa?",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendikbud, Kemendagri, Kementerian PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PMD, Dinas Dikbud, Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Dikbud, Dinas PMD, Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Angka Partisipasi Murni (APM)  anak usia 7-12 tahun yang bersekolah SD/MI/Sederajat di desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Angka Partisipasi Murni (APM) anak usia 7-12 tahun yang bersekolah SD/ MI/ Sederajat di desa",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendikbud, Kemendagri, Kementerian PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PMD, Dinas Dikbud, Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Dikbud, Dinas PMD, Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "AKSES TERHADAP SMP/MTs/Sederajat",
+        "rowspan": 2,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Kemudahan Akses menuju SMP/MTs/Sederajat terdekat di Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Kemudahan Akses menuju SMP/MTs/Sederajat terdekat di Desa?",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendikbud, Kemendagri, Kementerian PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PMD, Dinas Dikbud, Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PMD, Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Angka Partisipasi Murni (APM)  anak usia 13-15 tahun yang bersekolah SMP/MTs/Sederajat di desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Angka Partisipasi Murni (APM) anak usia 13-15 tahun yang bersekolah SMP/ MTs/ Sederajat di desa",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendikbud, Kemendagri, Kementerian PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PMD, Dinas Dikbud, Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PMD, Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "AKSES TERHADAP SMA/SMK/MA/MAK/Sederajat",
+        "rowspan": 2,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Kemudahan Akses menuju SMA/SMK/MA/MAK/Sederajat terdekat di Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Kemudahan Akses menuju SMA/ SMK/ MA/ MAK/ Sederajat terdekat di Desa?",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendikbud, Kemendagri, Kementerian PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PMD, Dinas Dikbud, Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PMD, Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Angka Partisipasi Murni (APM)  anak usia 16-18 tahun yang bersekolah SMA/SMK/MA/MAK/Sederajat di desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Angka Partisipasi Murni (APM) anak usia 16-18 tahun yang bersekolah SMA/ SMK/ MA/ MAK/ Sederajat di desa",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendikbud, Kemendagri, Kementerian PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PMD, Dinas Dikbud, Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PMD, Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "SUB-DIMENSI KESEHATAN",
+        "rowspan": 20,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Layanan Sarana Kesehatan",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Kemudahan akses menuju Sarana Kesehatan",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Kemudahan akses menuju Sarana Kesehatan",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemenkes, Kemen PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Kesehatan, DPMD, Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Fasilitas Puskesmas Pembantu (Pustu)",
+        "rowspan": 2,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Keberadaan Fasilitas Puskesmas Pembantu (Pustu) termasuk  Poskesdes/Polindes di Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Ketersediaan Fasilitas Kesehatan Pustu/ Poskesdes/ Polindes di Desa",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemenkes, Kemen PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Kesehatan, DPMD, Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Kemudahan akses menuju Fasilitas Puskesmas Pembantu (Pustu) termasuk Kesehatan Poskesdes/Polindes",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Kemudahan akses menuju Fasilitas Kesehatan Pustu/ Poskesdes/ Polindes",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemenkes, Kemen PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Kesehatan, DPMD, Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Aktivitas Posyandu",
+        "rowspan": 3,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Ketersediaan Fasilitas Posyandu di Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Ketersediaan Fasilitas Posyandu di Desa",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemenkes, Kemen PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Kesehatan, DPMD, Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Keberadaan Aktivitas Posyandu",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Terdapat Aktivitas Posyandu",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemenkes, Kemen PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Kesehatan, DPMD, Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Kemudahan akses menuju Fasilitas Posyandu",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Kemudahan akses menuju Fasilitas Posyandu",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemenkes, Kemen PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Kesehatan, DPMD, Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Layanan Dokter",
+        "rowspan": 4,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Ketersediaan layanan dokter di desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Ketersediaan layanan perbankan di desa",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemenkes, Kemen PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Kesehatan, DPMD, Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Operasional ketersediaan layanan dokter di desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Berapa lama/ hari ketersediaan layanan dokter di desa?",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemenkes, Kemen PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Kesehatan, DPMD, Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Penyedia layanan dokter di desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Penyedia layanan dokter di desa berasal dari?",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemenkes, Kemen PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Kesehatan, DPMD, Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Keberadaan Penyedia Transportasi penunjang menuju layanan Dokter",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Terdapat Penyedia Transportasi penunjang menuju layanan Dokter",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemenkes, Kemen PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Kesehatan, DPMD, Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Layanan Bidan",
+        "rowspan": 4,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Ketersediaan layanan Bidan di Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Ketersediaan layanan perbankan di desa",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemenkes, Kemen PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Kesehatan, DPMD, Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Operasional ketersediaan layanan Bidan di desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Berapa lama/ hari ketersediaan layanan Bidan di desa?",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemenkes, Kemen PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Kesehatan, DPMD, Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Penyedia layanan Bidan di desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Penyedia layanan Bidan di desa berasal dari?",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemenkes, Kemen PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Kesehatan, DPMD, Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Keberadaan Penyedia Transportasi penunjang menuju layanan Bidan",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Terdapat Penyedia Transportasi penunjang menuju layanan Bidan",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemenkes, Kemen PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Kesehatan, DPMD, Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Layanan Tenaga Kesehatan Lainnya",
+        "rowspan": 4,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Ketersediaan layanan Tenaga Kesehatan di Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Apakah Tersedia layanan Tenaga Kesehatan di Desa?",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemenkes, Kemen PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Kesehatan, DPMD, Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Operasional ketersediaan layanan Tenaga Kesehatan di desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Berapa lama/ hari ketersediaan layanan Tenaga Kesehatan di desa?",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemenkes, Kemen PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Kesehatan, DPMD, Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Penyedia layanan Tenaga Kesehatan di desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Penyedia layanan Tenaga Kesehatan di desa berasal dari?",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemenkes, Kemen PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Kesehatan, DPMD, Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Keberadaan Penyedia Transportasi penunjang menuju layanan Nakes",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Terdapat Penyedia Transportasi penunjang menuju layanan Nakes",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemenkes, Kemen PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Kesehatan, DPMD, Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Jaminan Kesehatan Nasional",
+        "rowspan": 2,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Persentase keanggotaan BPJS",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Persentase keanggotaan BPJS",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemenkes, Kemen PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Kesehatan, DPMD, Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Keberadaan kegiatan sosialisasi dan/atau advokasi terkait program jaminan kesehatan nasional di desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Apakah terdapat kegiatan sosialisasi dan/ atau advokasi terkait program jaminan kesehatan nasional di desa?",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemenkes, Kemen PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Kesehatan, DPMD, Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Sub-Dimensi Utilitas Dasar",
+        "rowspan": 5,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Rumah Tangga dengan Air Minum Aman",
+        "rowspan": 4,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Operasional Ketersediaan Air Minum di Desa dalam seminggu",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Hari operasional penyediaan Air Minum di Desa dalam kurun waktu satu minggu",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "PAMSIMAS, PU",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PUPR, Dinas Kesehatan, DPMD, PDAM",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Ketersediaan Air Minum untuk warga desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Ketersediaan Air Minum untuk warga desa",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "PAMSIMAS, PU",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PUPR, Dinas Kesehatan, DPMD, PDAM",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Kemudahan akses Air Minum untuk warga di desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Kemudahan akses Air Minum untuk warga di desa",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "PAMSIMAS, PU",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PUPR, Dinas Kesehatan, DPMD, PDAM",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Kualitas Air Minum di Desa (Tidak untuk Berbau, Berwarna, & Berasa)",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Bagaimana Kualitas Air Minum di Desa (Tidak untuk Berbau Berwarna & Berasa)",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "PAMSIMAS, PU",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PUPR, Dinas Kesehatan, DPMD, PDAM",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Persentase Rumah Tidak Layak Huni",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Persentase Rumah Tidak Layak Huni",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Persentase Rumah Tidak Layak Huni",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "PAMSIMAS, PU",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PUPR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PUPR, Dinas Kesehatan, DPMD, PDAM",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "2",
+        "rowspan": 17,
+        "colspan": 1,
+        "class": "font-bold text-gray-800 align-top"
+      },
+      {
+        "type": "text",
+        "value": "SOSIAL",
+        "rowspan": 17,
+        "colspan": 1,
+        "class": "font-bold text-gray-800 align-top"
+      },
+      {
+        "type": "text",
+        "value": "SUB-DIMENSI AKTIVITAS",
+        "rowspan": 13,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Kearifan Sosial/Budaya dan Keagamaan",
+        "rowspan": 2,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Keberadaan kearifan budaya/sosial/keagamaan yang ada/menjadi ciri khas desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Apakah terdapat kearifan budaya/ sosial yang ada/ menjadi ciri khas desa?",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendesa PDT, Kemendikbudristek, Kemenag, Kemenparekraf",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PMD, Dians Pariwisata",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PMD, Dinas Pariwisata",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes, Lembaga Adat, Karang Taruna",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Jumlah Kearifan budaya/sosial yang masih dipertahankan/dilestarikan",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Apakah kearifan budaya/ sosial tersebut masih dipertahankan/ dilestarikan?",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendesa PDT, Kemendikbudristek, Kemenag, Kemenparekraf",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PMD, Dians Pariwisata, Dinas Pendidikan dan Kebudayaan",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PMD, Dians Pariwisata, Dinas Pendidikan dan Kebudayaan",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes, Lembaga Adat, Kelompok Seni, Karang Taruna",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Frekuensi Gotong Royong",
+        "rowspan": 3,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Keberadaan kegiatan gotong royong di Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Apakah terdapat kegiatan gotong royong di Desa?",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendagri, Kemendesa PDT, Kemensos",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PMD, Dinas Sosial",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PMD, Dinas Sosial",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Lembaga Kemasyarakatan Desa (LPMD/RT/RW), Pemdes, Karang Taruna",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Frekuensi Kegiatan Gotong Royong di desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Frekuensi Kegiatan Gotong Royong di desa",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendagri, Kemendesa PDT, Kemensos",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PMD, Dinas Sosial",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PMD, Dinas Sosial",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Lembaga Kemasyarakatan Desa (LPMD/RT/RW), Pemdes, Karang Taruna, Kelompok Pemuda",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Keterlibatan warga dalam kegiatan gotong royong",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Keterlibatan warga dalam kegiatan gotong royong",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendagri, Kemendesa PDT, Kemensos",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PMD, Dinas Sosial",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PMD, Dinas Sosial",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Lembaga Kemasyarakatan Desa (LPMD/RT/RW), Pemdes, Karang Taruna, Kelompok Pemuda",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Kegiatan Olahraga",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Frekuensi Aktivitas Kegiatan Olahraga dilakukan dalam satu bulan",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Frekuensi kegiatan tersebut dilakukan dalam satu bulan",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemenpora, Kemendesa,Koni, Lembaga Olah Raga nasional",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dispora, Dinkes",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dispora, Dinkes",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes, karang Taruna, PKK",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Klub Olahraga,Pusat Studi Olah Raga, kampus",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Mitigasi dan Penanganan Konflik Sosial",
+        "rowspan": 5,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Penyelesaian Konflik secara damai",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "i Penyelesaian Konflik secara damai",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendagri, kemenkum dan HAM, kemenkopolhukam, BIN, Kepolisian, TNI",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Kesbangpol,Dinas Kominfo, Dinas Sosial",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Kesbangpol,Dinas Kominfo, Dinas Kesejahteraan Sosial, Dinas PMD",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Lembaga Kemasyarakatan Desa (LPMD/RT/RW), Pemdes, Karang Taruna, Kelompok Pemuda, Tokoh Masyarakat dan Adat",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Fasilitator Mediasi Akademis, Kampus",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Peranan aparat keamanan menjadi mediator / penengah dalam penyelesaian Konflik",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "ii Peranan aparat keamanan menjadi mediator / penengah dalam penyelesaian Konflik",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemenko Polhukam, Kemendagri, Kemenhan, Polri, TNI",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Satpol PP,Dinsos, Forkopinda",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Satpol PP,Dinsos, Forkopinda",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "pemdes, LKS, Lembaga Mediasi Swasta",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Akademisi, Pakar Konsflik dan Perdamaian",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Peranan aparat pemerintah menjadi mediator / penengah dalam penyelesaian Konflik",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "iii Peranan aparat pemerintah menjadi mediator / penengah dalam penyelesaian Konflik",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendagri, Kemendesa PDTT, Kemenko Polhukam, Kemenkumham, BNPB, Lemhannas, BPN",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Kesbangpol, Dinas PMD",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Kesbangpol, Dinas PMD, Dinsos",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes, BPD",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "LSM, Akademisi, Pusat Studi konflik",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Peranan tokoh masyarakat menjadi mediator / penengah dalam penyelesaian Konflik",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "iv Peranan tokoh masyarakat menjadi mediator / penengah dalam penyelesaian Konflik",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendagri, Kemendesa PDTT,Kemenag, Kemenko PMK, BNPT, LIPI, MUI",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PMD, Dinas Pariwisata, Kesbangpol",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PMD, Dinsos, Dinas pendidikan",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes, BPD",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "LSM, Akademisi, Pusat Kajian Konflik dan Perdamaian",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Peranan tokoh agama menjadi mediator / penengah dalam penyelesaian Konflik",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "v Peranan tokoh agama menjadi mediator / penengah dalam penyelesaian Konflik",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemenag, Kemenko PMK, Kemendagri, MUI, Konferensi Waligereja Indonesia, BNPT",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Kesbangpol, Dinsos, Dinas PMD,",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Kesbangpol, Dinsos, Dinas PMD, Dias Dikbud",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes, BPD, ",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "LSM Keagamaan, Swasta, Akademisi, Pusat Studi Agama dan Perdamaian",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Satkamling",
+        "rowspan": 2,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Keberadaan Satuan Keamanan Lingkungan (Satkamling) di Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Apakah terdapat Satuan Keamanan Lingkungan (Satkamling) di Desa",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendagri, Kemenko Polhukam, Kemendesa PDTT, Polri, BNPT,BIN",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Kesbangpol, Dinas PMD,Forkopinda",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Kesbangpol, Dinas PMD,Forkopinda",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes, BPD, RT/RW",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Akademisi, Pusat Studi Keamanan",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Aktivitas Satuan Keamanan Lingkungan (Satkamling) di Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Apakah terdapat aktivitas Satuan Keamanan Lingkungan (Satkamling) di Desa",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendagri, Kemendesa PDTT, Kemenko Polhukam, Polri, TNI, BNPT, BIN",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Kesbangpol, Dinas PMD",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Kesbangpol, Dinas PMD",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes, BPD, RT/RW, Tokoh Masyarakat",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Akademisi, Pusat Studi Keamanan",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "SUB-DIMENSI FASILITAS MASYARAKAT",
+        "rowspan": 4,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Taman Bacaan Masyarakat/ Perpustakaan Desa",
+        "rowspan": 2,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Keberadaan Taman Bacaan Masyarakat/ Perpustakaan Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Apakah terdapat Taman Bacaan Masyarakat/ Perpustakaan Desa",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendibudristek, Kemendagri, Kemendesa PDTT, Perpustakaan nasional, Bakti-Kominfo, Badan pengembangan dan Pembinaan Bahasa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas perpustakaan dan Kearsipan, Dinas Dikbud, Diskominfo",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas perpustakaan dan Kearsipan, Dinas Dikbud, Diskominfo, Dinas PMD",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes, Karang Taruna, RT, RW, Kader Literasi Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta, LSM, Akademisi, Pusat Studi Literasi, Mahasiswa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Operasional Taman Bacaan Masyarakat/ Perpustakaan Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Hari operasional Taman Bacaan Masyarakat/ Perpustakaan Desa",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendikbudristek, Kemendagri, Kemendesa PDTT, Perpusnas, Bakti-Kominfo, Badan pengembangan dan pembinaan bahasa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas perpustakaan dan Kearsipan, Dinas Dikbud, Diskominfo",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas perpustakaan dan Kearsipan, Dinas Dikbud, Diskominfo, Dinas PMD",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes, Karang Taruna, RT, RW, Kader Literasi Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta, LSM, Akademisi, Pusat Studi Literasi, Mahasiswa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Fasilitas Olahraga",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Ketersediaan Fasilitas dan kondisi/keadaan sebagian besar Fasilitas olahraga di Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "SKOR Ketersediaan Fasilitas dan kondisi/keadaan sebagian besar Fasilitas olahraga di Desa",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemenpora, Kemendesa PDTT, KONI, Lembaga Pengelola Dana Hibah, ",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dispora, Dinas PU, Dinas Kesehatan",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dispora, Dinas PUPR, Dinas Kesehatan, Dinas Pariwisata",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes, Karang Taruna, kelompok Pemuda, BPD",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta, Akademisi, Pusat Penelitian dan Pengembangan Olahraga",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Keberadaan Ruang Publik Terbuka",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Keberadaan ruang publik terbuka/keadaan sebagian besar Fasilitas Ruang Publik Terbuka di Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "SKOR Keberadaan ruang publik terbuka/keadaan sebagian besar Fasilitas Ruang Publik Terbuka di Desa",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "KemenPUPR, Kemendesa PDTT, KLHK, Bappenas, Badan Pengelola Dana Lingkungan Hidup, LSM",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PUPR, DLH,",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PUPR, DLH,",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes, BPD, ",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta, Akademisi, Badan Penelitian tata Kota dan Lingkungan",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "3",
+        "rowspan": 32,
+        "colspan": 1,
+        "class": "font-bold text-gray-800 align-top"
+      },
+      {
+        "type": "text",
+        "value": "EKONOMI",
+        "rowspan": 32,
+        "colspan": 1,
+        "class": "font-bold text-gray-800 align-top"
+      },
+      {
+        "type": "text",
+        "value": "SUB-DIMENSI PRODUKSI DESA",
+        "rowspan": 8,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Keragaman Aktivitas Ekonomi",
+        "rowspan": 2,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Keragaman Aktivitas Ekonomi di Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Keragaman Aktivitas Ekonomi di Desa",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendesa PDTT, Kemenkop UKM, Kemendag, Kementan, Kemenparekraf, LPDB, BUMN, Lembaga Penelitian dan Pengembangan",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Kop dan UMKM, Dinas Perindag",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Koperasi dan UMKM, Dinas Perindag, Dinas Parekraf",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes, BPD, Kelompok Tani, Nelayan dan Pengrajin Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta, Koperasi, Bumdes, Akademisi, Pusat Penelitian Ekonomi dan Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Keaktifan Aktivitas Ekonomi di Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Keaktifan Aktivitas Ekonomi di Desa",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendesa PDTT, Kemenkop & UMKM, Kementan, Kemendag, BUMN, Lembaga Penelitian Ekonomi dan Kebijakan Publik, Lembaga Keuangan dan Bank BUMN",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Kop dan UMKM, Dinas Perindag, Dinas Pariwisata",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Koperasi dan UMKM, Dinas Pertanian, Dinas Pariwisata dan kebudayaan, Dinas Tenaga Kerja",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes, BPD, Kelompok Tani, Pengrajin Desa, ",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta, Akademisi, Pusat Penelitian Ekonomi dan Sosial",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Produk Unggulan Desa",
+        "rowspan": 3,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Keberadaan Produk Unggulan Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Ketersediaan Produk Unggulan Desa",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendesa PDTT, Kementan, Kemenperin, Kemenkop UKM, Kemenparekraf, Kemendag, BPS, BUMN, LIPI, Brin",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas pMD, Disperindag, Dinas Pertanian dan Ketahanan Pangan, Dinas pariwisata dan Kebudayaan",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas pMD, Disperindag, Dinas Pertanian dan Ketahanan Pangan, Dinas pariwisata dan Kebudayaan",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes, Bumdes, ",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Akademisi, Pusat Penelitian dan Inovasi Universitas",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Cakupan Penjualan Hasil Produk Unggulan Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Cakupan pasar Produk Unggulan Desa",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendesa PDTT, Kementan, Kemenperin, Kemendag, BPS, BKPM",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Koperasi dan UMKM, Dinas Perdagangan, Dinas Pertanian",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas pMD, Disperindag",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes, Bumdes, Kelompok Tani, Kelompok Usaha",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Ketersediaan merek dagang",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Ketersediaan merek dagang",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemenkumham, Kemendesa PDTT, Kemendag, Kemenperin, BSN, Lembaga Pengkajian dan Pengembangan",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Disperindag, Dinas Koperasi dan UKM",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Disperindag, Dinas PMD",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes, Bumdes, ",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Ekonomi Kreatif",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Keberadaan Kearifan lokal atau kebudayaan lokal yang di jadikan sebagai kegiatan ekonomi dalam menunjang penghidupan masyarakat di desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Terdapat Kearifan lokal atau kebudayaan lokal yang di jadikan sebagai kegiatan ekonomi dalam menunjang penghidupan masyarakat di desa?",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemenparekraf, Kemendikbudristek, Kemendesa PDTT, Kemendag, Bekraf, Lembaga Kebudayaan Lokal",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Pariwisata dan Kebudayaan, Dinas Koperasi daan UKM, Dinas Pendidikan",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Pariwisata dan Kebudayaan, Dinas PMD, Dinas Perindustrian dan Perdagangan",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes, Bumdes, Kelompok Masyarakat Adat dan Budaya",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Kerjasama Desa",
+        "rowspan": 2,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Kerjasama desa dengan desa lainnya",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Apakah telah dilakukan kerjasama desa dengan desa lainnya?",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendesa PDTT,Kemendagri, Kemenko PMK,BKPM, LPM",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PMD, Dinas Perdagangan, Dinas Koperasi dan UKM",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PMD, Disperindag, Dinas Pariwisata dan Kebudayaan",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes, Bumdes, Kelompok Masyarakat",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Kerjasama desa dengan pihak ketiga",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Apakah telah dilakukan kerjasama desa dengan pihak ketiga?",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendesa PDTT,Kemendagri, Kemenko PMK,BKPM, LPM",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PMD, Dinas Perdagangan, Dinas Koperasi dan UKM",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PMD, Disperindag, Dinas Pariwisata dan Kebudayaan",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes, Bumdes, Kelompok Masyarakat",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "SUB-DIMENSI FASILTAS PENDUKUNG EKONOMI",
+        "rowspan": 24,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Akses Terhadap Pendidikan Non-formal/Pusat Keterampilan/Kursus",
+        "rowspan": 2,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Ketersediaan Pendidikan Non-formal/Pusat Keterampilan/Kursus",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Ketersediaan Pendidikan Non-formal/ Pusat Keterampilan/ Kursus",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendikbudristek, Kemenaker, Kemendesa PDTT,Kemensos, BNSP, Perpustakaan Nasional, LPKS",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Pendidikan, Dinas Ketenagakerjaan, Disperindag",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Pendidikan, Dinas Ketenagakerjaan, Dinas Koperasi dan UKM",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes, Bumdes, Kelompok Masyarakat",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Keterlibatan Angkatan Kerja pada Pendidikan Non-formal/Pusat Keterampilan/Kursus",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Keterlibatan Pendidikan Non-formal/ Pusat Keterampilan/ Kursus",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemenaker, Kemendikbudristek, Kemendesa PDTT, Kemenperin, BNSP, Bappenas, BUMN",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Ketenagakerjaan, Dinas Pendidikan, Disperindag",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Ketenagakerjaan, Dinas Pendidikan, Dinas Koperasi dan UKM",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes, Bumdes, Kelompok Pemuda Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Pasar Rakyat",
+        "rowspan": 2,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Ketersediaan Pasar di Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Ketersediaan Pasar di Desa",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendesa PDTT, Kemendag, Kementerian Koperasi dan UKM, Kementan, LPDB-KUMKM, BKPM, Perpustakaan Nasional dan Lembaga Arsip Daerah",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Disperindag, Dinas Koperasi dan UKM, Dinas Pertanian",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Perdagangan, Dinas Koperasi dana UKM, Dinas Pertanian dan Perikanan",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes, Bumdes, Kelompok Tani dan Pengrajin",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Kemudahan akses menuju pasar di Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Kemudahan akses menuju pasar di Desa",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kementerian PUPR, Kemenhub, Kemendesa PDTT, Kementan, BPIW, BNPB, LKPP",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PUPR, Dinas Perhubungan, Dinas Pembangunan",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PUPR, Dinas Perhubungan, Dinas PMD",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes, Bumdes, Kelompok Masyarakat",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Toko/Pertokoan",
+        "rowspan": 2,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Ketersediaan Toko/Pertokoan  di Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Ketersediaan Toko/ Pertokoan di Desa",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendesa PDTT, Kementerian Koperasi dan UKM, Kementerian PUPR, Kemendag, LPDB-KUMKM, BPIW, BKPM",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Koperasi dan UKM, Disperindag, Dinas PU dan Penataan Ruang",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Disperindag, Dinas Koperasi dan UKM, Dinas PU",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes, Bumdes, Kelompok Masyarakat",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Kemudahan akses menuju toko/pertokoan di Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Kemudahan akses menuju toko/ pertokoan di Desa",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendesa PDTT, Kementerian PUPR, Kemenhub, Kemendag, BPIW, BNPB, LPDB-KUMKM",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PUPR, Dishub, Disperindag",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PU, Dishub, Disperindag",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes, Bumdes, Kelompok Masyarakat",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Kedai/Rumah Makan",
+        "rowspan": 2,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Ketersediaan Kedai/Rumah Makan di Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Ketersediaan Kedai/ Rumah Makan di Desa",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendesa PDTT, Kemenparekraf, Kementerian Koperasi dan UKM, Kemendag, LPDB-KUMKM, Bekraf, BKPM",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Koperasi dan UKM, Disperindag, Dinas Pariwisata",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Koperasi dan UKM, Disperindag, Dinas Pariwisata",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes, Bumdes, Kelompok Masyarakat",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Kemudahan akses menuju Kedai/Rumah Makan di Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Kemudahan akses menuju Kedai/ Rumah Makan di Desa",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendesa PDTT, Kementerian PUPR, kemenhub, Kemenparekraf, BPIW, Bekraf, LPDB-KUMKM",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dias PUPR, Dishub, Dinas Pariwisata",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PU, Dishub, Dinas Pariwisata",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes, Bumdes, Kelompok Masyarakat",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Penginapan",
+        "rowspan": 2,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Ketersediaan Penginapan di Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Ketersediaan Penginapan di Desa",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendesa PDTT, Kemenparekraf, Kementerian Koperasi dan UKM, Kemendag, Bekraf, BPIW, LPDB-KUMKM",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Pariwisata, Dinas PUPR, Dinas Perdagangan dan Koperasi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Pariwisata, Dinas PU, Dinas Perdagangan dan Koperasi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes, Bumdes, Kelompok Masyarakat",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Kemudahan akses menuju Penginapan di Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Kemudahan akses menuju Penginapan di Desa",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendesa PDTT, Kementerian PUPR, Kemenhub, Kemenparekraf, BPIW-Bekraf, LPDB-KUMKM",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PUPR, Dishub, Dinas Pariwisata",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PU, Dishub, Dinas Pariwisata",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes, Bumdes, Kelompok Masyarakat",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Layanan Pos dan Logistik",
+        "rowspan": 2,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Ketersediaan Layanan Pos dan Logistik di Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Ketersediaan Layanan Pos dan/ Logistik di Desa",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendesa PDTT, Kementerian Kominfo, Kemenhub, BUMN, PT Pos Indonesia, Bulog, BPOM",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dishub, Diskominfo, Dinas Koperasi dan UKM",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dishub, Diskominfo, Dinas Koeprasi dan UKM",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes, Bumdes, Kelompok Masyarakat",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Kemudahan akses menuju Layanan Pos dan Logistik di Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Kemudahan akses menuju Layanan Pos dan Logistik di Desa",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendesa PDTT, Kementerian Kominfo, Kemenhub, BUMN, PT Pos Indonesia, Bulog, BPOM",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dishub, Diskominfo, Dinas Perdagangan",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dishub, Dinas Komunikasi dan Informatika, Dinas Koperasi dan UKM",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes, Bumdes, Kelompok Masyarakat",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Lembaga Ekonomi",
+        "rowspan": 6,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Keberadaan BUM Desa/BUM Desa Bersama di Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Apakah terdapat BUM Desa/ BUM Desa Bersama di Desa?",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendesa PDTT, Kementerian Koperasi dan UKM, Kemenkeu, Kementerian BUMN, BUMN, Lembaga Pengembangan Ekonomi,Bappenas",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PMD, Dinas Koperasi dan UKM, Dinas Perdagangan",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PMD,Dinas Koperasi dan UKM, Dinas Perdagangan",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes, Bumdes",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "BUM Desa/BUM Desa Bersama sudah berbadan hukum",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Apakah BUM Desa/ BUM Desa Bersama tersebut sudah berbadan hukum?",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendesa PDTT, Kemenkumham, Kementerian Koperasi dan UKM, BKPM, LPED",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PMD, Dinas Koperasi dan UKM, Dinas Perdagangan",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PMD,Dinas Koperasi dan UKM, Dinas Perdagangan",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes, Bumdes",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Operasional BUM Desa/BUM Desa Bersama",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Hari Operasional BUM Desa/ BUM Desa Bersama",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendesa PDTT, Kementeian Koperasi dan UKM, Kemenkeu, BKPM, LPED",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PMD, Dinas Koperasi dan UKM, Dinas Perdagangan",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PMD,Dinas Koperasi dan UKM, Dinas Perdagangan",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes, Bumdes",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Ketersediaan Lembaga Ekonomi lainnya di Desa (selain BUM Desa/BUM Desa bersama)",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Ketersediaan Lembaga Ekonomi lainnya di Desa (selain BUM Desa/ BUM Desa bersama):",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendesa PDTT, Kementerian Koperasi dan UKM, Kemenkeu, Kemensos, BKPM, LPED, OJK",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PMD, Dinas Koperasi dan UKM, Dinas Perdagangan",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PMD,Dinas Koperasi dan UKM, Dinas Perdagangan",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Ketersediaan Lembaga Ekonomi KUD",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Ketersediaan Pasar di Desa",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendesa PDTT, Kementerian Koperasi dan UKM, Kemenkeu, Kemensos, BKPM, LPED, OJK",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PMD, Dinas Koperasi dan UKM, Dinas Perdagangan",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PMD,Dinas Koperasi dan UKM, Dinas Perdagangan",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes, Lembaga Ekonomi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Ketersediaan Lembaga Ekonomi UMKM",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "ii. Ketersediaan UMKM",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemenkop UKM, Kemendesa PDTT, Kemendag, kemenkeu, Bekraf, BKPM, OJK, Lembaga Pembiayaan",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Koperasi dan UKM, Dinas Perdagangan, Dinas Perindustrian",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Koperasi dan UKM, Dinas Perdagangan, Dinas Perindustrian",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes, Lembaga Ekonomi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Layanan Keuangan",
+        "rowspan": 6,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Ketersediaan layanan perbankan di desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Ketersediaan layanan perbankan di desa",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemenkeu, BI, OJK, Kemendesa PDTT, BKPM, LKM",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Koperasi dan UKM, Dinas Perdagangan",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Koperasi dan UKM, Dinsos",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes, Lembaga Ekonomi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Operasional layanan perbankan",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "i. Hari operasional layanan perbankan",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemenkeu, BI, OJK, Kemendesa PDTT, BKPM, LKM",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Koperasi dan UKM, Dinas Perdagangan",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Koperasi dan UKM, Dinsos",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes, Lembaga Ekonomi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Keberadaan Layanan Fasilitas Kredit Berupa KUR",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "i. Terdapat Layanan Fasilitas Kredit Berupa KUR",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemenkeu, Kemenkop UKM, Kemendesa PDTT, OJK, Bank Pemerintah, Lembaga Keuangan Mikro, Aosiasi Perbankan Indonesia",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Koperasi dan UKM, Disperindag",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Koperasi dan UKM, Dinas PMD",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes, Lembaga Ekonomi, lembaga Pengelola Keuangan Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Keberadaan Layanan Fasilitas Kredit Berupa KKP-E ",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "ii. Terdapat Layanan Fasilitas Kredit Berupa KKP-E",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemenkop UKM, Kemenkeu, OJK, Kemendesa PDTT, Bank Pemerintah, Lembaga Keuangan Mikro",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Koperasi dan UKM, Disperindag",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Koperasi dan UKM, Dinas PMD",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes, Lembaga Ekonomi, lembaga Pengelola Keuangan Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Keberadaan Layanan Fasilitas Kredit Berupa KUK ",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "iii. Terdapat Layanan Fasilitas Kredit Berupa KUK",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemenkop UKM, Kemenkeu, OJK, Kemendesa PDTT, Bank Pemeintah, Lembaga Keuangan Mikro",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Koperasi dan UKM, Disperindag",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Koperasi dan UKM, Dinas PMD",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes, Lembaga Ekonomi Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Status Layanan Fasilitas Kredit di Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Status Layanan Fasilitas Kredit",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemenkeu, Kemenkop UKM, OJK, Bank Pemerintah, Lembaga Keuangan Mikro,lembaga Pembiayaan",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Koperasi dan UKM, Disperindag",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Koperasi dan UKM, Dinas PMD",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemdes, Lembaga Ekonomi Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "4",
+        "rowspan": 18,
+        "colspan": 1,
+        "class": "font-bold text-gray-800 align-top"
+      },
+      {
+        "type": "text",
+        "value": "LINGKUNGAN",
+        "rowspan": 18,
+        "colspan": 1,
+        "class": "font-bold text-gray-800 align-top"
+      },
+      {
+        "type": "text",
+        "value": "SUB-DIMENSI PENGELOLAAN LINGKUNGAN",
+        "rowspan": 13,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Kearifan Lingkungan",
+        "rowspan": 4,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Terdapat upaya menjaga/mempertahankan/melestarikan kearifan lingkungan berupa atraksi alam/sumberdaya alam/keindahan alam yang ada di desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Apakah terdapat upaya menjaga/ mempertahankan/ melestarikan kearifan lingkungan berupa atraksi alam/ sumberdaya alam/ keindahan alam yang ada di desa",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "KLHK, Kemenparekraf, Kemendesa PDTT, Bappenas",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Lingkungan Hidup Provinsi, Dinas Pariwisata Provinsi, Bappeda Provinsi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Lingkungan Hidup Kab/Kota, Dinas Pariwisata Kab/Kota",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemerintah Desa, Pokdarwis",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "LSM, Swasta, BUMDes, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Terdapat peraturan/regulasi yang mengatur terkait pelestarian lingkungan di Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Apakah terdapat peraturan/ regulasi yang mengatur terkait pelestarian lingkungan di Desa?",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "KLHK, Kemendagri, Kemendesa PDTT Bappenas, BSN",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Lingkungan Hidup Provinsi, Dinas Pemerdayaan Masyarakat Desa Provinsi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Lingkungan Hidup Kab/Kota, Dinas Pemberdayaan Masyarakat Kab/Kota",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemerintah Desa, BPD, Lembaga Masyarakat Adat",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "LSM, Swasta, Akademisi ",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Terdapat kegiatan pelestarian lingkungan berbasis kearifan lokal di bidang lingkungan di Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Apakah terdapat kegiatan pelestarian lingkungan berbasis kearifan lokal di bidang lingkungan di Desa (seperti Awik-awik)?",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "KLHK, Kemenparekraf, Kemendesa PDTT, Bappenas",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Lingkungan Hidup Provinsi, Dinas Pariwisata Provinsi, Dinas Kebuudayaan Provinsi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Lingkungan Hidup Kab/Kota, Dinas Pemberdayaan Masyarakat dan Desa (DPMD) Kab/Kota",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemerintah Desa, Lembaga Masyarakat Adat",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "BUMDes, LSM, Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Terdapat pemanfaatan Energi Baru Terbarukan di desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Terdapat pemanfaatan Energi Baru Terbarukan di desa",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kementerian ESDM, Kemendesa PDTT, KLHK, Bappenas, BPPT",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas ESDM Provinsi, Dinas Lingkungan Hidup Provinsi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas ESDM Kab/Kota, Dinas Pemberdayaan Masyarakat dan Desa Kab/Kota",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemerintah Desa, Kelompok Masyarakat",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "BUMDesa, Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Sistem Pengelolaan Sampah",
+        "rowspan": 3,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Ketersediaan Tempat Penampuangan Pembuangan Sampah di Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Tempat pembuangan sampah di Desa",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "KLHK, Kemendesa PDTT, Bappenas",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Lingkungan Hidup Provinsi, Bappeda Provinsi, Dinas Pemberdayaan Masyarakat dan Desa (DPMD) Provinsi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Lingkungan Hidup Kabupaten/Kota, Dinas Pemberdayaan Masyarakat dan Desa (DPMD) Kabupaten/Kota",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemerintah Desa, ",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "BUMDesa, LSM, Swasta, Akademisi ",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Ketersediaan Pengolahan Sampah di desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Ketersediaan Penginapan di Desa",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "KLHK, Kemendagri, Kemendesa PDTT, Bappenas, BPPT",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Lingkungan Hidup Provinsi, Dinas Pemberdayaan Masyarakat dan Desa (DPMD) Provinsi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Lingkungan Hidup Kabupaten/Kota, Dinas Pemberdayaan Masyarakat dan Desa (DPMD) Kabupaten/Kota",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemerintah Desa, Lembaga Masyarakat Desa, BPD",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "BUMDesa, Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Ketersediaan Pemanfaatan Sampah di desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Dilakukan pemanfaatan sampah di desa",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "KLHK, Kemendagri, Kemendesa PDTT, Bappenas, BPPT",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Lingkungan Hidup Provinsi, Dinas Pemberdayaan Masyarakat dan Desa (DPMD) Provinsi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Lingkungan Hidup Kabupaten/Kota, Dinas Pemberdayaan Masyarakat dan Desa (DPMD) Kabupaten/Kota",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemerintah Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta, LSM, BUMDesa Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Tingkat Pencemaran Lingkungan",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Rata-rata kejadian pencemaran lingkungan",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Rata-rata kejadian pencemaran lingkungan",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "KLHK, Kemendesa PDTT, Kementerian Perindustrian, Kementerian ESDM, Bappenas, BPPT",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Lingkungan Hidup Provinsi, Dinas Perindustrian dan Perdagangan Provinsi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Lingkungan Hidup Kab/Kota, Dinas Kesehatan Kab/Kota, Dinas Perindustrian dan Perdagangan Kab/Kota",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemerintah Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "LSM, BUMDesa. Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Rumah Tangga Dengan Akses Sanitasi (Air Limbah Domestik) Aman",
+        "rowspan": 5,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Ketersediaan dan kepemilikan Jamban di Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "i. Ketersediaan dan kepemilikan Jamban di Desa",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "KLHK, Kementerian Perindustrian, Kementerian ESDM, Kemendesa PDTT, Bappenas, BPPT",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Kesehatan Provinsi, Dinas Pemberdayaan Masyarakat dan Desa (DPMD) Provinsi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Kesehatan Kabupaten/Kota, Dinas Pemberdayaan Masyarakat dan Desa (DPMD) Kabupaten/Kota",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemerintah Desa, BPD, Lembaga Masyarakat Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta, BUMDesa, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Keberfungsian jamban",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "ii. Keberfungsian jamban",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "KLHK, Kemendesa Perindustrian, Kementerian ESDM, Kemendesa PDTT, Bappenas, BPPT",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Lingkungan Hidup Provinsi, Dinas Perindustrian dan Perdagangan Provinsi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Lingkungan Hidup Kabupaten/Kota, Dinas Kesehatan Kabupaten/Kota, Dinas Perindustrian dan Perdagangan Kabupaten/Kota",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemerintah Desa, BPD, Lembaga Masyarakat Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "BUMDesa, LSM, Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Ketersediaan Tangki Septik (Komunal/ Bersama)",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "i. Ketersediaan Septic Tank (Pilihan: Komunal / Individual)",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kementerian PUPR, Kementerian Kesehatan, Kemendesa PDTT, Bappenas, BPPT",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Perkim Provinsi, Dinas  Kesehatan Provinsi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Kesehatan Kabupaten/Kota, Dinas PUPR Kabupaten/Kota, Dinas Lingkungan Hidup Kabupaten/Kota",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemerintah Desa, BPD, Lembaga Masyarakat Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "BUMDesa, LSM, Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Keberfungsian Tangki Septik",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "ii. Keberfungsian Septic Tank",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kementerian PUPR, Kementerian Kesehatan, Kemendesa PDTT, Bappenas, BPPT",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Perkim Provinsi, Dinas  Kesehatan Provinsi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Kesehatan Kabupaten/Kota, Dinas PUPR Kabupaten/Kota, Dinas Lingkungan Hidup Kabupaten/Kota",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemerintah Desa, BPD, Lembaga Masyarakat Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "BUMDesa, LSM, Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Pembuangan Air Limbah Cair Rumah",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Pembuangan Air Limbah Cair Rumah Tangga",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kementerian PUPR, Kementerian Kesehatan, Kemendesa PDTT, Bappenas, BPPT",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Perkim Provinsi, Dinas  Kesehatan Provinsi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Kesehatan Kabupaten/Kota, Dinas PUPR Kabupaten/Kota, Dinas Lingkungan Hidup Kabupaten/Kota",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemerintah Desa, BPD, Lembaga Masyarakat Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "BUMDesa, LSM, Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "SUB-DIMENSI PENANGGULANGAN BENCANA",
+        "rowspan": 5,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Penanggulangan Bencana",
+        "rowspan": 5,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Ketersediaan Aspek informasi Kebencanaan",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Ketersediaan aspek informasi kebencanaan",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendagri, Kemensos, Kemenkominfo, KLHK, BNPB, BMKG, BIG, LIPI",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "BPBD, Dinas Komunikasi dan Informatika, Dinas Lingkungan Hidup Provinsi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "BPBD Kabupaten/Kota, Dinas kominfo Kabupaten/Kota, Dinas Pendidikan Kabupaten/Kota",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemerintah Desa, Lembaga Masyarakat Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "LSM, Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Ketersediaan Fasilitas Mitigasi Bencana ",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Ketersediaan Fasilitas Mitigasi Bencana",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendagri, Kementerian PUPR, Kemensos, Kemenkominfo, KLHK, BNPB, BMKG, BIG, LIPI",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "BPBD, Dinas PUPR Provinsi, Dinas Lingkungan Hidup Provinsi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "BPBD Kabupaten/Kota, Dinas Pertanian Kabupaten/Kota, Dinas Pendidikan Kabupaten/Kota",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemerintah Desa, Lembaga Masyarakat Desa, Relawan Tanggap Bencana",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "LSM, Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Kemudahan Akses Menuju Fasilitas Mitigasi Bencana",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Kemudahan akses menuju fasilitas mitigasi bencana",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendagri, Kementerian PUPR, Kemensos, Kemenhub, BNPB, BMKG, BIG, LIPI",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "BPBD, Dinas PUPR Provinsi, Dinas Perhubungan Provinsi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "BPBD Kabupaten/Kota, Dinas Perhubungan Kabupaten/Kota, Dinas PUPR Kabupaten/Kota",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemerintah Desa, Lembaga Masyarakat Desa, Relawan Tanggap Bencana",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "LSM, Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Terdapat aktivitas Mitigasi dan atau Rehabilitasi Bencana di Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Terdapat aktivitas Mitigasi dan atau Rehabilitasi bencana di Desa",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendagri, Kementerian PUPR, KLHK, Kemensos, BNPB, BMKG, BIG, LIPI",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "BPBD, Dinas PUPR Provinsi, Dinas Lingkungan Hidup Provinsi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "BPBD Kabupaten/Kota, Dinas Kesehatan Kabupaten/Kota, Dinas Pendidikan Kabupaten/Kota",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemerintah Desa, Lembaga Masyarakat Desa, Relawan Tanggap Bencana",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "LSM, Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Ketersediaan Fasilitas Aspek Tanggap Darurat Bencana",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Ketersediaan fasilitas aspek tanggap darurat bencana",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendagri, Kementerian PUPR, Kemenkominfo, Kemensos, BNPB, BMKG, BIG, LIPI",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "BPBD, Dinas PUPR Provinsi, Dinas Kesehatan Provinsi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "BPBD Kabupaten/Kota, Dinas Sosial Kabupaten/Kota, Dinas Pendidikan Kabupaten/Kota",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemerintah Desa, Lembaga Masyarakat Desa, Relawan Tanggap Bencana",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "LSM, Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "5",
+        "rowspan": 10,
+        "colspan": 1,
+        "class": "font-bold text-gray-800 align-top"
+      },
+      {
+        "type": "text",
+        "value": "AKSESIBILITAS",
+        "rowspan": 10,
+        "colspan": 1,
+        "class": "font-bold text-gray-800 align-top"
+      },
+      {
+        "type": "text",
+        "value": "SUB-DIMENSI KONDISI AKSES JALAN",
+        "rowspan": 4,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Kondisi Jalan di desa",
+        "rowspan": 2,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Jenis Permukaan Jalan sebagian besar di desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Jenis Permukaan Jalan sebagian besar di desa",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kementerian PUPR, Kemendesa PDTT, Kemeterian Perhubungan, KLHK, LKPP, BIG, BUMN",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PUPR Provinsi, Dinas Perhubungan Provinsi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PUPR Kabupaten/Kota, Dinas Perhubungan Kabupaten/Kota",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemerintah Desa, Lembaga Masyarakat Desa,",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "BUMDesa, LSM, Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Kualitas sebagian besar jalan di Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Kualitas sebagian besar jalan di Desa",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kementerian PUPR, Kemendesa PDTT, Kemeterian Perhubungan, KLHK, BPKP, BIG, BUMN",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PUPR Provinsi, Dinas Perhubungan Provinsi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PUPR Kabupaten/Kota, Dinas Perhubungan Kabupaten/Kota",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemerintah Desa, Lembaga Masyarakat Desa,",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "BUMDesa, LSM, Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Kondisi Penerangan Jalan Utama Desa",
+        "rowspan": 2,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Ketersediaan penerangan di jalan-jalan utama di desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Ketersediaan penerangan di jalan-jalan utama di desa",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kementerian ESDM, Kemendesa PDTT, Kementerian PUPR, Kemenhub, PLN, LKPP, BUMN",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas ESDM Provinsi, Dinas Perhubungan Provinsi, Dinas PUPR Provinsi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PUPR Kabupaten/Kota, Dinas Perhubungan Kabupaten/Kota",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemerintah Desa, Lembaga Masyarakat Desa,",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "BUMDesa, Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Operasional desa dalam penyediaan penerangan di jalan-jalan utama di desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Operasional desa dalam penyediaan penerangan di jalan-jalan utama di desa",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kementerian ESDM, Kemendesa PDTT, Kemenkeu, KLHK, PLN, BUMN",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas ESDM Provinsi, Dinas Perhubungan Provinsi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PUPR Kabupaten/Kota, Dinas Perhubungan Kabupaten/Kota",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemerintah Desa, Lembaga Masyarakat Desa,",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "BUMDesa, Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "SUB-DIMENSI KEMUDAHAN AKSES",
+        "rowspan": 6,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Keberadaan Angkutan Perdesaan/Angkutan Lokal/ Sejenis",
+        "rowspan": 2,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Keberadaan Angkutan Perdesaan/Angkutan Lokal/ Sejenis di Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Bagaimana hari operasional Angkutan Perdesaan/ Angkutan Lokal/ Sejenis di Desa?",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemenhub, Kemendesa PDTT, Kemenkeu, Perusahaan Otobus, BUMN Transportasi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PUPR Provinsi, Dinas Perhubungan Provinsi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PUPR Kabupaten/Kota, Dinas Perhubungan Kabupaten/Kota",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemerintah Desa, Lembaga Masyarakat Desa,",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "BUMDesa, Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Operasional Angkutan Perdesaan/Angkutan Lokal/Sejenis  di Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Bagaimana hari operasional Angkutan Perdesaan/ Angkutan Lokal/ Sejenis di Desa?",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemenhub, Kemendesa PDTT, Kementerian PUPR, Kemenkeu, PLN, BUMN Transportasi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PUPR Provinsi, Dinas Perhubungan Provinsi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PUPR Kabupaten/Kota, Dinas Perhubungan Kabupaten/Kota",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemerintah Desa, Lembaga Masyarakat Desa,",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "BUMDesa, Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Akses Listrik",
+        "rowspan": 2,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Ketersediaan Pelayanan Listrik untuk rumah di desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Ketersediaan pelayanan listrik untuk rumah di desa?",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kementerian ESDM, Kemendesa PDTT, Kemenkeu, PLN, BUMN Lembaga Energi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PUPR Provinsi, Dinas ESDM Provinsi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PUPR Kabupaten/Kota, Dinas ESDM Kabupaten/Kota",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemerintah Desa, Lembaga Masyarakat Desa,",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "BUMDesa, Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Tersedia Lama Durasi layanan Listrik di Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Berapa Lama Durasi layanan Listrik di Desa?",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kementerian ESDM, Kemendesa PDTT, Kemenkeu, Kementerian PUPR, PLN, BUMN Lembaga Energi Terbarukan",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PUPR Provinsi, Dinas ESDM Provinsi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PUPR Kabupaten/Kota, Dinas ESDM Kabupaten/Kota",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemerintah Desa, Lembaga Masyarakat Desa,",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "BUMDesa, Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Layanan Telekomunikasi",
+        "rowspan": 2,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Ketersediaan Akses Telepon di sebagian besar wilayah Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Ketersediaan Akses Telepon di sebagian besar wilayah Desa",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemenkominfo, Kemendesa PDTT, Kementerian PUPR, BAKTI, Lembaga Penyedia Telekomunikasi Nasional",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Kominfo Provinsi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Kominfo Kabupaten/Kota, Dinas PUPR Kabupaten/Kota",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemerintah Desa, Lembaga Masyarakat Desa,",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "BUMDesa, Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Ketersediaan Akses Internet di sebagian besar wilayah Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Ketersediaan Akses Internet di sebagian besar wilayah Desa",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemenkominfo, Kemendesa PDTT, Kementerian PUPR, BAKTI, Lembaga Penyedia Jasa Internet (ISP)",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Kominfo Provinsi, Dinas PUPR Provinsi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Kominfo Kabupaten/Kota, Dinas Pendidikan dan kebudayaan Kabupaten/Kota",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemerintah Desa, Lembaga Masyarakat Desa,",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "BUMDesa, Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "6",
+        "rowspan": 16,
+        "colspan": 1,
+        "class": "font-bold text-gray-800 align-top"
+      },
+      {
+        "type": "text",
+        "value": "TATA KELOLA PEMERINTAHAN DESA",
+        "rowspan": 16,
+        "colspan": 1,
+        "class": "font-bold text-gray-800 align-top"
+      },
+      {
+        "type": "text",
+        "value": "SUB-DIMENSI KELEMBAGAAN DAN PELAYANAN DESA",
+        "rowspan": 7,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pelaksanaan Pelayanan dan Administrasi Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pelaksanaan Pelayanan dan Administrasi Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Apakah sudah dilaksanakan pelayanan administrasi untuk masyarakat desa?",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendagri, Kemendesa PDTT, Kemenkeu, BPKP, Lembaga Administrasi Negara",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Kesehatan Provinsi, BKD Provinsi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Kominfo Kabupaten/Kota, Dinas PMD Kabupaten/Kota",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemerintah Desa, BPD,",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Pemanfaatan Teknologi dalam Pelayanan Desa (SPBE)",
+        "rowspan": 4,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Publikasi Informasi Pelayanan kepada masyarakat desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Apakah sudah dilaksanakan publikasi informasi pelayanan kepada masyarakat desa?",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemenkominfo, Kemendesa PDTT, Kemendagri, BAKTI, Komisi Informasi Pusat",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Kominfo Provinsi, Dinas PMD Provinsi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Kominfo Kabupaten/Kota, Dinas PMD Kabupaten/Kota",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemerintah Desa, Lembaga Masyarakat Desa,",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "BUMDesa, Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Pelayanan Administrasi untuk masyarakat desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Apakah sudah dilaksanakan pelayanan administrasi untuk masyarakat desa?",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemenkeu, Kemendesa PDTT, Kemendagri, Lembaga Administrasi Negara, Komisi Aparatur Sipil Negara",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Kominfo Provinsi, Dinas PMD Provinsi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Kominfo Kabupaten/Kota, Dinas Dukcapil Kabupaten/Kota",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemerintah Desa, BPD,",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Pelayanan Pengaduan untuk masyarakat desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Apakah sudah dilaksanakan pelayanan pengaduan untuk masyarakat desa?",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendagri, Kemendesa PDTT, Kemenkumham, KORI, Komisi Informasi Pusat",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Kominfo Provinsi, Dinas PMD Provinsi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Kominfo Kabupaten/Kota, Dinas PMD Kabupaten/Kota",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemerintah Desa, BPD,",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Pelayanan Lainnya untuk masyarakat desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Apakah sudah dilaksanakan pelayanan lainnya untuk masyarakat desa?",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendagri, Kemendesa PDTT, Kemenkes, BNPB, BPS",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Kesehatan Provinsi, Dinas Sosial Provinsi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Kesehatan Kabupaten/Kota, Dinas PMD Kabupaten/Kota",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemerintah Desa, BPD,",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Musyawarah Desa",
+        "rowspan": 2,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Frekuensi Musyawarah Desa selama setahun terakhir",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Berapa Kali musyawarah Desa selama setahun terakhir?",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendagri, Kemendesa PDTT, BPMD, Bappenas",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Bappeda Provinsi, Dinas PMD Provinsi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Bappeda Kabupaten/Kota, Dinas PMD Kabupaten/Kota",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemerintah Desa, BPD,",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta, Akademisi, LSM",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Musyawarah Desa dihadiri oleh unsur masyarakat atau unsur masyarakat lainnya",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Musyawarah Desa dihadiri oleh unsur masyarakat atau unsur masyarakat lainnya",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendagri, Kemendesa PDTT, BPMD, Bappenas",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Pendidikan Provinsi, Dinas PMD Provinsi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Sosial Kabupaten/Kota, Dinas PMD Kabupaten/Kota",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemerintah Desa, BPD,",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta, Akademisi, LSM",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "SUB-DIMENSI TATA KELOLA KEUANGAN DESA",
+        "rowspan": 9,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pendapatan Asli Desa (PADes) dan Dana Desa",
+        "rowspan": 3,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pendapatan Asli Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Apakah terdapat Pendapatan Asli Desa?",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendagri, Kemendesa PDTT, Kemenkeu, BPMD, BPKP",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Parekraf Provinsi, Dinas PMD Provinsi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Koperasi dan UMKM Kabupaten/Kota, Dinas PMD Kabupaten/Kota",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemerintah Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "BUMDesa, Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Peningkatan PADes",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Peningkatan PADes",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendagri, Kemendesa PDTT, Kemenkeu, Kemenparekraf, BPMD, Bappenas, BPKP",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Parekraf Provinsi, Dinas PMD Provinsi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Koperasi dan UMKM Kabupaten/Kota, Dinas PMD Kabupaten/Kota",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemerintah Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "BUMDesa, Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Ketersediaan Penyertaan Modal dari Dana Desa kepada BUMDesa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Apakah dilakukan penyertaan modal dari Dana Desa kepada BUMDesa?",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendagri, Kemendesa PDTT, Kemenkeu, Bappenas, BPKP",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Koperasi dan UMKM Provinsi, Dinas PMD Provinsi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Keuangan Kabupaten/Kota, Dinas PMD Kabupaten/Kota",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemerintah Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "BUMDesa, Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Jumlah Kepemilikan dan Produktivitas Aset Desa",
+        "rowspan": 6,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Kepemilikan Aset berupa Tanah Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "i. Desa memiliki Aset berupa Tanah Desa",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kementerian ATR/BPN, Kemendesa PDTT, Kemendagri, BPN, BPKP",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Pertanahan dan Tata Ruang Provinsi, Dinas PMD Provinsi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PMD Kabupaten/Kota, ",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemerintah Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "BUMDesa, Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Kepemilikan Aset berupa Kantor Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "ii. Desa memiliki Aset berupa Kantor Desa",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendagri, Kemendesa PDTT, Kementerian PUPR, BPK, BPKP",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Pertanahan dan Tata Ruang Provinsi, Dinas PMD Provinsi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PMD Kabupaten/Kota, Dinas Perumahan, Kawasan Permukiman, dan Pertanahan Kabupaten/Kota",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemerintah Desa, BPD",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Kepemilikan Aset berupa Pasar Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "iii. Desa memiliki Aset berupa Pasar Desa",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendagri, Kemendesa PDTT, Kementerian Perdagangan, Kemenkeu, BPK, BPKP",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Koperasi dan UMKM Provinsi, Dinas PMD Provinsi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Perdagangan dan Koperasi Kabupaten/Kota, Dinas PMD Kabupaten/Kota",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemerintah Desa, BPD",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "BUMDesa, Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Kepemilikan Aset Lainnya",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "iv. Desa memiliki Aset Lainnya",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendagri, Kemendesa PDTT, Kementerian PUPR, Kemenkeu, BPK, BPKP",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Pemuda dan Olahraga atau Kebudayaan Provinsi, Dinas PMD Provinsi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Perdagangan dan Koperasi Kabupaten/Kota, Dinas PMD Kabupaten/Kota",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemerintah Desa, BPD",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "BUMDesa, Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "Produktivitas Kepemilikan Aset Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Produktivitas Kepemilikan Aset Desa",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendagri, Kemendesa PDTT, Kemenparekraf, Kemenkeu, Bappenas, BPKP",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Pariwisata dan Kebudayaan Provinsi, Dinas PMD Provinsi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Koperasi dan UMKM Kabupaten/Kota, Dinas PMD Kabupaten/Kota, Dinas Perdagangan atau Perindustrian Kabupaten/Kota",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Pemerintah Desa, BPD",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "BUMDesa, Swasta, Akademisi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ],
+    [
+      {
+        "type": "text",
+        "value": "inventarisasi Aset Desa",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "dynamic_score",
+        "item_name": "Apakah telah dilakukan inventarisasi aset desa?",
+        "rowspan": 1,
+        "colspan": 1
+      },
+      {
+        "type": "text",
+        "value": "Kemendagri, Kemendesa PDTT, Kemenkeu, BPN, BPKP, LKPP",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas PMD Provinsi",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "Dinas Pertahanan Kabupaten/Kota, Dinas PMD Kabupaten/Kota, Dinas Keuangan Daerah Kabupaten/Kota",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      },
+      {
+        "type": "text",
+        "value": "",
+        "rowspan": 1,
+        "colspan": 1,
+        "class": "align-top"
+      }
+    ]
+  ]
+}

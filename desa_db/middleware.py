@@ -2373,6 +2373,68 @@ def _compute_iku_json_raw(year: str, metric_filter: str = None):
         return {"error": str(e)}
     finally:
         con.close()
+def _compute_rekomendasi_scores(year: str) -> dict:
+    """
+    Computes per-province + national score distributions for the rekomendasi table.
+    For each item in intervensi_kegiatan_mapping.json, counts villages per score value
+    (1-4 only; score 5 = null = no intervention needed, omitted).
+
+    Returns:
+        {
+            "total":      { item_name: { "1": count, "2": count, ... }, ... },
+            "JAWA BARAT": { item_name: { "1": count, ... }, ... },
+            ...
+        }
+    """
+    if not os.path.exists(JSON_PATH):
+        return {}
+    try:
+        with open(JSON_PATH, "r", encoding="utf-8") as f:
+            mapping = json.load(f)
+
+        con, _ = helpers_get_db_connection(year)
+        try:
+            df = con.execute("SELECT * FROM master_data WHERE valid_to IS NULL").pl()
+            if df.height == 0 or "Provinsi" not in df.columns:
+                return {}
+
+            valid_items = [
+                item for item in mapping
+                if item in df.columns
+                and any(v is not None for v in mapping[item].values())
+            ]
+            if not valid_items:
+                return {}
+
+            result = {"total": {}}
+
+            for item in valid_items:
+                active_scores = [int(k) for k, v in mapping[item].items() if v is not None]
+                if not active_scores:
+                    continue
+                try:
+                    df_item = df.select([
+                        pl.col("Provinsi"),
+                        pl.col(item).cast(pl.Int64, strict=False).alias("_score")
+                    ]).filter(pl.col("_score").is_in(active_scores))
+                except Exception:
+                    continue
+
+                # National totals
+                for row in df_item.group_by("_score").agg(pl.len().alias("cnt")).to_dicts():
+                    result["total"].setdefault(item, {})[str(row["_score"])] = int(row["cnt"])
+
+                # Per-province
+                for row in df_item.group_by(["Provinsi", "_score"]).agg(pl.len().alias("cnt")).to_dicts():
+                    prov = row["Provinsi"]
+                    result.setdefault(prov, {}).setdefault(item, {})[str(row["_score"])] = int(row["cnt"])
+
+            return result
+        finally:
+            con.close()
+    except Exception:
+        traceback.print_exc()
+        return {}
 
 def helpers_generate_public_table_json(year: str):
     """
@@ -2412,6 +2474,7 @@ def helpers_generate_public_table_json(year: str):
             if metric in result:
                 year_data[metric] = result[metric]
 
+        year_data["rekomendasi_scores"] = _compute_rekomendasi_scores(year)
         existing[year] = year_data
 
         # Atomic write

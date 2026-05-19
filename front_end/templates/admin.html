@@ -19,8 +19,8 @@
     >
 
     <style>
-      body, .font-mono { 
-        font-family: 'Atkinson Hyperlegible', sans-serif !important; 
+      body, .font-mono {
+        font-family: 'Atkinson Hyperlegible', sans-serif !important;
       }
     </style>
 
@@ -44,7 +44,7 @@
           <h1 class="header_title_label text-sm font-bold flex items-center gap-2 truncate h-8 w-full text-slate-700
             border-r border-gray-300 dark:text-slate-100 dark:border-slate-600/50">
             <span class="text-blue-600 dark:text-blue-400 flex items-center gap-1.5">
-              <img 
+              <img
               src="/static/images/logo.svg"
               width="30"
               height="30"
@@ -1530,6 +1530,18 @@
               </div>
 
             </div>
+
+            <div class="documentation bottom-4 left-4 z-50 mb-3 inline-block py-2">
+              <a href="/documentation"
+                 class="flex items-center justify-center w-8 h-8 rounded-full
+                        bg-transparent border-2 border-dashed border-slate-600
+                        text-slate-600 font-bold hover:bg-blue-600 hover:text-white
+                        hover:border-solid transition-all shadow-lg cursor-pointer"
+                 title="dokumentasi">
+                ?
+              </a>
+            </div>
+
           </div>
         </div>
       </div>
@@ -1568,7 +1580,7 @@
           class="view_container_iku flex-1 p-4 overflow-hidden relative"
           style="display: none;"
         >
-          <div 
+          <div
             class="dashboard_table_wrapper dashboard-container shadow-md rounded h-full overflow-auto custom-scrollbar"
             @scroll="if($el.scrollTop + $el.clientHeight >= $el.scrollHeight - 200) action_LoadMoreIku()">
             <table
@@ -1591,7 +1603,7 @@
       x-data="{
           toast: { show: false, msg: '', type: 'info', timeout: null },
           modal: { show: false, type: 'info', title: '', msg: '', callback: null },
-         
+
           // Helper: Show Toast
           showToast(msg, type = 'info') {
               clearTimeout(this.toast.timeout);
@@ -1603,7 +1615,7 @@
                   this.toast.timeout = setTimeout(() => { this.toast.show = false }, 3000);
               }
           },
-         
+
           // Helper: Show Modal
           showModal(title, msg, type = 'info', cb = null) {
               this.modal = { show: true, type, title, msg, callback: cb };
@@ -1617,7 +1629,7 @@
       x-init="
           // Listen for legacy Alpine variables from parent
           $watch('setUiStatusMessage', val => val ? showToast(val, 'info') : (toast.show = false));
-         
+
           // Listen for legacy Alert State
           $watch('ui_AlertState', val => {
               if(val.isOpen) showModal(val.title, val.message, val.type, val.confirmCallback);
@@ -2208,14 +2220,14 @@
             this.initializeAgGridConfig();
             this.fetchVersionHistoryAndHierarchy();
             this.fetch_MainGridData_FromAPI();
-            
+
             this.ui_CheckMobileOrientation();
             window.addEventListener('resize', () => this.ui_CheckMobileOrientation());
           },
 
           ui_CheckMobileOrientation() {
             if (this._orientationForced) return;
-            
+
             if (window.innerHeight > window.innerWidth && window.innerWidth < 1024) {
               this.util_Confirm(
                 "Portrait Mode Terdeteksi",
@@ -2517,10 +2529,10 @@
             let currentArr = (currentVal && currentVal !== "__NONE__") ? currentVal.split(';') : [];
             let filteredVals = allOptions.filter(o => o.label.toLowerCase()
                 .includes(search.toLowerCase())).map(o => o.val);
-           
+
             if (filteredVals.length === 0) return currentVal;
             let arr = Array.from(new Set([...currentArr, ...filteredVals]));
-           
+
             if (arr.length === allOptions.length) return "";
             if (arr.length === 0) return "__NONE__";
             return arr.join(';');
@@ -3115,7 +3127,7 @@
             if (this.filter_NameSearch) params.append("Kode Wilayah Administrasi Desa", this.filter_NameSearch);
             if (this.iku_GroupByOverride) params.append("group_by", this.iku_GroupByOverride);
             if (this.filter_IdListInput.trim()) params.append("ids", this.filter_IdListInput.replace(/\n/g, ";"));
-            
+
             params.append("offset", this.iku_offset);
             params.append("limit", this.iku_limit);
             params.append("is_append", "false");
@@ -3154,7 +3166,7 @@
             if (this.filter_NameSearch) params.append("Kode Wilayah Administrasi Desa", this.filter_NameSearch);
             if (this.iku_GroupByOverride) params.append("group_by", this.iku_GroupByOverride);
             if (this.filter_IdListInput.trim()) params.append("ids", this.filter_IdListInput.replace(/\n/g, ";"));
-            
+
             params.append("offset", this.iku_offset);
             params.append("limit", this.iku_limit);
             params.append("is_append", "true");
@@ -3165,7 +3177,7 @@
                 credentials: 'include'
               });
               let htmlContent = await res.text();
-              
+
               if (!htmlContent.trim()) {
                   this.iku_hasMore = false;
               } else {
@@ -3176,7 +3188,7 @@
                       this.$nextTick(() => { this.ui_ApplyFreeze(); });
                   }
               }
-            } catch (e) { console.error("Error loading more IKU:", e); } 
+            } catch (e) { console.error("Error loading more IKU:", e); }
             finally { this.iku_isLoadingMore = false; }
           },
 
@@ -3334,7 +3346,7 @@
                     colOffset += span;
 
                     // Find specifically the "Capaian" column for horizontal sorting score
-                    let capaianColIdx = endIdx; 
+                    let capaianColIdx = endIdx;
                     for (let i = startIdx; i <= endIdx; i++) {
                         const subTh = headerRow2.querySelector(`th[data-col-idx="${i}"]`);
                         if (subTh && subTh.textContent.toLowerCase().includes('capaian')) {
@@ -3461,13 +3473,13 @@
                 dataRows.sort((a, b) => {
                     const tdA = a.querySelector(`td[data-col-idx="${this.iku_V_SortColIdx}"]`);
                     const tdB = b.querySelector(`td[data-col-idx="${this.iku_V_SortColIdx}"]`);
-                    
+
                     const textA = tdA ? tdA.textContent.trim() : '';
                     const textB = tdB ? tdB.textContent.trim() : '';
-                    
+
                     const valA = parseFloat(textA.replace('%', '').replace(/,/g, ''));
                     const valB = parseFloat(textB.replace('%', '').replace(/,/g, ''));
-                    
+
                     const isNumA = !isNaN(valA) && textA !== '';
                     const isNumB = !isNaN(valB) && textB !== '';
 
@@ -3518,7 +3530,7 @@
             // Add Sort Indicators
             if (this.iku_SortDir !== 0 && this.iku_SortColIdx !== -1) {
                 const arrow = this.iku_SortDir === 1 ? ' ▼' : ' ▲';
-                
+
                 // Sub Header Arrow
                 const activeTh = headerRow2.querySelector(`th[data-col-idx="${this.iku_SortColIdx}"]`);
                 if (activeTh) activeTh.textContent += arrow;

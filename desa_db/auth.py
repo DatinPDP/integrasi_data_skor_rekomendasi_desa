@@ -27,7 +27,14 @@ def auth_get_users_db():
     try:
         with open(AUTH_FILE, "r") as f:
             return json.load(f)
-    except:
+    except PermissionError as e:
+        print(f"[AUTH ERROR] Cannot read auth file (permissions): {e}")
+        return {}
+    except json.JSONDecodeError as e:
+        print(f"[AUTH ERROR] auth_users.json is corrupted or invalid JSON: {e}")
+        return {}
+    except OSError as e:
+        print(f"[AUTH ERROR] OS error reading auth file: {e}")
         return {}
 
 def auth_verify_password(plain_password, hashed_password):
@@ -118,5 +125,7 @@ async def auth_require_admin(request: Request):
     user = db.get(username)
     if not user or not user.get("active"):
         raise HTTPException(status_code=401, detail="User inactive or deleted")
+    if user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Access restricted to Admins only")
 
     return username
