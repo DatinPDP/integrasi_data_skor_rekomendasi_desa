@@ -5,9 +5,11 @@ import markdown
 import urllib.request
 import urllib.parse
 import traceback
+import shutil
+import time
 from datetime import datetime, timedelta
 from fastapi import FastAPI, Request, Form, Response
-from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from jose import jwt, JWTError
@@ -42,6 +44,16 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 DOC_IMAGES_DIR = os.path.join(BASE_DIR, "../documentation/images")
 os.makedirs(DOC_IMAGES_DIR, exist_ok=True)
 app.mount("/docs_images", StaticFiles(directory=DOC_IMAGES_DIR), name="docs_images")
+
+# Config Editor Settings
+CONFIG_DIR = os.path.abspath(os.path.join(BASE_DIR, "../.config"))
+HISTORY_DIR = os.path.join(CONFIG_DIR, ".history")
+os.makedirs(HISTORY_DIR, exist_ok=True)
+
+ALLOWED_CONFIG_FILES = [
+    "headers.json", "iku_mapping.json", "intervensi_kegiatan_mapping.json",
+    "rekomendasi.json", "table_structure.csv", "table_structure_IKU.csv"
+]
 
 # Points to your Data API
 # IMPORTANT: You must set this ENV VAR to your Cloudflare Backend URL
@@ -230,10 +242,10 @@ async def view_documentation(request: Request, lang: str = "EN"):
         docs_dir = os.path.abspath(os.path.join(BASE_DIR, "../documentation"))
         if not os.path.exists(docs_dir):
              return HTMLResponse(f"<h1>Directory Error</h1><p>Path not found: {docs_dir}</p><p>Verify that your docker-compose.yml mounts the documentation folder into the frontend container.</p>")
-        
+
         prefix = "INDONESIAN" if lang == "ID" else "ENGLISH"
         files = glob.glob(os.path.join(docs_dir, f"{prefix}*.md"))
-        
+
         if not files:
             md_content = f"# {prefix} document not found in {docs_dir}"
         else:
@@ -246,7 +258,7 @@ async def view_documentation(request: Request, lang: str = "EN"):
 
     # Render Markdown Check
     try:
-        html_body = markdown.markdown(md_content, extensions=['fenced_code', 'tables'])
+        html_body = markdown.markdown(md_content, extensions=['fenced_code', 'tables', 'toc'])
     except Exception as e:
         error_trace = traceback.format_exc()
         return HTMLResponse(f"<h1>Markdown Parsing Error</h1><pre style='background:#f4f4f4; padding:10px; color:red;'>{error_trace}</pre>")
@@ -262,124 +274,254 @@ async def view_documentation(request: Request, lang: str = "EN"):
         <script type="module">
             import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
             mermaid.initialize({{ startOnLoad: false, theme: 'neutral' }});
-            mermaid.run({{ nodes: document.querySelectorAll('pre code.language-mermaid') }}).catch(err => console.error(err));
-            
-            window.toggleTheme = function() {{
-                document.documentElement.classList.toggle('dark');
-            }}
+            mermaid.run({{ nodes: document.querySelectorAll('pre code.language-mermaid') }}).catch(console.error);
+            window.toggleTheme = () => document.documentElement.classList.toggle('dark');
         </script>
         <style>
-            /* Firefox Reader View - Monospace Edition */
-            :root {{
-                --bg: #F9F9FB;
-                --text: #333333;
-                --text-light: #555555;
-                --link: #0060DF;
-                --border: #D7D7DB;
-                --code-bg: #EDEDF0;
-                --nav-bg: #F0F0F4;
-            }}
-            html.dark {{
-                --bg: #202023;
-                --text: #FBFBFE;
-                --text-light: #AAAAAA;
-                --link: #8CB4FF;
-                --border: #4A4A4F;
-                --code-bg: #2A2A2E;
-                --nav-bg: #1C1C1F;
-            }}
-
-            body {{
-                background-color: var(--bg);
-                color: var(--text);
-                font-family: Consolas, Monaco, 'Courier New', monospace;
-                font-size: 18px;
-                line-height: 1.6;
-                margin: 0;
-                padding: 4rem 1rem 4rem 1rem; /* Top padding clears the fixed nav */
-                transition: background-color 0.2s, color 0.2s;
-            }}
-
-            .reader-container {{
-                max-width: 800px;
-                margin: 0 auto;
-            }}
-
-            /* Typographic Hierarchy */
-            h1, h2, h3, h4 {{ color: var(--text); font-weight: bold; line-height: 1.2; }}
-            h1 {{ font-size: 2.2em; margin: 0 0 1.5rem 0; border-bottom: 2px solid var(--border); padding-bottom: 0.3em; }}
-            h2 {{ font-size: 1.6em; margin: 2.5rem 0 1rem 0; border-bottom: 1px solid var(--border); padding-bottom: 0.2em; }}
-            h3 {{ font-size: 1.3em; margin: 2rem 0 1rem 0; }}
-            h4 {{ font-size: 1.1em; margin: 1.5rem 0 0.8rem 0; text-decoration: underline; }}
-
-            p {{ margin: 0 0 1.5rem 0; }}
-
-            /* Lists formatting restored */
-            ul {{ list-style-type: disc; margin: 0 0 1.5rem 2.5rem; padding: 0; }}
-            ol {{ list-style-type: decimal; margin: 0 0 1.5rem 2.5rem; padding: 0; }}
-            li {{ margin-bottom: 0.5rem; padding-left: 0.3rem; }}
-            li p {{ margin-bottom: 0.5rem; }}
-
-            a {{ color: var(--link); text-decoration: none; border-bottom: 1px dashed var(--link); }}
-            a:hover {{ border-bottom-style: solid; }}
-
-            /* Code block formatting */
-            code {{ background-color: var(--code-bg); padding: 0.2em 0.4em; border-radius: 4px; font-size: 0.9em; }}
-            pre {{ background-color: var(--code-bg); padding: 1.5rem; border-radius: 6px; border: 1px solid var(--border); overflow-x: auto; margin: 0 0 1.5rem 0; }}
-            pre code {{ background-color: transparent; padding: 0; border: none; font-size: 0.85em; }}
-
-            /* Elements */
-            table {{ width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; font-size: 0.9em; }}
-            th, td {{ border: 1px solid var(--border); padding: 0.8rem; text-align: left; }}
-            th {{ background-color: var(--code-bg); font-weight: bold; }}
-            
-            img {{ max-width: 100%; height: auto; display: block; margin: 2rem auto; border: 1px solid var(--border); border-radius: 4px; }}
-            blockquote {{ border-left: 4px solid var(--border); padding-left: 1.5rem; color: var(--text-light); margin: 0 0 1.5rem 0; font-style: italic; }}
-
-            /* Fixed Minimal Navigation Bar */
-            .nav-bar {{
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                background-color: var(--nav-bg);
-                border-bottom: 1px solid var(--border);
-                display: flex;
-                justify-content: flex-end;
-                align-items: center;
-                padding: 0.5rem 2rem;
-                z-index: 100;
-            }}
-            .nav-btn {{
-                background: transparent;
-                color: var(--text);
-                border: 1px solid var(--border);
-                padding: 0.3rem 0.8rem;
-                margin-left: 0.5rem;
-                border-radius: 4px;
-                font-family: inherit;
-                font-size: 0.85rem;
-                cursor: pointer;
-                text-decoration: none;
-            }}
-            .nav-btn:hover {{ background-color: var(--code-bg); border-bottom-style: solid; }}
-            .nav-btn.danger {{ color: #d73a49; border-color: #d73a49; border-bottom-style: solid; }}
-            .nav-btn.danger:hover {{ background-color: #d73a49; color: white; }}
-            html.dark .nav-btn.danger {{ color: #ff7b72; border-color: #ff7b72; }}
-            html.dark .nav-btn.danger:hover {{ background-color: #ff7b72; color: #000; }}
+            :root {{ --bg:#F9F9FB; --txt:#333; --link:#0060DF; --brd:#D7D7DB; --code:#EDEDF0; }}
+            html.dark {{ --bg:#202023; --txt:#FBFBFE; --link:#8CB4FF; --brd:#4A4A4F; --code:#2A2A2E; }}
+            body {{ background:var(--bg); color:var(--txt); font: 18px/1.6 Consolas, Monaco, monospace;
+            margin:0; padding:4rem 1rem; transition:.2s; }}
+            .container {{ max-width:800px; margin:0 auto; }}
+            h1, h2, h3, h4 {{ font-weight:bold; line-height:1.2; margin:2rem 0 1rem; }}
+            h1 {{ font-size:2.2em; border-bottom:2px solid var(--brd); padding-bottom:.3em; margin-top:0; }}
+            h2 {{ font-size:1.6em; border-bottom:1px solid var(--brd); padding-bottom:.2em; }}
+            h3 {{ font-size:1.3em; }}
+            h4 {{ font-size:1.1em; text-decoration:underline; }}
+            p, ul, ol, pre, table, blockquote {{ margin:0 0 1.5rem; }}
+            ul, ol {{ padding-left:2.5rem; }}
+            li {{ margin-bottom:.5rem; }}
+            a {{ color:var(--link); text-decoration:none; border-bottom:1px dashed; }}
+            a:hover {{ border-bottom-style:solid; }}
+            code, pre {{ background:var(--code); border-radius:4px; }}
+            code {{ padding:.2em .4em; font-size:.9em; }}
+            pre {{ padding:1.5rem; border:1px solid var(--brd); overflow-x:auto; }}
+            pre code {{ background:0 0; padding:0; border:none; }}
+            table {{ width:100%; border-collapse:collapse; font-size:.9em; }}
+            th, td {{ border:1px solid var(--brd); padding:.8rem; text-align:left; }}
+            th {{ background:var(--code); }}
+            img {{ max-width:100%; display:block; margin:2rem auto; border:1px solid var(--brd); border-radius:4px; }}
+            blockquote {{ border-left:4px solid var(--brd); padding-left:1.5rem; opacity:0.8; font-style:italic; }}
+            .nav {{ position:fixed; top:0; left:0; right:0; background:transparent; display:flex;
+            justify-content:flex-end; padding:.5rem 2rem; z-index:100; pointer-events:none; }}
+            .nav-btn {{ background:var(--bg); color:var(--txt); border:1px solid var(--brd); padding:.3rem .8rem;
+            margin-left:.5rem; border-radius:4px; font:inherit; font-size:.85rem; cursor:pointer;
+            text-decoration:none; pointer-events:auto; }}
+            .nav-btn:hover {{ background:var(--code); border-bottom-style:solid; }}
+            .nav-btn.danger {{ color:#d73a49; border-color:#d73a49; }}
+            .nav-btn.danger:hover {{ background:#d73a49; color:#fff; }}
+            html.dark .nav-btn.danger {{ color:#ff7b72; border-color:#ff7b72; }}
+            html.dark .nav-btn.danger:hover {{ background:#ff7b72; color:#000; }}
         </style>
     </head>
     <body>
-        <div class="nav-bar">
+        <div class="nav">
             <button onclick="toggleTheme()" class="nav-btn">Theme</button>
-            <a href="/documentation?lang=EN" class="nav-btn" title="English">EN</a>
-            <a href="/documentation?lang=ID" class="nav-btn" title="Indonesian">ID</a>
+            <a href="?lang=EN" class="nav-btn">EN</a>
+            <a href="?lang=ID" class="nav-btn">ID</a>
             <a href="/admin" class="nav-btn danger">Exit</a>
         </div>
-
-        <div class="reader-container">
+        <div class="container">
             {html_body}
         </div>
+    </body>
+    </html>
+    """
+    return HTMLResponse(content=html_content)
+
+@app.get("/api/config/read")
+async def api_read_config(request: Request, filename: str, hist_id: str = ""):
+    token = request.cookies.get("session_token")
+    if not token or get_current_user_role(token) != "admin": return Response(status_code=403)
+    if filename not in ALLOWED_CONFIG_FILES: return Response(status_code=403)
+
+    # Read target file or historical file
+    filepath = os.path.join(CONFIG_DIR, filename)
+    if hist_id:
+        if not hist_id.startswith(filename): return Response(status_code=403)
+        filepath = os.path.join(HISTORY_DIR, hist_id)
+
+    content = ""
+    if os.path.exists(filepath):
+        with open(filepath, "r", encoding="utf-8") as f: content = f.read()
+
+    # Get history tree
+    hist_pattern = os.path.join(HISTORY_DIR, f"{filename}.*.bak")
+    history_files = sorted(glob.glob(hist_pattern), reverse=True)
+    history = [{"id": os.path.basename(h), "time": os.path.getmtime(h)} for h in history_files]
+
+    return JSONResponse({"content": content, "history": history})
+
+
+@app.post("/api/config/save")
+async def api_save_config(request: Request, filename: str):
+    token = request.cookies.get("session_token")
+    if not token or get_current_user_role(token) != "admin": return Response(status_code=403)
+    if filename not in ALLOWED_CONFIG_FILES: return Response(status_code=403)
+
+    data = await request.json()
+    new_content = data.get("content", "")
+    filepath = os.path.join(CONFIG_DIR, filename)
+
+    # Create Undo Tree Backup
+    if os.path.exists(filepath):
+        ts = int(time.time())
+        bak_path = os.path.join(HISTORY_DIR, f"{filename}.{ts}.bak")
+        shutil.copy2(filepath, bak_path)
+
+    # Write new file
+    with open(filepath, "w", encoding="utf-8") as f:
+        f.write(new_content)
+    return JSONResponse({"status": "success"})
+
+@app.get("/config-editor", response_class=HTMLResponse)
+async def view_config_editor(request: Request):
+    token = request.cookies.get("session_token")
+    if not token: return RedirectResponse(url="/login")
+    try: role = get_current_user_role(token)
+    except Exception: role = "admin"
+    if role != "admin": return RedirectResponse(url="/user")
+
+    html_content = f"""
+    <!DOCTYPE html>
+    <html lang="en" class="dark">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Config Editor</title>
+        <style>
+            :root {{ --bg:#F9F9FB; --bg-sec:#F0F0F4; --txt:#333; --brd:#D7D7DB; --code:#EDEDF0; --hl:#0060DF; }}
+            html.dark {{ --bg: #000000; --bg-sec: #16161D; --txt: #DCD7BA; --brd: #363646; --code: #2A2A37; --hl: #7E9CD8; --success: #76946A; --danger: #C34043; }}
+
+            * {{ box-sizing: border-box; }}
+            body {{ background:var(--bg); color:var(--txt); font:14px/1.5 Consolas, monospace; margin:0;
+            display:flex; height:100vh; overflow:hidden; transition: background 0.2s, color 0.2s; }}
+
+            .sidebar {{ width:20%; min-width:220px; max-width:300px; background:var(--bg-sec);
+            border-right:1px solid var(--brd); display:flex; flex-direction:column; padding:15px; gap:15px; }}
+            .sidebar h2 {{ margin:0; font-size:16px; border-bottom:1px solid var(--brd); padding-bottom:10px; }}
+
+            .main {{ flex:1; display:flex; flex-direction:column; width:80%; }}
+            .topbar {{ display:flex; justify-content:space-between; align-items:center; padding:10px 20px;
+            border-bottom:1px solid var(--brd); background:var(--bg); }}
+
+            select, button, .btn {{ background:var(--bg); color:var(--txt); border:1px solid var(--brd);
+            padding:6px 12px; border-radius:4px; font:inherit; cursor:pointer; text-decoration:none; }}
+            select:hover, button:hover, .btn:hover {{ background:var(--code); }}
+            .btn-primary {{ border-color:#28a745; color:#28a745; font-weight:bold; }}
+            .btn-danger {{ border-color:#d73a49; color:#d73a49; }}
+            html.dark .btn-danger {{ border-color:#ff7b72; color:#ff7b72; }}
+
+            #history-list {{ flex:1; overflow-y:auto; border:1px solid var(--brd); background:var(--bg);
+            border-radius:4px; margin-top:5px; }}
+            .hist-item {{ padding:8px 10px; border-bottom:1px solid var(--brd); cursor:pointer; font-size:12px; }}
+            .hist-item:hover {{ background:var(--code); }}
+            .hist-item.active {{ border-left:3px solid var(--hl); background:var(--code); }}
+
+            #editor {{ flex:1; overflow:hidden; }}
+            .cm-editor {{ height:100%; outline:none !important; }}
+        </style>
+    </head>
+    <body>
+        <div class="sidebar">
+            <h2>Config Editor</h2>
+            <div>
+                <label style="font-size:12px; opacity:0.8;">Target File:</label>
+                <select id="file-select" style="width:100%; margin-top:5px;">
+                    <option value="" disabled selected>-- Select Config --</option>
+                    {"".join([f'<option value="{f}">{f}</option>' for f in ALLOWED_CONFIG_FILES])}
+                </select>
+            </div>
+            <div style="flex:1; display:flex; flex-direction:column; min-height:0;">
+                <label style="font-size:12px; opacity:0.8;">Undo Tree (History):</label>
+                <div id="history-list"></div>
+            </div>
+        </div>
+
+        <div class="main">
+            <div class="topbar">
+                <div style="display:flex; align-items:center; gap:15px;">
+                    <span id="status-msg" style="font-weight:bold; color:var(--hl);">Ready</span>
+                    <span id="file-lbl" style="opacity:0.7; font-size:12px;">No file selected</span>
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <button onclick="document.documentElement.classList.toggle('dark')">Theme</button>
+                    <button id="btn-save" class="btn-primary">Save</button>
+                    <a href="/admin" class="btn btn-danger">Exit</a>
+                </div>
+            </div>
+            <div id="editor"></div>
+        </div>
+
+        <script type="module">
+            import {{EditorView, basicSetup}} from "https://esm.sh/codemirror@6.0.1";
+            import {{json}} from "https://esm.sh/@codemirror/lang-json@6.0.1";
+
+            let view = new EditorView({{ extensions: [basicSetup, json()], parent: document.getElementById("editor") }});
+            let currentFile = "";
+            let currentHistId = "";
+
+            const statusMsg = document.getElementById("status-msg");
+            const fileLbl = document.getElementById("file-lbl");
+            const histList = document.getElementById("history-list");
+
+            window.loadFile = async function(filename, histId = "") {{
+                statusMsg.textContent = "Loading...";
+                let url = `/api/config/read?filename=${{filename}}`;
+                if (histId) url += `&hist_id=${{histId}}`;
+
+                let res = await fetch(url);
+                if (!res.ok) return statusMsg.textContent = "Error loading file";
+
+                let data = await res.json();
+
+                view.dispatch({{ changes: {{from: 0, to: view.state.doc.length, insert: data.content}} }});
+                currentFile = filename;
+                currentHistId = histId;
+                fileLbl.textContent = histId ? `Viewing past: ${{histId}}` : `Live: ${{filename}}`;
+                statusMsg.textContent = histId ? "Unsaved Preview" : "Loaded";
+                statusMsg.style.color = histId ? "#d73a49" : "var(--hl)";
+
+                if (!histId) {{
+                    renderHistory(filename, data.history, "");
+                }} else {{
+                    document.querySelectorAll('.hist-item').forEach(el => el.classList.remove('active'));
+                    document.getElementById('hist-' + histId)?.classList.add('active');
+                }}
+            }};
+
+            function renderHistory(filename, history, activeId) {{
+                histList.innerHTML = `<div id="hist-" class="hist-item ${{!activeId ? 'active' : ''}}"
+                    onclick="loadFile('${{filename}}')">[Current Live Version]</div>`;
+                history.forEach(h => {{
+                    let d = new Date(h.time * 1000).toLocaleString();
+                    histList.innerHTML += `<div id="hist-${{h.id}}"
+                        class="hist-item ${{activeId === h.id ? 'active' : ''}}"
+                        onclick="loadFile('${{filename}}', '${{h.id}}')">${{d}}</div>`;
+                }});
+            }}
+
+            document.getElementById("file-select").addEventListener("change", (e) => loadFile(e.target.value));
+
+            document.getElementById("btn-save").addEventListener("click", async () => {{
+                if (!currentFile) return;
+                if (currentHistId && !confirm("Warning: You are overwriting the live file with an old backup. Continue?")) return;
+
+                statusMsg.textContent = "Saving...";
+                let res = await fetch(`/api/config/save?filename=${{currentFile}}`, {{
+                    method: "POST", headers: {{"Content-Type": "application/json"}},
+                    body: JSON.stringify({{content: view.state.doc.toString()}})
+                }});
+
+                if (res.ok) {{
+                    statusMsg.textContent = "Saved!";
+                    statusMsg.style.color = "#28a745";
+                    loadFile(currentFile);
+                }} else {{
+                    statusMsg.textContent = "Error saving.";
+                }}
+            }});
+        </script>
     </body>
     </html>
     """
