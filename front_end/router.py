@@ -270,7 +270,7 @@ async def view_documentation(request: Request, lang: str = "EN"):
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Documentation Reader</title>
+        <title>Documentation</title>
         <script type="module">
             import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
             mermaid.initialize({{ startOnLoad: false, theme: 'neutral' }});
@@ -384,7 +384,7 @@ async def view_config_editor(request: Request):
 
     html_content = f"""
     <!DOCTYPE html>
-    <html lang="en" class="dark">
+    <html lang="en">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -392,32 +392,21 @@ async def view_config_editor(request: Request):
         <style>
             :root {{ --bg:#F9F9FB; --bg-sec:#F0F0F4; --txt:#333; --brd:#D7D7DB; --code:#EDEDF0; --hl:#0060DF; }}
             html.dark {{ --bg: #000000; --bg-sec: #16161D; --txt: #DCD7BA; --brd: #363646; --code: #2A2A37; --hl: #7E9CD8; --success: #76946A; --danger: #C34043; }}
-
-            * {{ box-sizing: border-box; }}
-            body {{ background:var(--bg); color:var(--txt); font:14px/1.5 Consolas, monospace; margin:0;
-            display:flex; height:100vh; overflow:hidden; transition: background 0.2s, color 0.2s; }}
-
-            .sidebar {{ width:20%; min-width:220px; max-width:300px; background:var(--bg-sec);
-            border-right:1px solid var(--brd); display:flex; flex-direction:column; padding:15px; gap:15px; }}
+            * {{ box-sizing:border-box; font-family:Consolas, monospace; }}
+            body {{ background:var(--bg); color:var(--txt); margin:0; display:flex; height:100vh; overflow:hidden; font-size:14px; transition: background 0.2s, color 0.2s; }}
+            .sidebar {{ width:20%; min-width:220px; max-width:300px; background:var(--bg-sec); border-right:1px solid var(--brd); display:flex; flex-direction:column; padding:15px; gap:15px; }}
             .sidebar h2 {{ margin:0; font-size:16px; border-bottom:1px solid var(--brd); padding-bottom:10px; }}
-
             .main {{ flex:1; display:flex; flex-direction:column; width:80%; }}
-            .topbar {{ display:flex; justify-content:space-between; align-items:center; padding:10px 20px;
-            border-bottom:1px solid var(--brd); background:var(--bg); }}
-
-            select, button, .btn {{ background:var(--bg); color:var(--txt); border:1px solid var(--brd);
-            padding:6px 12px; border-radius:4px; font:inherit; cursor:pointer; text-decoration:none; }}
+            .topbar {{ display:flex; justify-content:space-between; align-items:center; padding:10px 20px; border-bottom:1px solid var(--brd); background:var(--bg); }}
+            select, button, .btn {{ background:var(--bg); color:var(--txt); border:1px solid var(--brd); padding:6px 12px; border-radius:4px; font:inherit; cursor:pointer; text-decoration:none; }}
             select:hover, button:hover, .btn:hover {{ background:var(--code); }}
             .btn-primary {{ border-color:#28a745; color:#28a745; font-weight:bold; }}
             .btn-danger {{ border-color:#d73a49; color:#d73a49; }}
             html.dark .btn-danger {{ border-color:#ff7b72; color:#ff7b72; }}
-
-            #history-list {{ flex:1; overflow-y:auto; border:1px solid var(--brd); background:var(--bg);
-            border-radius:4px; margin-top:5px; }}
+            #history-list {{ flex:1; overflow-y:auto; border:1px solid var(--brd); background:var(--bg); border-radius:4px; margin-top:5px; }}
             .hist-item {{ padding:8px 10px; border-bottom:1px solid var(--brd); cursor:pointer; font-size:12px; }}
-            .hist-item:hover {{ background:var(--code); }}
-            .hist-item.active {{ border-left:3px solid var(--hl); background:var(--code); }}
-
+            .hist-item:hover, .hist-item.active {{ background:var(--code); }}
+            .hist-item.active {{ border-left:3px solid var(--hl); }}
             #editor {{ flex:1; overflow:hidden; }}
             .cm-editor {{ height:100%; outline:none !important; }}
         </style>
@@ -437,7 +426,6 @@ async def view_config_editor(request: Request):
                 <div id="history-list"></div>
             </div>
         </div>
-
         <div class="main">
             <div class="topbar">
                 <div style="display:flex; align-items:center; gap:15px;">
@@ -457,70 +445,47 @@ async def view_config_editor(request: Request):
             import {{EditorView, basicSetup}} from "https://esm.sh/codemirror@6.0.1";
             import {{json}} from "https://esm.sh/@codemirror/lang-json@6.0.1";
 
-            let view = new EditorView({{ extensions: [basicSetup, json()], parent: document.getElementById("editor") }});
-            let currentFile = "";
-            let currentHistId = "";
+            const $ = id => document.getElementById(id);
+            let view = new EditorView({{ extensions: [basicSetup, json()], parent: $("editor") }});
+            let state = {{ file: "", histId: "" }};
 
-            const statusMsg = document.getElementById("status-msg");
-            const fileLbl = document.getElementById("file-lbl");
-            const histList = document.getElementById("history-list");
-
-            window.loadFile = async function(filename, histId = "") {{
-                statusMsg.textContent = "Loading...";
-                let url = `/api/config/read?filename=${{filename}}`;
-                if (histId) url += `&hist_id=${{histId}}`;
-
-                let res = await fetch(url);
-                if (!res.ok) return statusMsg.textContent = "Error loading file";
+            window.loadFile = async (filename, histId = "") => {{
+                $("status-msg").textContent = "Loading...";
+                let res = await fetch(`/api/config/read?filename=${{filename}}${{histId ? '&hist_id='+histId : ''}}`);
+                if (!res.ok) return $("status-msg").textContent = "Error loading";
 
                 let data = await res.json();
-
                 view.dispatch({{ changes: {{from: 0, to: view.state.doc.length, insert: data.content}} }});
-                currentFile = filename;
-                currentHistId = histId;
-                fileLbl.textContent = histId ? `Viewing past: ${{histId}}` : `Live: ${{filename}}`;
-                statusMsg.textContent = histId ? "Unsaved Preview" : "Loaded";
-                statusMsg.style.color = histId ? "#d73a49" : "var(--hl)";
+                state = {{ file: filename, histId }};
+
+                $("file-lbl").textContent = histId ? `Viewing past: ${{histId}}` : `Live: ${{filename}}`;
+                $("status-msg").textContent = histId ? "Unsaved Preview" : "Loaded";
+                $("status-msg").style.color = histId ? "#d73a49" : "var(--hl)";
 
                 if (!histId) {{
-                    renderHistory(filename, data.history, "");
+                    $("history-list").innerHTML = `<div class="hist-item active" onclick="loadFile('${{filename}}')">[Current Live]</div>` +
+                        data.history.map(h => `<div id="hist-${{h.id}}" class="hist-item" onclick="loadFile('${{filename}}', '${{h.id}}')">${{new Date(h.time * 1000).toLocaleString()}}</div>`).join('');
                 }} else {{
                     document.querySelectorAll('.hist-item').forEach(el => el.classList.remove('active'));
-                    document.getElementById('hist-' + histId)?.classList.add('active');
+                    $('hist-' + histId)?.classList.add('active');
                 }}
             }};
-
-            function renderHistory(filename, history, activeId) {{
-                histList.innerHTML = `<div id="hist-" class="hist-item ${{!activeId ? 'active' : ''}}"
-                    onclick="loadFile('${{filename}}')">[Current Live Version]</div>`;
-                history.forEach(h => {{
-                    let d = new Date(h.time * 1000).toLocaleString();
-                    histList.innerHTML += `<div id="hist-${{h.id}}"
-                        class="hist-item ${{activeId === h.id ? 'active' : ''}}"
-                        onclick="loadFile('${{filename}}', '${{h.id}}')">${{d}}</div>`;
-                }});
-            }}
-
-            document.getElementById("file-select").addEventListener("change", (e) => loadFile(e.target.value));
-
-            document.getElementById("btn-save").addEventListener("click", async () => {{
-                if (!currentFile) return;
-                if (currentHistId && !confirm("Warning: You are overwriting the live file with an old backup. Continue?")) return;
-
-                statusMsg.textContent = "Saving...";
-                let res = await fetch(`/api/config/save?filename=${{currentFile}}`, {{
+            $("file-select").onchange = e => loadFile(e.target.value);
+            $("btn-save").onclick = async () => {{
+                if (!state.file || (state.histId && !confirm("Overwrite live file with old backup?"))) return;
+                $("status-msg").textContent = "Saving...";
+                let res = await fetch(`/api/config/save?filename=${{state.file}}`, {{
                     method: "POST", headers: {{"Content-Type": "application/json"}},
                     body: JSON.stringify({{content: view.state.doc.toString()}})
                 }});
-
                 if (res.ok) {{
-                    statusMsg.textContent = "Saved!";
-                    statusMsg.style.color = "#28a745";
-                    loadFile(currentFile);
+                    $("status-msg").textContent = "Saved!";
+                    $("status-msg").style.color = "#28a745";
+                    loadFile(state.file);
                 }} else {{
-                    statusMsg.textContent = "Error saving.";
+                    $("status-msg").textContent = "Error saving.";
                 }}
-            }});
+            }};
         </script>
     </body>
     </html>

@@ -275,7 +275,7 @@
       }
 
       .status-block.maju {
-        border-top: 4px solid #3b82f6;
+        border-top: 4px solid #84cc16;
       }
 
       .status-block.berkembang {
@@ -619,7 +619,7 @@
             class="dropdown-indikator-button"
             @click="dropdownOpen = !dropdownOpen; if(dropdownOpen) $nextTick(() => $refs.searchMetric.focus());"
           >
-            <span x-text="selectedMetric ? selectedMetric : '-- Pilih Indikator --'"></span>
+            <span x-text="selectedMetric ? (selectedMetric.toLowerCase() === 'total desa dan status desa' ? selectedMetric.toUpperCase() : selectedMetric) : '-- Pilih Indikator --'"></span>
             <svg
               width="20"
               height="20"
@@ -662,7 +662,7 @@
               <div
                 class="dropdown-option-item"
                 @click="selectedMetric = metric; dropdownOpen = false; search = '';"
-                x-text="metric"
+                x-text="metric.toLowerCase() === 'total desa dan status desa' ? metric.toUpperCase() : metric"
               ></div>
             </template>
 
@@ -794,7 +794,10 @@
                 </div>
               </div>
 
-              <div class="achievement-score-box">
+              <div
+                class="achievement-score-box"
+                x-show="selectedMetric !== 'Total Desa dan Status Desa'"
+              >
                 <div class="score-label">Capaian</div>
                 <div
                   class="score-value"
@@ -806,8 +809,8 @@
 
           <div
             id="map"
-            style="height: 500px; width: 100%; z-index: 1; border-radius: 8px;"
             x-init="initMap()"
+            style="height: 500px; width: 100%; z-index: 1; border-radius: 8px;"
           ></div>
 
           <div class="village-status-grid">
@@ -852,7 +855,7 @@
       <!-- Leaderboards -->
       <div
         class="leaderboard-grid fade-in-on-load"
-        x-show="!isLoading && selectedMetric && allData.length > 0"
+        x-show="!isLoading && selectedMetric && allData.length > 0 && selectedMetric !== 'Total Desa dan Status Desa'"
       >
         <div class="leaderboard-section styled-flat-card">
           <h3 class="leaderboard-title">Peringkat Nasional: <span x-text="selectedMetric"></span></h3>
@@ -989,22 +992,38 @@
       </div>
 
       <!-- Rekomendasi Table -->
-      <div class="rekomendasi-table styled-flat-card fade-in-on-load" x-show="!!tableSkeleton" style="display:none;">
-        <div style="padding:1.25rem 1.5rem 0.75rem;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;">
+      <div
+        class="rekomendasi-table styled-flat-card fade-in-on-load"
+        x-show="!!tableSkeleton"
+        style="display:none;"
+      >
+        <div
+          style="padding:1.25rem 1.5rem 0.75rem;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;"
+        >
           <div>
             <h3 style="margin:0;font-size:1rem;font-weight:700;color:#1e293b;">Rekomendasi Intervensi Kegiatan</h3>
             <p style="margin:0.25rem 0 0;font-size:0.8rem;color:#64748b;">
-              Menampilkan data: <span style="font-weight:600;" x-text="selectedProvince === 'total' ? 'Semua Provinsi (Nasional)' : 'Provinsi ' + toProperCase(selectedProvince)"></span>
+              Menampilkan data: <span
+                style="font-weight:600;"
+                x-text="selectedProvince === 'total' ? 'Semua Provinsi (Nasional)' : 'Provinsi ' + toProperCase(selectedProvince)"
+              ></span>
             </p>
           </div>
         </div>
         <div style="margin-left:12px;max-height:600px;overflow-y:auto;overflow-x:auto;">
-          <table style="table-layout:fixed;width:100%;border-collapse:collapse;font-family:'Atkinson Hyperlegible',sans-serif;">
+          <table
+            style="table-layout:fixed;width:100%;border-collapse:collapse;font-family:'Atkinson Hyperlegible',sans-serif;"
+          >
             <thead>
               <tr>
-                <template x-for="(header, i) in (tableSkeleton ? tableSkeleton.headers : [])" :key="i">
-                  <th x-text="header" class="rek-th relative"
-                      :style="[
+                <template
+                  x-for="(header, i) in (tableSkeleton ? tableSkeleton.headers : [])"
+                  :key="i"
+                >
+                  <th
+                    x-text="header"
+                    class="rek-th relative"
+                    :style="[
                         'width: 40px; min-width: 40px;',          /* NO */
                         'width: 80px; max-width: 100px;',         /* DIMENSI */
                         'width: 120px; max-width: 200px;',        /* SUB DIMENSI */
@@ -1016,7 +1035,8 @@
                         'width: 200px; min-width: 150px;',        /* KABUPATEN */
                         'width: 200px; min-width: 150px;',        /* DESA */
                         'width: 200px; min-width: 150px;'         /* LAINNYA */
-                      ][i]">
+                      ][i]"
+                  >
                   </th>
                 </template>
               </tr>
@@ -1041,7 +1061,7 @@
           year: new Date().getFullYear() - 1,
           dynamicYears: [],
           tabColors: ['#667b99', '#7589a4', '#8596ae', '#94a3b8', '#a3b0c2'],
-          isLoading: true,
+          isLoading: false,
           metrics: [],
           provinces: [],
           fullData: [],
@@ -1059,6 +1079,7 @@
           rekomendasiData: {},
           tableSkeleton: null,
           interventionMapping: {},
+          proportionalMarkers: null, // Add this for the map
 
           toProperCase(str) {
             if (!str) return "";
@@ -1250,7 +1271,7 @@
               ]);
               this.tableSkeleton = await skelRes.json();
               this.interventionMapping = await intRes.json();
-            } catch(e) { console.error('Failed to load static JSON:', e); }
+            } catch (e) {console.error('Failed to load static JSON:', e);}
 
             // Metric changes are now instant — all data already in cache
             this.$watch('selectedMetric', (val) => {
@@ -1287,15 +1308,105 @@
               }
 
               const yearData = this.cache[cacheKey] || {};
-              this.metrics = yearData.metrics || [];
+              this.metrics = (yearData.metrics || []).sort((a, b) => {
+                if (a.toLowerCase() === 'total desa dan status desa') return -1;
+                if (b.toLowerCase() === 'total desa dan status desa') return 1;
+                return 0;
+              });
 
               // Auto-select first metric to bypass empty state
               if (this.metrics.length > 0) {
-                this.selectedMetric = this.metrics[0];
+                // If the user previously selected the map metric, keep it selected
+                if (!this.selectedMetric || !this.metrics.includes(this.selectedMetric)) {
+                  this.selectedMetric = this.metrics[0];
+                }
                 this.fetchData(this.selectedMetric);  // synchronous — no await needed
+
+                if (this.selectedMetric === 'Total Desa dan Status Desa') {
+                  this.$nextTick(() => this.updateMapVisuals());
+                }
               }
             } catch (e) {console.error(e);}
             finally {this.isLoading = false;}
+          },
+
+          // Gradient fills are applied directly in renderMapLayer() via _applyGradientFills().
+          // This shim is kept so the existing loadMetricsForYear() call remains valid.
+          updateMapVisuals() { /* no-op */ },
+
+          // ── SVG gradient fill for "Total Desa dan Status Desa" ───────────────────
+          // Each province polygon is filled with a hard-stop left→right linearGradient
+          // whose colour-band widths are proportional to the village-status counts.
+          // Colours come from the existing .status-block.* CSS border-top values.
+          _applyGradientFills(desaMap, statusColors) {
+            const overlayPane = this.map.getPanes().overlayPane;
+            const svgEl = overlayPane ? overlayPane.querySelector('svg') : null;
+            if (!svgEl) return;
+
+            // Ensure <defs> exists inside Leaflet's SVG overlay
+            let defs = svgEl.querySelector('defs');
+            if (!defs) {
+              defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+              svgEl.insertBefore(defs, svgEl.firstChild);
+            }
+            // Remove stale gradients from previous renders
+            Array.from(defs.querySelectorAll('linearGradient[id^="sipiku-grad-"]'))
+              .forEach(el => el.remove());
+
+            this.geoJsonLayer.eachLayer(layer => {
+              if (!layer.feature || !layer._path) return;
+
+              const fprov = layer.feature.properties.PROVINSI.toUpperCase();
+              const row = desaMap[fprov];
+              if (!row || !row.total_desa) return;
+
+              const gradId = `sipiku-grad-${layer.feature.properties.KODE_PROV}`;
+
+              // Sort statuses descending – highest share goes to the left/west
+              const statuses = [
+                { count: row.mandiri         || 0, color: statusColors.mandiri },
+                { count: row.maju            || 0, color: statusColors.maju },
+                { count: row.berkembang      || 0, color: statusColors.berkembang },
+                { count: row.tertinggal      || 0, color: statusColors.tertinggal },
+                { count: row.sangat_tertinggal || 0, color: statusColors['sangat-tertinggal'] }
+              ].sort((a, b) => b.count - a.count).filter(s => s.count > 0);
+
+              // Build linearGradient with hard colour stops (no blending at edges)
+              const grad = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
+              grad.setAttribute('id', gradId);
+              grad.setAttribute('x1', '0%');
+              grad.setAttribute('y1', '0%');
+              grad.setAttribute('x2', '100%');
+              grad.setAttribute('y2', '0%');
+              // objectBoundingBox → percentages relative to each province's own bounding box
+              grad.setAttribute('gradientUnits', 'objectBoundingBox');
+
+              let pctSoFar = 0;
+              statuses.forEach(s => {
+                const pct = (s.count / row.total_desa) * 100;
+
+                // Hard stop: two stops at the same offset create a sharp boundary
+                const stopA = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+                stopA.setAttribute('offset', `${pctSoFar}%`);
+                stopA.setAttribute('stop-color', s.color);
+                stopA.setAttribute('stop-opacity', '0.82');
+                grad.appendChild(stopA);
+
+                pctSoFar += pct;
+
+                const stopB = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+                stopB.setAttribute('offset', `${pctSoFar}%`);
+                stopB.setAttribute('stop-color', s.color);
+                stopB.setAttribute('stop-opacity', '0.82');
+                grad.appendChild(stopB);
+              });
+
+              defs.appendChild(grad);
+
+              // Override the Leaflet-painted fill with our gradient
+              layer._path.setAttribute('fill', `url(#${gradId})`);
+              layer._path.setAttribute('fill-opacity', '0.82');
+            });
           },
 
           //Maps leaflet
@@ -1327,80 +1438,115 @@
 
           renderMapLayer() {
             if (!this.geoJsonData || !this.map) return;
-
-            if (this.geoJsonLayer) {
-              this.map.removeLayer(this.geoJsonLayer);
-            }
-
+            if (this.geoJsonLayer) this.map.removeLayer(this.geoJsonLayer);
             if (!this.allData || this.allData.length === 0) return;
 
-            // Identify dynamic columns dynamically based on your existing logic
-            const provKey = Object.keys(this.allData[0]).find(k => k.toLowerCase().includes('provinsi'));
-            // Fallback to 'capaian' or the last column for the numerical metric
-            const valKey = Object.keys(this.allData[0]).find(k => k.toLowerCase().includes('capaian')) || Object.keys(this.allData[0]).pop();
+            const isDesa = this.selectedMetric === 'Total Desa dan Status Desa';
 
+            // CSS .status-block.* border-top colours
+            const statusColors = {
+              mandiri:          '#16a34a',
+              maju:             '#84cc16',
+              berkembang:       '#eab308',
+              tertinggal:       '#f97316',
+              'sangat-tertinggal': '#ef4444'
+            };
+
+            const provKey = Object.keys(this.allData[0])
+              .find(k => k.toLowerCase().includes('provinsi'));
+
+            // Build lookup: province-name → row  (for both metric types)
             let maxVal = 0;
-            const provValues = {};
+            const provValues = {};   // non-desa: name → capaian value
+            const desaMap    = {};   // desa:     name → full row
 
-            // Map values and find maximum for opacity scaling
             this.allData.forEach(row => {
-              if (!row[provKey] || !row[valKey]) return;
+              if (!row[provKey]) return;
+              const pName = row[provKey].toUpperCase();
 
-              // Strip % or other non-numeric chars for calculation
-              const rawVal = row[valKey];
-              const val = parseFloat(String(rawVal).replace(/[^0-9.-]+/g, ""));
-
-              if (!isNaN(val)) {
-                provValues[row[provKey].toUpperCase()] = val;
-                if (val > maxVal) maxVal = val;
+              if (isDesa) {
+                desaMap[pName] = row;
+              } else {
+                const valKey = Object.keys(row).find(k => k.toLowerCase().includes('capaian'))
+                  || Object.keys(row).pop();
+                const val = parseFloat(String(row[valKey] || '').replace(/[^0-9.-]+/g, ''));
+                if (!isNaN(val)) {
+                  provValues[pName] = val;
+                  if (val > maxVal) maxVal = val;
+                }
               }
             });
 
             // Helper to blend between low (#e18ea2) and high (#a2e18e) colors
-            const interpolateColor = (color1, color2, factor) => {
-              const hex1 = color1.slice(1).match(/.{2}/g).map(x => parseInt(x, 16));
-              const hex2 = color2.slice(1).match(/.{2}/g).map(x => parseInt(x, 16));
-              const result = hex1.map((c, i) => Math.round(c + factor * (hex2[i] - c)).toString(16).padStart(2, '0'));
-              return `#${result.join('')}`;
+            const interpolateColor = (c1, c2, f) => {
+              const h1 = c1.slice(1).match(/.{2}/g).map(x => parseInt(x, 16));
+              const h2 = c2.slice(1).match(/.{2}/g).map(x => parseInt(x, 16));
+              return '#' + h1.map((c, i) =>
+                Math.round(c + f * (h2[i] - c)).toString(16).padStart(2, '0')
+              ).join('');
             };
 
             this.geoJsonLayer = L.geoJSON(this.geoJsonData, {
               style: (feature) => {
-                const featureProv = feature.properties.PROVINSI.toUpperCase();
-                const val = provValues[featureProv];
-
-                const factor = (val !== undefined && maxVal > 0) ? (val / maxVal) : 0;
-                // Cap factor between 0 and 1 just in case
-                const normalizedFactor = Math.max(0, Math.min(1, factor));
-
+                if (isDesa) {
+                  // Filled via SVG gradient after layer is added — use neutral placeholder
+                  return { fillColor: '#e2e8f0', weight: 1, opacity: 1,
+                           color: 'white', fillOpacity: 0.85 };
+                }
+                const fprov  = feature.properties.PROVINSI.toUpperCase();
+                const val    = provValues[fprov];
+                const factor = (val !== undefined && maxVal > 0)
+                  ? Math.max(0, Math.min(1, val / maxVal)) : 0;
                 return {
-                  fillColor: interpolateColor('#e18ea2', '#a2e18e', normalizedFactor),
-                  weight: 1,
-                  opacity: 1,
-                  color: 'white', // Border color
-                  fillOpacity: 0.8 // Changed from dynamic opacity to solid value
+                  fillColor: interpolateColor('#e18ea2', '#a2e18e', factor),
+                  weight: 1, opacity: 1, color: 'white', fillOpacity: 0.8
                 };
               },
+
               onEachFeature: (feature, layer) => {
-                const featureProv = feature.properties.PROVINSI.toUpperCase();
-                const val = provValues[featureProv];
-                const displayVal = val !== undefined ? val : 'N/A';
+                const fprov = feature.properties.PROVINSI.toUpperCase();
 
-                // Optional: Simple tooltip on hover
-                layer.bindTooltip(`<b>${feature.properties.PROVINSI}</b><br/>Value: ${displayVal}`, {
-                  sticky: true
-                });
+                if (isDesa) {
+                  const row = desaMap[fprov];
+                  if (row && row.total_desa > 0) {
+                    const sorted = [
+                      { label: 'Mandiri',          count: row.mandiri          || 0 },
+                      { label: 'Maju',             count: row.maju             || 0 },
+                      { label: 'Berkembang',       count: row.berkembang       || 0 },
+                      { label: 'Tertinggal',       count: row.tertinggal       || 0 },
+                      { label: 'Sangat Tertinggal',count: row.sangat_tertinggal|| 0 }
+                    ].sort((a, b) => b.count - a.count);
 
-                // Click on map polygon sets the dropdown/focus
-                layer.on('click', () => {
-                  // Assuming your exact casing in dropdown matches the data
-                  const matchedProv = this.provinces.find(p => p.toUpperCase() === featureProv);
-                  if (matchedProv) {
-                    this.selectedProvince = matchedProv;
+                    const lines = sorted
+                      .filter(s => s.count > 0)
+                      .map(s => {
+                        const pct = ((s.count / row.total_desa) * 100).toFixed(1);
+                        return `${s.label}: ${s.count.toLocaleString('id-ID')} (${pct}%)`;
+                      }).join('<br/>');
+
+                    layer.bindTooltip(
+                      `<b>${feature.properties.PROVINSI}</b><br/>` +
+                      `Total: ${row.total_desa.toLocaleString('id-ID')} desa<br/>${lines}`,
+                      { sticky: true }
+                    );
                   }
+                } else {
+                  const val = provValues[fprov];
+                  layer.bindTooltip(
+                    `<b>${feature.properties.PROVINSI}</b><br/>Value: ${val !== undefined ? val : 'N/A'}`,
+                    { sticky: true }
+                  );
+                }
+
+                layer.on('click', () => {
+                  const matchedProv = this.provinces.find(p => p.toUpperCase() === fprov);
+                  if (matchedProv) this.selectedProvince = matchedProv;
                 });
               }
             }).addTo(this.map);
+
+            // Paint each province polygon with a proportional hard-stop SVG gradient
+            if (isDesa) this._applyGradientFills(desaMap, statusColors);
           },
 
           focusMap(province) {

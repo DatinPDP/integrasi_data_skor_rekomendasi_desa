@@ -20,23 +20,6 @@ from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 from logging.handlers import TimedRotatingFileHandler
 
-# ==========================================
-# CONFIGURATION
-# ==========================================
-# /root
-#   /root
-#   /.config/headers.json
-#   /.config/intervensi_kegiatan_mapping.json
-#   /.config/rekomendasi.json
-#   /.config/table_structure.csv
-#   /desa_db/server.py
-#   /desa_db/middleware.py
-#   /front_end/router.py
-#   /front_end/templates/admin.html
-#   /front_end/templates/user.html
-#   /front_end/templates/login.html
-
-
 # Resolves to: /.../desa_db/
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -2473,6 +2456,47 @@ def helpers_generate_public_table_json(year: str):
             result = _compute_iku_json_raw(year, metric_filter=metric)
             if metric in result:
                 year_data[metric] = result[metric]
+
+        query_real_total = """
+            SELECT 
+                Provinsi AS provinsi,
+                CAST(COUNT(*) AS INTEGER) AS total_desa,
+                CAST(SUM(CASE WHEN LOWER(TRIM("Status ID")) = 'mandiri' THEN 1 ELSE 0 END) AS INTEGER) AS mandiri,
+                CAST(SUM(CASE WHEN LOWER(TRIM("Status ID")) = 'maju' THEN 1 ELSE 0 END) AS INTEGER) AS maju,
+                CAST(SUM(CASE WHEN LOWER(TRIM("Status ID")) = 'berkembang' THEN 1 ELSE 0 END) AS INTEGER) AS berkembang,
+                CAST(SUM(CASE WHEN LOWER(TRIM("Status ID")) = 'tertinggal' THEN 1 ELSE 0 END) AS INTEGER) AS tertinggal,
+                CAST(SUM(CASE WHEN LOWER(TRIM("Status ID")) = 'sangat tertinggal' THEN 1 ELSE 0 END) AS INTEGER) AS sangat_tertinggal
+            FROM master_data
+            WHERE Provinsi IS NOT NULL AND Provinsi != ''
+            GROUP BY Provinsi
+            ORDER BY Provinsi ASC
+        """
+
+        # Establish DuckDB connection
+        con, _ = helpers_get_db_connection(year)
+        try:
+            df_real_total = con.execute(query_real_total).df()
+        finally:
+            con.close()
+
+        real_total_records = df_real_total.to_dict(orient="records")
+
+        national_totals = {
+            "total_desa": int(df_real_total["total_desa"].sum()),
+            "mandiri": int(df_real_total["mandiri"].sum()),
+            "maju": int(df_real_total["maju"].sum()),
+            "berkembang": int(df_real_total["berkembang"].sum()),
+            "tertinggal": int(df_real_total["tertinggal"].sum()),
+            "sangat_tertinggal": int(df_real_total["sangat_tertinggal"].sum())
+        }
+
+        year_data["Total Desa dan Status Desa"] = {
+            "data": real_total_records,
+            "totals": national_totals
+        }
+
+        if "Total Desa dan Status Desa" not in year_data["metrics"]:
+            year_data["metrics"].append("Total Desa dan Status Desa")
 
         year_data["rekomendasi_scores"] = _compute_rekomendasi_scores(year)
         existing[year] = year_data

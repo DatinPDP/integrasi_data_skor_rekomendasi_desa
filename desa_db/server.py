@@ -40,19 +40,6 @@ from auth import (
     ACCESS_TOKEN_EXPIRE_MINUTES
 )
 
-# /root
-#   /root
-#   /.config/rekomendasi.json
-#   /.config/headers.json
-#   /.config/intervensi_kegiatan_mapping.json
-#   /.config/table_structure.csv
-#   /desa_db/server.py
-#   /desa_db/middleware.py
-#   /front_end/router.py
-#   /front_end/templates/admin.html
-#   /front_end/templates/user.html
-#   /front_end/templates/login.html
-
 def _excel_worker(year):
     """
     Runs in a separate process - all memory freed on exit
