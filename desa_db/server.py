@@ -46,7 +46,7 @@ def _excel_worker(year):
     """
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     EXPORT_FOLDER = os.path.abspath(os.path.join(BASE_DIR, "../exports"))
-    
+
     target_file = os.path.join(EXPORT_FOLDER, f"Export_Nasional_{year}_skor.xlsx")
     if os.path.exists(target_file):
         print(f"[{year}] Excel skor already exists. Skipping pre-render on startup.")
@@ -98,15 +98,15 @@ async def app_lifespan(app: FastAPI):
                 pj = multiprocessing.Process(target=_json_worker, args=(year,), daemon=True)
                 pj.start()
     yield # Server runs here
-    
+
     # Shutdown logic (if any) would go here
 
 app = FastAPI(
-    docs_url=None, 
-    redoc_url=None, 
+    docs_url=None,
+    redoc_url=None,
     openapi_url=None,
     lifespan=app_lifespan
-) 
+)
 
 # FastAPI Rate limiter
 limiter = Limiter(key_func=get_remote_address)
@@ -149,7 +149,7 @@ app.add_middleware(GZipMiddleware, minimum_size=1000)
 # Import helpers and logic from middleware
 try:
     from middleware import (
-        apply_rekomendasis, 
+        apply_rekomendasis,
         make_json_response,
         helpers_get_db_connection,
         helpers_init_db,
@@ -225,11 +225,11 @@ def endpoint_get_public_iku_json(request: Request, year: str, metric: str = Quer
     """
     Public JSON endpoint for homepage IKU visualization (no authentication).
     Rate limited per the industry standard (60 requests per minute per IP).
-    
+
     Query param:
     - ?metric=... → returns data array for that specific parent metric
     - No metric → returns only the list of available metrics
-    
+
     Returns:
         JSONResponse: exact structure from helpers_get_public_iku_json()
     """
@@ -260,12 +260,12 @@ async def login(creds: LoginRequest, response: JSONResponse = None):
     # Return success AND Set HttpOnly Cookie
     resp = JSONResponse(content={"message": "Login successful", "role": user['role']})
     resp.set_cookie(
-        key="session_token", 
-        value=access_token, 
+        key="session_token",
+        value=access_token,
         httponly=True,   # JavaScript cannot read this (Security +)
         max_age=21600,   # 6 hours
-        samesite="lax", 
-        secure=True      
+        samesite="lax",
+        secure=True
     )
     return resp
 
@@ -276,9 +276,9 @@ async def logout():
     """
     resp = JSONResponse(content={"message": "Logged out"})
     resp.delete_cookie(
-        key="session_token", 
-        httponly=True, 
-        samesite="lax", 
+        key="session_token",
+        httponly=True,
+        samesite="lax",
         secure=True
     )
     return resp
@@ -309,11 +309,11 @@ async def get_admin_page(request: Request):
     Redirects to /login if no session_token cookie is present.
     """
     token = request.cookies.get("session_token")
-    
+
     if not token:
         # User is not logged in -> Redirect
         return RedirectResponse(url="/login")
-    
+
     # User has a cookie -> Serve the page
     # (The API endpoints will still verify if the token is valid/expired)
     return FileResponse(os.path.join(TEMPLATE_DIR, "admin.html"))
@@ -484,7 +484,7 @@ async def endpoint_post_upload_chunk(
     # In a stricter system, we'd check os.path.getsize(temp_file_path) == offset
     with open(temp_file_path, "ab") as f:
         # Seek is redundant in 'ab' mode usually, but ensures safety if file implementation varies
-        f.seek(offset) 
+        f.seek(offset)
         f.write(content)
 
     return {"status": "ok", "received": len(content)}
@@ -514,16 +514,16 @@ async def endpoint_post_upload_finalize(year: str, payload: UploadFinalize):
     # Determine extension
     _, ext = os.path.splitext(payload.filename)
     if not ext: ext = ".xlsb"
-    
+
     safe_temp_path = os.path.join(TEMP_FOLDER, f"raw_{temp_id}{ext}")
     os.rename(temp_file_path, safe_temp_path)
 
     # Return ID for the frontend to call /preview
     return {
-        "status": "uploaded_raw", 
-        "temp_id": temp_id, 
+        "status": "uploaded_raw",
+        "temp_id": temp_id,
         "filename": payload.filename,
-        "path_ref": safe_temp_path 
+        "path_ref": safe_temp_path
     }
 
 # Upload preview table
@@ -535,10 +535,10 @@ async def endpoint_post_upload_preview(year: str, payload: PreviewRequest):
     # Reconstruct path based on temp_id
     _, ext = os.path.splitext(payload.filename)
     file_path = os.path.join(TEMP_FOLDER, f"raw_{payload.temp_id}{ext}")
-    
+
     if not os.path.exists(file_path):
         return JSONResponse(status_code=404, content={"error": "Temp file expired or missing"})
-        
+
     try:
         rows = helpers_read_excel_preview(file_path)
         return {"rows": rows}
@@ -554,7 +554,7 @@ async def endpoint_post_analyze_headers(year: str, payload: HeaderAnalysisReques
     """
     _, ext = os.path.splitext(payload.filename)
     file_path = os.path.join(TEMP_FOLDER, f"raw_{payload.temp_id}{ext}")
-    
+
     try:
         mapping, missing_headers = helpers_generate_header_mapping(file_path, payload.header_row_index)
         return {"mapping": mapping, "missing_headers": missing_headers}
@@ -573,24 +573,24 @@ async def endpoint_post_process_mapped(year: str, payload: ProcessRequest):
     """
     _, ext = os.path.splitext(payload.filename)
     file_path = os.path.join(TEMP_FOLDER, f"raw_{payload.temp_id}{ext}")
-    
+
     try:
         # Create a new temp ID for the Parquet result
         temp_id = str(uuid.uuid4())
-        
+
         result = helpers_internal_process_temp_file(
-            year, 
-            file_path, 
-            payload.filename, 
+            year,
+            file_path,
+            payload.filename,
             temp_id,
             payload.header_row_index,
             payload.data_start_index,
             payload.confirmed_mapping
         )
-        
+
         # Cleanup Raw File now
         if os.path.exists(file_path): os.remove(file_path)
-        
+
         return result
     except Exception as e:
         traceback.print_exc()
@@ -606,7 +606,7 @@ async def endpoint_post_commit_stage(
     ):
     """
     Commits staged Parquet into SCD Type 2 master_data.
-    
+
     Uses fully parameterized queries:
     - valid_to = ? for expire removed/changed
     - INSERT ... VALUES (?, ?, ?, ?) for new rows + commit log
@@ -634,7 +634,7 @@ async def endpoint_post_commit_stage(
         # Close REMOVED rows (Set valid_to = now)
         con.execute(f"""
             UPDATE master_data SET valid_to = '{now}'
-            WHERE valid_to IS NULL 
+            WHERE valid_to IS NULL
             AND "{ID_COL}" NOT IN (SELECT "{ID_COL}" FROM incoming)
         """)
 
@@ -658,7 +658,7 @@ async def endpoint_post_commit_stage(
         # Insert NEW and UPDATED versions (Set valid_from = now, valid_to = NULL)
         # Insert New IDs
         con.execute(f"""
-            INSERT INTO master_data 
+            INSERT INTO master_data
             SELECT '{now}', NULL, '{temp_id}', ?, i.* FROM incoming i
             WHERE i."{ID_COL}" NOT IN (
                 SELECT "{ID_COL}" FROM master_data WHERE valid_to IS NULL
@@ -754,12 +754,12 @@ def endpoint_get_query_data(
             # "DESCRIBE" is fast in DuckDB
             try:
                 valid_cols = [r[0] for r in con.execute("DESCRIBE master_data").fetchall()]
-                
+
                 if sort_by in valid_cols:
                     safe_dir = "DESC" if sort_dir.lower() == "desc" else "ASC"
-                    # sort to ensure pages don't shuffle rows. 
+                    # sort to ensure pages don't shuffle rows.
                     # Using ID_COL or rowid if available, but valid_from/Provinsi is a safe fallback.
-                    # add ID_COL as a secondary sort key to ensure consistent pagination 
+                    # add ID_COL as a secondary sort key to ensure consistent pagination
                     # even if values in the primary column are identical.
                     order_clause = f'ORDER BY "{sort_by}" {safe_dir}, "{ID_COL}" ASC'
             except Exception as e:
@@ -773,8 +773,8 @@ def endpoint_get_query_data(
 
         # Sanitize NaNs
         records = res.to_dicts()
-        
-        response = make_json_response(res) 
+
+        response = make_json_response(res)
         response.headers["X-Total-Count"] = str(total_rows)
         return response
 
@@ -811,7 +811,7 @@ def endpoint_get_history_versions(year: str):
             tables = [t[0] for t in con.execute("SHOW TABLES").fetchall()]
             if 'master_data' in tables:
                 query = """
-                    SELECT DISTINCT "Provinsi", "Kabupaten/ Kota", "Kecamatan" 
+                    SELECT DISTINCT "Provinsi", "Kabupaten/ Kota", "Kecamatan"
                     FROM master_data
                     WHERE valid_to IS NULL AND "Provinsi" IS NOT NULL
                     ORDER BY "Provinsi", "Kabupaten/ Kota", "Kecamatan"
@@ -841,22 +841,22 @@ def endpoint_get_history_versions(year: str):
 def endpoint_get_download_server_excel(year: str, request: Request):
     """
     Downloads Excel export (two sheets) for the given year.
-    
+
     Smart logic:
     - If NO filters and NO ?version → serves pre-compiled master file instantly
       (Export_Nasional_{year}_text.xlsx or Export_Nasional_{year}_skor.xlsx)
     - If any filter or ?version is present → builds on-the-fly using helpers_generate_excel_workbook
-    
+
     Features:
     - Full support for translate flag (text vs skor)
     - All dynamic filters and sorting from URL params
     - Time travel via ?version
     - Parameterized query for safety
-    
+
     Sheet 1: Grid Data (full filtered rows)
     Sheet 2: Dashboard Calc (stats + merged headers + rowspans)
     Sheet 3: "Dashboard IKU"
-    
+
     Returns:
         FileResponse: pre-compiled master file (when available)
         or
@@ -864,11 +864,11 @@ def endpoint_get_download_server_excel(year: str, request: Request):
         (media_type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet)
     """
     con, _ = helpers_get_db_connection(year)
-    
+
     try:
         # PREPARE QUERY (Filters + Sort)
         params_dict = dict(request.query_params)
-        
+
         # Check Translate Flag (String "true"/"false" from URL)
         do_translate = params_dict.get("translate", "false").lower() == "true"
 
@@ -878,11 +878,11 @@ def endpoint_get_download_server_excel(year: str, request: Request):
         # 1. INTERCEPT: Check if there are any active filters
         valid_cols = [r[0] for r in con.execute("DESCRIBE master_data").fetchall()]
         ignored_keys = {"ids", "version", "limit", "translate", "temp_id", "filename", "sort_by", "sort_dir"}
-        
+
         is_filtered = False
         if params_dict.get("ids"):
             is_filtered = True
-        
+
         for k, v in params_dict.items():
             if k in valid_cols and k not in ignored_keys and v:
                 is_filtered = True
@@ -893,7 +893,7 @@ def endpoint_get_download_server_excel(year: str, request: Request):
             # Pick the correct file based on frontend UI toggle
             file_suffix = "text" if do_translate else "skor"
             precompiled_path = os.path.join(EXPORT_FOLDER, f"Export_Nasional_{year}_{file_suffix}.xlsx")
-            
+
             if os.path.exists(precompiled_path):
                 print(f"[{datetime.now()}] Serving pre-compiled {file_suffix} master excel for {year}")
                 return FileResponse(
@@ -909,16 +909,16 @@ def endpoint_get_download_server_excel(year: str, request: Request):
             base_values = [version, version]
         else:
             time_filter = "valid_to IS NULL"
-        
+
         base_query = f"SELECT * EXCLUDE (valid_from, valid_to, commit_id, source_file) FROM master_data WHERE {time_filter}"
-        
+
         # Apply Filters (Provinsi, Kab, Kec, etc.)
         final_query, values = helpers_build_dynamic_query(con, base_query, params_dict, base_values)
 
         # Apply Sort (AG Grid State)
         sort_by = params_dict.get("sort_by")
         sort_dir = params_dict.get("sort_dir", "asc")
-        
+
         if sort_by:
             try:
                 # Basic injection check
@@ -949,10 +949,10 @@ def endpoint_get_download_server_excel(year: str, request: Request):
             provinsi_val = 'Multiple_Provinsi'
 
         filename = f"Export_{provinsi_val}_{year}.xlsx"
-        
+
         # Return as downloadable file (Quotes around filename prevent header injection breaks)
         return StreamingResponse(
-            output, 
+            output,
             media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             headers={"Content-Disposition": f'attachment; filename="{filename}"'}
         )
@@ -1043,7 +1043,7 @@ async def endpoint_post_calculate_dashboard(year: str, request: Request):
         html_table = helpers_render_dashboard_html(calculated_rows)
 
         # Format for Frontend (Ensure numbers are strings with commas if needed, or send raw)
-        # The helper sends raw numbers (Int/Float). 
+        # The helper sends raw numbers (Int/Float).
         # If your frontend expects formatted strings (e.g. "1,024"), convert here or handle in JS.
         # Current frontend code handles raw numbers fine.
         return HTMLResponse(content=html_table)
@@ -1059,12 +1059,12 @@ async def endpoint_post_calculate_dashboard(year: str, request: Request):
 async def endpoint_post_calculate_iku_dashboard(year: str, request: Request):
     """
     Calculates and renders the IKU dashboard based on filtered data (Paginated).
-    
+
     Logic:
     - Applies time-travel (?version) and dynamic location/ID filters
     - Fetches filtered DataFrame from master_data
     - Calls helpers_render_iku_dashboard for HTML generation
-    
+
     Returns:
         HTMLResponse: fully rendered <table> HTML (thead + tbody)
     """
@@ -1072,7 +1072,7 @@ async def endpoint_post_calculate_iku_dashboard(year: str, request: Request):
 
     try:
         params_dict = dict(request.query_params)
-        
+
         # Pagination Extraction
         limit = int(params_dict.get("limit", 100))
         offset = int(params_dict.get("offset", 0))
@@ -1152,12 +1152,12 @@ async def endpoint_post_delete_ids(
         con.executemany("INSERT INTO target_ids VALUES (?)", [[x] for x in id_list])
 
         query = f"""
-            UPDATE master_data 
+            UPDATE master_data
             SET valid_to = ?
-            WHERE valid_to IS NULL 
+            WHERE valid_to IS NULL
             AND "{ID_COL}" IN (SELECT id FROM target_ids)
             RETURNING "{ID_COL}"
-        """ 
+        """
 
         # Execute and fetch the IDs that were actually updated
         deleted_rows = con.execute(query, [now]).fetchall()
@@ -1171,8 +1171,8 @@ async def endpoint_post_delete_ids(
 
             print(current_user," changes ", commit_id)
             return {
-                "status": "success", 
-                "deleted_count": changes, 
+                "status": "success",
+                "deleted_count": changes,
                 "deleted_ids": [r[0] for r in deleted_rows]
             }
         else:
@@ -1180,7 +1180,7 @@ async def endpoint_post_delete_ids(
             # IMPORTANT: This returns 200 OK, but with a warning status.
             # The frontend must read this 'status' field.
             return {
-                "status": "warning", 
+                "status": "warning",
                 "message": "No active records found. Check if ID has hidden spaces or is already deleted."
             }
 
@@ -1227,15 +1227,15 @@ def endpoint_get_history_details(year: str, version: str = Query(...)):
 
                 if diffs:
                     changes.append({
-                        "type": "MOD", 
-                        "id": uid, 
+                        "type": "MOD",
+                        "id": uid,
                         "desc": f"Updated headers:\n- " + "\n- ".join(diffs)
                     })
             else:
                 # It did not exist before -> ADDED
                 changes.append({
-                    "type": "ADD", 
-                    "id": uid, 
+                    "type": "ADD",
+                    "id": uid,
                     "desc": "New Record Added"
                 })
 
@@ -1243,8 +1243,8 @@ def endpoint_get_history_details(year: str, version: str = Query(...)):
         for uid in old_map:
             if uid not in new_map:
                 changes.append({
-                    "type": "DEL", 
-                    "id": uid, 
+                    "type": "DEL",
+                    "id": uid,
                     "desc": f"Dropped (Valid To: {version})"
                 })
 

@@ -44,7 +44,7 @@ HEADER_FILE = os.path.join(CONFIG_DIR, "headers.json")
 
 # Data Structure Constants
 # ID_COL acts as the Primary Key for deduplication and version control.
-ID_COL = "Kode Wilayah Administrasi Desa" 
+ID_COL = "Kode Wilayah Administrasi Desa"
 
 # Export Folder for Ready to download
 EXPORT_FOLDER = os.path.abspath(os.path.join(BASE_DIR, "../exports"))
@@ -156,7 +156,7 @@ def apply_rekomendasis(df: pl.DataFrame) -> pl.DataFrame:
 
 def make_json_response(df: pl.DataFrame) -> Response:
     """
-    OPTIMIZATION: 
+    OPTIMIZATION:
     Converts Polars DataFrame directly to JSON string using Rust engine
     and returns a FastAPI Response. Bypasses Python's slow list-of-dicts conversion
     for better performance on large datasets.
@@ -177,11 +177,11 @@ def helpers_read_excel_preview(file_path: str, limit_rows: int = 25):
     Reads first N rows of 'Skor' sheet for frontend preview.
     - .xlsx: openpyxl streaming (read_only=True) for low memory
     - .xlsb/.xlsx fallback: Polars calamine
-    - Caps at 424 columns
+    - Caps at 448 columns
     - Converts None → ""
     - Returns pure list-of-lists
     Returns:
-        list[list[str]]: rows as list of lists (max limit_rows rows, 424 cols)
+        list[list[str]]: rows as list of lists (max limit_rows rows, 448 cols)
     """
     rows = []
 
@@ -203,9 +203,9 @@ def helpers_read_excel_preview(file_path: str, limit_rows: int = 25):
                 for row in ws.iter_rows(min_row=1, max_row=limit_rows, values_only=True):
                     # Convert None to "" and map to list
                     clean_row = [str(cell) if cell is not None else "" for cell in row]
-                    
+
                     # Check if row has data
-                    rows.append(clean_row[:424])
+                    rows.append(clean_row[:448])
 
             finally:
                 wb.close()
@@ -220,17 +220,17 @@ def helpers_read_excel_preview(file_path: str, limit_rows: int = 25):
                 engine="calamine",
                 has_header=False # Direct argument, not inside dict
             )
-            
+
             # Slice row limit manually
             df = df.head(limit_rows)
 
             # Limit width (similar to existing logic)
-            max_col = min(df.width, 424)
+            max_col = min(df.width, 448)
             df = df[:, :max_col]
-            
+
             # Replace nulls with empty string for JSON safety
             data = df.fill_null("").to_dicts()
-            
+
             # Convert to list of lists (easier for generic grid in JS)
             # Polars to_dicts returns list of objects with "column_0", "column_1", etc.
             # Only pure values.
@@ -257,26 +257,27 @@ def helpers_normalize_text(text: str):
 def helpers_generate_header_mapping(file_path: str, header_row_idx: int):
     """
     Generates column mapping from uploaded Excel against headers.json.
-    
+
     Logic:
     - Loads standards and aliases from headers.json
     - .xlsx: streams only header row with openpyxl (read_only=True)
     - .xlsb: full read with calamine + row extraction
-    - Caps at 424 columns
-    - Detects first non-empty column → start_col (dynamic alignment)
-    - First 6 columns: forced index mapping + auto-confirm
-    - Remaining columns: two-pass matching (skips empty headers)
-      - Pass 1: alias_exact (exact match on standard or aliases)
+    - Caps at 448 columns
+    - ALL columns matched by content (no positional forcing):
+      - Pass 1: alias_exact — exact match against standard name or any alias
       - Pass 2: fuzzy SequenceMatcher on leftovers
         - > 85% → auto-confirm
         - < 40% → "(No Match)"
     - Tracks assigned_standards to prevent duplicates
-    - Computes missing_headers (unmapped standards after first 6)
-    
+    - OUTPUT ORDER follows headers.json, not Excel column order.
+      This ensures the database column order always matches headers.json.
+    - Computes missing_headers (standards from headers.json not found in Excel)
+
     Returns:
         tuple[list[dict], list[str]]: (
             mapping: list of dicts with keys: standard, file_header,
-                     col_index, is_confirmed, match_type, score,
+                     col_index, is_confirmed, match_type, score
+                     — ordered by headers.json position,
             missing_headers: list of unmapped standard names
         )
     """
@@ -294,25 +295,19 @@ def helpers_generate_header_mapping(file_path: str, header_row_idx: int):
     # OPTIMIZATION: Streaming for .xlsx
     if file_path.lower().endswith(".xlsx"):
         wb = openpyxl.load_workbook(file_path, read_only=True, data_only=True)
-        if "Skor" in wb.sheetnames:
-            ws = wb["Skor"]
-        else:
-            ws = wb.active
-        
+        ws = wb["Skor"] if "Skor" in wb.sheetnames else wb.active
+
         # OpenPyXL is 1-based, header_row_idx is 0-based.
         target_excel_row = header_row_idx + 1
-        
-        # Iterate until we hit the row (efficient skipping)
-        for i, row in enumerate(ws.iter_rows(min_row=target_excel_row, max_row=target_excel_row, values_only=True)):
-            clean_row = [str(cell) if cell is not None else "" for cell in row]
-            file_headers_raw = clean_row[:424]
+        for row in ws.iter_rows(min_row=target_excel_row, max_row=target_excel_row, values_only=True):
+            file_headers_raw = [str(cell) if cell is not None else "" for cell in row][:448]
             break
-        
+
         wb.close()
-        
+
         if not file_headers_raw:
-             raise Exception(f"Header row index {header_row_idx} is out of bounds or empty.")
-             
+            raise Exception(f"Header row index {header_row_idx} is out of bounds or empty.")
+
     else:
         # Fallback for .xlsb
         df = pl.read_excel(
@@ -321,7 +316,7 @@ def helpers_generate_header_mapping(file_path: str, header_row_idx: int):
             engine="calamine",
             has_header=False
         )
-        max_col = min(df.width, 424)
+        max_col = min(df.width, 448)
         df = df[:, :max_col]
 
         if header_row_idx >= df.height:
@@ -330,140 +325,106 @@ def helpers_generate_header_mapping(file_path: str, header_row_idx: int):
         # Get the raw list of values from the target row
         # Polars reads as col_0, col_1.
         file_headers_raw = list(df.row(header_row_idx))
-    
-    mapping = []
-    special_first_6 = standard_headers[:6]
-    remaining_standards = standard_headers[6:]
-    
-    # DYNAMIC ALIGNMENT: Find the first non-empty column in the Excel file.
-    # This prevents assigning "Provinsi" to an empty Column A.
-    start_col = 0
+
+    # --- Build alias lookup: normalized_name → standard ---
+    # Covers both the standard name itself and all declared aliases.
+    alias_lookup: dict[str, str] = {}
+    for item in headers_data:
+        std = item["standard"]
+        alias_lookup[helpers_normalize_text(std)] = std
+        for alias in item.get("aliases", []):
+            if alias.strip():
+                alias_lookup[helpers_normalize_text(alias)] = std
+
+    # Set to track already-assigned standards (prevents duplicates)
+    assigned_standards: set[str] = set()
+
+    # col_index → partial entry (standard may be None until Pass 2)
+    raw_matches: dict[int, dict] = {}
+
+    # --- PASS 1: EXACT / ALIAS MATCHES across ALL columns ---
     for i, val in enumerate(file_headers_raw):
-        if val.strip() != "":
-            start_col = i
-            break
+        file_val = str(val).strip() if val is not None else ""
 
-    # Set to track already assigned header
-    assigned_standards = set()
-
-    # Map Special First 6 using the actual start column
-    for i in range(min(6, len(file_headers_raw) - start_col)):
-        if start_col + i >= len(file_headers_raw):
-            break
-        file_val = str(file_headers_raw[start_col + i]).strip()
-        std_val = special_first_6[i]
-        
-        # Auto-confirm the first 6 based on User's rule "the order always right"
-        mapping.append({
-            "standard": std_val,
-            "file_header": file_val,
-            "col_index": start_col + i,
-            "is_confirmed": True, 
-            "match_type": "index_forced"
-        })
-        assigned_standards.add(std_val)
-
-    # --- TWO PASS MATCHING ALGORITHM ---
-    mapping_dict = {}
-
-    # Resume fuzzy mapping after the first 6
-    fuzzy_start_idx = start_col + 6
-
-    # PASS 1: EXACT & ALIAS MATCHES ONLY
-    for i in range(fuzzy_start_idx, len(file_headers_raw)):
-        file_val = str(file_headers_raw[i]).strip()
-
-        # Even if empty, we list it so user can see it (but usually ignore)
-        if not file_val: continue # Skip empty columns
-        
-        # SKIP EMPTY COLUMNS
-        # If the header in the file is empty/None/NaN, it's not a valid data column.
-        # Don't even try to map it.
-        if not file_val or file_val.lower() == "none" or file_val == "":
+        # Skip empty / sentinel columns
+        if not file_val or file_val.lower() == "none":
             continue
 
         norm_file = helpers_normalize_text(file_val)
-        best_match = None
+        matched_std = alias_lookup.get(norm_file)
 
-        # Match based on headers.json and it's aliases
-        for item in headers_data[6:]:
-            original_std = item["standard"]
-            
-            # Skip if this standard header has already been mapped to an earlier column
-            if original_std in assigned_standards:
-                continue
-
-            valid_names = [helpers_normalize_text(a) for a in item.get("aliases", []) if a.strip()]
-            valid_names.append(helpers_normalize_text(original_std))
-
-            if norm_file in valid_names:
-                best_match = original_std
-                break
-
-        if best_match:
-            assigned_standards.add(best_match)
-            mapping_dict[i] = {
-                "standard": best_match,
+        if matched_std and matched_std not in assigned_standards:
+            assigned_standards.add(matched_std)
+            raw_matches[i] = {
+                "standard": matched_std,
                 "file_header": file_val,
                 "col_index": i,
                 "is_confirmed": True,
                 "match_type": "alias_exact",
-                "score": 1.0
+                "score": 1.0,
             }
         else:
-            # Leave for Pass 2
-            mapping_dict[i] = {
+            # No exact match (or standard already taken) → candidate for Pass 2
+            raw_matches[i] = {
                 "standard": None,
                 "file_header": file_val,
                 "col_index": i,
                 "is_confirmed": False,
                 "match_type": "fuzzy",
-                "score": 0.0
+                "score": 0.0,
             }
 
-    # PASS 2: FUZZY MATCH THE LEFTOVERS
-    norm_standards = [(helpers_normalize_text(h), h) for h in remaining_standards]
-    
-    for i in range(fuzzy_start_idx, len(file_headers_raw)):
-        if i not in mapping_dict:
-            continue
-            
-        if mapping_dict[i]["standard"] is None:
-            file_val = mapping_dict[i]["file_header"]
-            norm_file = helpers_normalize_text(file_val)
-            
+    # --- PASS 2: FUZZY MATCH remaining unresolved columns ---
+    norm_standards = [(helpers_normalize_text(h), h) for h in standard_headers]
+
+    for entry in raw_matches.values():
+        if entry["standard"] is not None:
+            continue  # Already resolved in Pass 1
+
+        norm_file = helpers_normalize_text(entry["file_header"])
+        best_match = None
+        highest_ratio = 0.0
+
+        for norm_std, orig_std in norm_standards:
+            if orig_std in assigned_standards:
+                continue
+            ratio = SequenceMatcher(None, norm_std, norm_file).ratio()
+            if ratio > highest_ratio:
+                highest_ratio = ratio
+                best_match = orig_std
+
+        # Discard low-confidence matches
+        if highest_ratio < 0.4:
             best_match = None
-            highest_ratio = 0.0
-            
-            for norm_std, orig_std in norm_standards:
-                # Skip if already mapped
-                if orig_std in assigned_standards:
-                    continue
+        if best_match:
+            assigned_standards.add(best_match)
 
-                # Fuzzy match (Levenshtein) using python's difflib
-                ratio = SequenceMatcher(None, norm_std, norm_file).ratio()
-                if ratio > highest_ratio:
-                    highest_ratio = ratio
-                    best_match = orig_std
+        entry["standard"] = best_match if best_match else "(No Match)"
+        entry["score"] = round(highest_ratio, 2)
+        entry["is_confirmed"] = highest_ratio > 0.85
 
-            # If the best match is less than 40%, it's likely garbage.
-            if highest_ratio < 0.4:
-                best_match = None
-            # Lock the standard header so it cannot be assigned again
-            if best_match:
-                assigned_standards.add(best_match)
-            mapping_dict[i]["standard"] = best_match if best_match else "(No Match)"
-            mapping_dict[i]["score"] = round(highest_ratio, 2)
-            mapping_dict[i]["is_confirmed"] = highest_ratio > 0.85
-            
-    # Rebuild mapping array in left-to-right order
-    for i in range(fuzzy_start_idx, len(file_headers_raw)):
-        if i in mapping_dict:
-            mapping.append(mapping_dict[i])
+    # --- Build final mapping ordered by headers.json position ---
+    # This is critical: the processor iterates `confirmed_mapping` in order to
+    # build `selection_exprs`, so headers.json order here = DB column order.
+    standard_to_entry: dict[str, dict] = {
+        entry["standard"]: entry
+        for entry in raw_matches.values()
+        if entry["standard"] and entry["standard"] != "(No Match)"
+    }
 
-    # Compute missing headers (excluding the first 6 fixed columns)
+    mapping: list[dict] = []
+    for std in standard_headers:
+        if std in standard_to_entry:
+            mapping.append(standard_to_entry[std])
+
+    # Append unmatched Excel columns at the end (visible to user, not written to DB)
+    for entry in raw_matches.values():
+        if entry["standard"] == "(No Match)":
+            mapping.append(entry)
+
+    # Compute missing headers (standards from headers.json absent in Excel)
     found_standards = {m["standard"] for m in mapping if m["standard"] != "(No Match)"}
-    missing_headers = [h for h in remaining_standards if h not in found_standards]
+    missing_headers = [h for h in standard_headers if h not in found_standards]
 
     return mapping, missing_headers
 
@@ -479,25 +440,43 @@ def helpers_sync_db_schema(con: duckdb.DuckDBPyConnection, year: str):
         headers_data = json.load(f)
         target_headers = [item["standard"] for item in headers_data]
 
-    # Get existing DB columns
-    existing_cols = set([r[0] for r in con.execute("DESCRIBE master_data").fetchall()])
-    
+    # Get existing DB columns as {name: type}
+    existing_cols = {r[0]: r[1] for r in con.execute("DESCRIBE master_data").fetchall()}
+
     TEXT_COLUMNS = {
-        "Provinsi", "Kabupaten/ Kota", "Kecamatan", 
-        "Kode Wilayah Administrasi Desa", "Desa", "Status ID"
+        "Provinsi", "Kabupaten/ Kota", "Kecamatan",
+        "Kode Wilayah Administrasi Desa", "Desa", "Status ID", "KBI - KTI"
     }
 
     for h in target_headers:
         # If header contains quotes, strip them for comparison
         clean_h = h.replace('"', '')
+        expected_dtype = "VARCHAR" if clean_h in TEXT_COLUMNS else "SMALLINT"
+
         if clean_h not in existing_cols:
+            # Column missing entirely — add it
             print(f"Schema Evolution: Adding column '{clean_h}' to {year}...")
-            # Determine Type
-            dtype = "VARCHAR" if clean_h in TEXT_COLUMNS else "SMALLINT"
             try:
-                con.execute(f'ALTER TABLE master_data ADD COLUMN "{clean_h}" {dtype}')
+                con.execute(f'ALTER TABLE master_data ADD COLUMN "{clean_h}" {expected_dtype}')
             except Exception as e:
                 print(f"Failed to add column {clean_h}: {e}")
+
+        else:
+            # Column exists — fix type if wrong (e.g. KBI - KTI created as SMALLINT before)
+            actual_dtype = existing_cols[clean_h].upper()
+            is_text_actual   = actual_dtype in ("VARCHAR", "TEXT", "STRING")
+            is_text_expected = expected_dtype == "VARCHAR"
+
+            if is_text_expected and not is_text_actual:
+                print(f"Schema Fix: Retyping '{clean_h}' from {actual_dtype} to VARCHAR in {year}...")
+                try:
+                    # DuckDB blocks ALTER COLUMN when an index exists on the table.
+                    # Drop the index first, retype, then recreate.
+                    con.execute("DROP INDEX IF EXISTS idx_id")
+                    con.execute(f'ALTER TABLE master_data ALTER COLUMN "{clean_h}" SET DATA TYPE VARCHAR')
+                    con.execute(f'CREATE INDEX IF NOT EXISTS idx_id ON master_data ("{ID_COL}")')
+                except Exception as e:
+                    print(f"Failed to retype column {clean_h}: {e}")
 
 # Resumable uploads + convert to db basically
 def helpers_internal_process_temp_file(
@@ -511,12 +490,12 @@ def helpers_internal_process_temp_file(
     ):
     """
     Full ETL processor for staging upload.
-    
+
     Alignment fixes:
     - openpyxl scan: counts leading empty rows + first non-empty column offset
     - calamine read (has_header=False) then applies row/col offsets
     - Duplicate column resolution: prefers column with highest numeric values
-    
+
     Processing steps:
     - Row slice after offset
     - Confirmed mapping only (renames to standard names)
@@ -551,15 +530,15 @@ def helpers_internal_process_temp_file(
         # regardless of how many empty rows exist between headers and data.
         calamine_row_offset = 0
         calamine_col_offset = 0
-        
+
         if file_path.lower().endswith(".xlsx"):
             try:
                 wb_check = openpyxl.load_workbook(file_path, read_only=True, data_only=True)
                 ws_check = wb_check["Skor"] if "Skor" in wb_check.sheetnames else wb_check.active
-                
+
                 empty_rows_count = 0
                 min_col = 9999
-                
+
                 # Check up to data_start_idx to count every empty row Calamine might drop
                 for r_idx, row in enumerate(ws_check.iter_rows(min_row=1, max_row=data_start_idx + 1, values_only=True)):
                     row_has_data = False
@@ -568,10 +547,10 @@ def helpers_internal_process_temp_file(
                             row_has_data = True
                             if c_idx < min_col:
                                 min_col = c_idx
-                    
+
                     if not row_has_data:
                         empty_rows_count += 1
-                
+
                 calamine_row_offset = empty_rows_count
                 calamine_col_offset = min_col if min_col != 9999 else 0
                 wb_check.close()
@@ -593,7 +572,7 @@ def helpers_internal_process_temp_file(
 
         # Structure Cleaning:
         # Slice: Cap width to prevent reading infinite empty Excel columns
-        max_col = min(df.width, 424) 
+        max_col = min(df.width, 448)
         df = df[:, :max_col] # DO NOT drop columns manually anymore; Calamine offset handles it safely
 
         # Sync the absolute UI index with Calamine's stripped index
@@ -631,7 +610,7 @@ def helpers_internal_process_temp_file(
         for target_name, indices in target_to_cols.items():
             if not indices:
                 continue
-                
+
             chosen_idx = indices[0]
 
             # Resolve duplicates by checking if the dataframe column contains numbers
@@ -639,12 +618,12 @@ def helpers_internal_process_temp_file(
                 for idx in indices:
                     if idx < df.width:
                         col_name = df.columns[idx]
-                        # Cast to Int16 (strict=False turns text/invalid data to null). 
+                        # Cast to Int16 (strict=False turns text/invalid data to null).
                         # If it has valid numbers, it is the correct score column.
                         numeric_count = df[col_name].cast(pl.Int16, strict=False).is_not_null().sum()
                         if numeric_count > 0:
                             chosen_idx = idx
-                            break 
+                            break
 
             if 0 <= chosen_idx < df.width:
                 original_name = df.columns[chosen_idx]
@@ -661,7 +640,7 @@ def helpers_internal_process_temp_file(
 
         # Filter: Remove columns that are entirely Empty or Null
         df = df.select([
-            col for col in df 
+            col for col in df
             if not (col.is_null().all() or (col.dtype == pl.String and (col == "").all()))
         ])
         # DEBUG TAG
@@ -670,15 +649,15 @@ def helpers_internal_process_temp_file(
         # VALIDATION: Status ID (Strict)
         if "Status ID" in df.columns:
             valid_statuses = ["BERKEMBANG", "MAJU", "MANDIRI", "SANGAT TERTINGGAL", "TERTINGGAL"]
-            
+
             # Check for invalid values
             # is_in returns boolean series. ~ negates it.
             invalid_rows = df.filter(
-                ~pl.col("Status ID").str.to_uppercase().is_in(valid_statuses) 
-                & pl.col("Status ID").is_not_null() 
+                ~pl.col("Status ID").str.to_uppercase().is_in(valid_statuses)
+                & pl.col("Status ID").is_not_null()
                 & (pl.col("Status ID") != "")
             )
-            
+
             if invalid_rows.height > 0:
                 bad_vals = invalid_rows["Status ID"].unique().to_list()
                 raise Exception(f"Invalid 'Status ID' found: {bad_vals}. Allowed: {valid_statuses}")
@@ -690,7 +669,7 @@ def helpers_internal_process_temp_file(
             match_count = df.filter(pl.col(ID_COL).cast(pl.String).str.contains(pattern)).height
             # DEBUG TAG
             #print(f"5. Rows matching exactly 10 digits: {match_count}", flush=True)
-            
+
             df = df.filter(
                 pl.col(ID_COL).cast(pl.String).str.contains(pattern)
             )
@@ -700,8 +679,8 @@ def helpers_internal_process_temp_file(
         # OPTIMIZATION Type Casting (Optimized)
         # Identify Text Columns (same as middleware)
         TEXT_COLUMNS = {
-            "Provinsi", "Kabupaten/ Kota", "Kecamatan", 
-            "Kode Wilayah Administrasi Desa", "Desa", "Status ID"
+            "Provinsi", "Kabupaten/ Kota", "Kecamatan",
+            "Kode Wilayah Administrasi Desa", "Desa", "Status ID", "KBI - KTI"
         }
 
         # Cast, if non TEXT_COLUMNS return int16 (SMALLINT)
@@ -711,7 +690,7 @@ def helpers_internal_process_temp_file(
                 exprs.append(pl.col(col).cast(pl.String))
             else:
                 exprs.append(pl.col(col).cast(pl.Int16, strict=False))
-        
+
         df = df.with_columns(exprs)
 
         # Save Staged Data (Parquet will now store these as Integers)
@@ -722,7 +701,7 @@ def helpers_internal_process_temp_file(
         # the excel files
         # print(f"\n--- DEBUG LOG FOR {filename} ---", flush=True)
         # print(f"Total rows remaining after Polars cleaning: {df.height}", flush=True)
-        # 
+        #
         # if ID_COL in df.columns:
         #     sample_ids = df[ID_COL].head(20).to_list()
         #     print(f"Sample IDs (First 20): {sample_ids}", flush=True)
@@ -742,7 +721,7 @@ def helpers_internal_process_temp_file(
 
         # Rows to ADD (ID in Incoming, Not in Current)
         added_count = con.execute(f"""
-            SELECT COUNT(*) FROM incoming i 
+            SELECT COUNT(*) FROM incoming i
             WHERE i."{ID_COL}" NOT IN (SELECT "{ID_COL}" FROM current_state)
         """).fetchone()[0]
 
@@ -813,7 +792,7 @@ def helpers_init_db(con: duckdb.DuckDBPyConnection, headers: list[str]):
     # define columns that MUST remain text/string
     TEXT_COLUMNS = {
         "valid_from", "valid_to", "commit_id", "source_file",
-        "Provinsi", "Kabupaten/ Kota", "Kecamatan", 
+        "Provinsi", "Kabupaten/ Kota", "Kecamatan",
         "Kode Wilayah Administrasi Desa", "Desa", "Status ID"
     }
 
@@ -897,7 +876,7 @@ def helpers_build_dynamic_query(con, base_query, request_params, base_values=Non
                     f_type = config.get("filterType", "text")
                     match_type = config.get("type", "contains")
                     val = config.get("filter")
-                    
+
                     if val is not None:
                         if match_type == "contains":
                             filters.append(f'"{col}" ILIKE ?')
@@ -951,7 +930,7 @@ def helpers_build_dynamic_query(con, base_query, request_params, base_values=Non
             if val == "__NONE__":
                 filters.append("1=0")
                 continue
-            
+
             # Handle multi-select IN clause
             if ";" in val:
                 tokens = [x.strip() for x in val.split(";") if x.strip()]
@@ -982,22 +961,22 @@ def helpers_get_iku_normal_or_tematik(parent: str, status: str) -> pl.Expr:
     """
     score_col = pl.col(f"__iku_score_{parent}").fill_null(0)
     status_col = pl.col("Status ID") == status.upper()
-    
+
     # O(1) hash lookup against the global set
     if parent in IKU_TEMATIK_EXCEPTIONS:
         return status_col & (score_col > 0)
-    
+
     return status_col & (score_col >= 4)
 
 def helpers_generate_excel_workbook(con, df_grid: pl.DataFrame, do_translate: bool, params_dict: dict = None) -> Workbook:
     """
     Builds a complete three-sheet Excel Workbook from the provided DataFrame.
-    
+
     Sheet 1: "Grid Data"
     - Full rows from df_grid
     - If do_translate=True: applies apply_rekomendasis() (scores → text)
     - Simple header + data + basic bold/fill styling
-    
+
     Sheet 2: "Dashboard Rekomendasi"
     - Loads table_structure.csv
     - Determines metric column order from master_data schema
@@ -1008,7 +987,7 @@ def helpers_generate_excel_workbook(con, df_grid: pl.DataFrame, do_translate: bo
         • Column widths optimized for readability
         • Rowspans for NO / DIMENSI / SUB DIMENSI / INDIKATOR
         • Borders, alignment, and styling
-    
+
     Sheet 3: "Dashboard IKU"
     - Loads table_structure_IKU.csv and iku_mapping.json
     - Determines grouping level from params_dict (Provinsi → Kabupaten → Kecamatan → Desa)
@@ -1018,13 +997,13 @@ def helpers_generate_excel_workbook(con, df_grid: pl.DataFrame, do_translate: bo
     - Adds TOTAL row with sums/averages
     - Appends grouped data rows
     - Applies borders, number formats (#,##0 for int; #,##0.00 for float)
-    
+
     Returns:
         openpyxl.workbook.workbook.Workbook: fully built workbook (not saved)
     """
     # BUILD EXCEL (OpenPyXL)
     wb = Workbook()
-    
+
     # Define Common Styles
     thin_border = Border(
         left=Side(style='thin'),
@@ -1042,7 +1021,7 @@ def helpers_generate_excel_workbook(con, df_grid: pl.DataFrame, do_translate: bo
     ws1.title = "Grid Data"
     df_sheet1 = apply_rekomendasis(df_grid) if do_translate else df_grid
     grid_dicts = df_sheet1.to_dicts()
-    
+
     # Write Headers
     if grid_dicts:
         headers = list(grid_dicts[0].keys())
@@ -1051,7 +1030,7 @@ def helpers_generate_excel_workbook(con, df_grid: pl.DataFrame, do_translate: bo
             # Handle None/NaN for Excel
             clean_row = [(v if v is not None else "") for v in row.values()]
             ws1.append(clean_row)
-        
+
         # Basic Formatting for Sheet 1
         for cell in ws1[1]:
             cell.font = header_font
@@ -1083,7 +1062,7 @@ def helpers_generate_excel_workbook(con, df_grid: pl.DataFrame, do_translate: bo
     db_cols_info = con.execute("DESCRIBE master_data").fetchall()
     metadata_cols = {
         "valid_from", "valid_to", "commit_id", "source_file",
-        "Provinsi", "Kabupaten/ Kota", "Kecamatan", 
+        "Provinsi", "Kabupaten/ Kota", "Kecamatan",
         "Kode Wilayah Administrasi Desa", "Desa", "Status ID"
     }
     ordered_db_cols = [r[0] for r in db_cols_info if r[0] not in metadata_cols]
@@ -1113,15 +1092,15 @@ def helpers_generate_excel_workbook(con, df_grid: pl.DataFrame, do_translate: bo
 
     # Write Headers (Rows 1 & 2)
     # Row 1: Merged Headers
-    ws2.append(["NO", "DIMENSI", "SUB DIMENSI", "INDIKATOR", "ITEM", 
+    ws2.append(["NO", "DIMENSI", "SUB DIMENSI", "INDIKATOR", "ITEM",
                 "SKOR", "", "", "", "", "",         # Colspan 6
                 "INTERVENSI",                       # Rowspan 2
                 "PELAKSANA", "", "", "", ""])       # Colspan 5
-    
+
     # Row 2: Sub Headers
-    ws2.append(["", "", "", "", "", 
-                "Rata-Rata", "1", "2", "3", "4", "5", 
-                "", 
+    ws2.append(["", "", "", "", "",
+                "Rata-Rata", "1", "2", "3", "4", "5",
+                "",
                 "PUSAT", "PROVINSI", "KABUPATEN", "DESA", "LAINNYA"])
 
     # Merge Logic for Header
@@ -1153,14 +1132,14 @@ def helpers_generate_excel_workbook(con, df_grid: pl.DataFrame, do_translate: bo
 
     for i, row in enumerate(calculated_rows):
         current_excel_row = start_row_idx + i
-        
+
         # Extract values from the dictionary returned by the helper
         row_values = [
             row.get("NO"), row.get("DIMENSI"), row.get("SUB DIMENSI"), row.get("INDIKATOR"), row.get("ITEM"),
             row.get("SKOR Rata-Rata"), row.get("SKOR 1"), row.get("SKOR 2"), row.get("SKOR 3"), row.get("SKOR 4"), row.get("SKOR 5"),
             row.get("INTERVENSI KEGIATAN"),
-            row.get("PELAKSANA KEGIATAN PUSAT"), row.get("PELAKSANA KEGIATAN PROVINSI"), 
-            row.get("PELAKSANA KEGIATAN KABUPATEN"), row.get("PELAKSANA KEGIATAN DESA"), 
+            row.get("PELAKSANA KEGIATAN PUSAT"), row.get("PELAKSANA KEGIATAN PROVINSI"),
+            row.get("PELAKSANA KEGIATAN KABUPATEN"), row.get("PELAKSANA KEGIATAN DESA"),
             row.get("PELAKSANA KEGIATAN Lainnya")
         ]
 
@@ -1170,7 +1149,7 @@ def helpers_generate_excel_workbook(con, df_grid: pl.DataFrame, do_translate: bo
         for col_idx, cell in enumerate(ws2[current_excel_row], 1):
             cell.border = thin_border
             cell.alignment = align_top # Top align is crucial for merged cells
-            
+
             # Center align the Score columns (F to K -> 6 to 11)
             if 6 <= col_idx <= 11:
                 cell.alignment = Alignment(horizontal='center', vertical='top')
@@ -1179,21 +1158,21 @@ def helpers_generate_excel_workbook(con, df_grid: pl.DataFrame, do_translate: bo
         # Iterate through mergeable columns (NO, DIMENSI, SUB, INDIKATOR)
         # Logic: If value changes OR parent value changed, trigger merge of previous block and start new.
         meta_vals = [row.get("NO"), row.get("DIMENSI"), row.get("SUB DIMENSI"), row.get("INDIKATOR")]
-        for col_idx in [0, 1, 2, 3]: 
+        for col_idx in [0, 1, 2, 3]:
             val = meta_vals[col_idx]
-            
+
             # Check if parent changed (e.g., Cant merge SUB DIMENSI if DIMENSI changed)
             parent_changed = any(meta_vals[p] != merge_tracker[p]["val"] for p in range(col_idx))
-            
+
             if val != merge_tracker[col_idx]["val"] or parent_changed or (i == len(calculated_rows) - 1):
                 # Merge the PREVIOUS block if it spanned more than 1 row
                 prev_end = current_excel_row - 1 if not (i == len(calculated_rows) - 1) else current_excel_row
                 prev_start = merge_tracker[col_idx]["start"]
-                
+
                 if prev_end > prev_start:
                     col_letter = get_column_letter(col_idx + 1)
                     ws2.merge_cells(f"{col_letter}{prev_start}:{col_letter}{prev_end}")
-                
+
                 # Reset tracker
                 merge_tracker[col_idx]["val"] = val
                 merge_tracker[col_idx]["start"] = current_excel_row
@@ -1234,7 +1213,7 @@ def helpers_generate_excel_workbook(con, df_grid: pl.DataFrame, do_translate: bo
                     group_col = "Kecamatan"
                 else:
                     group_col = "Desa"
-            
+
             hierarchy = ["Provinsi", "Kabupaten/ Kota", "Kecamatan", "Desa"]
             if group_col in hierarchy:
                 group_cols = hierarchy[:hierarchy.index(group_col) + 1]
@@ -1243,14 +1222,14 @@ def helpers_generate_excel_workbook(con, df_grid: pl.DataFrame, do_translate: bo
 
             write_row1 = [c.upper() for c in group_cols] + row1[1:]
             write_row2 = [""] * len(group_cols) + row2[1:]
-            
+
             ws3.append(write_row1)
             ws3.append(write_row2)
-            
+
             # Merge Top-Left columns vertically (Group Cols + JLH DESA)
             for col_idx in range(1, len(group_cols) + 2):
                 ws3.merge_cells(start_row=1, start_column=col_idx, end_row=2, end_column=col_idx)
-                
+
             # Merge Row 1 headers horizontally for parent metrics
             current_val = write_row1[len(group_cols) + 1]
             start_col = len(group_cols) + 2
@@ -1263,7 +1242,7 @@ def helpers_generate_excel_workbook(con, df_grid: pl.DataFrame, do_translate: bo
                     start_col = col_idx
             if len(write_row1) > start_col:
                 ws3.merge_cells(start_row=1, start_column=start_col, end_row=1, end_column=len(write_row1))
-            
+
             for r in [1, 2]:
                 for cell in ws3[r]:
                     cell.font = header_font
@@ -1282,13 +1261,13 @@ def helpers_generate_excel_workbook(con, df_grid: pl.DataFrame, do_translate: bo
                     current_parent = p_val.strip()
                     if current_parent not in parent_to_statuses:
                         parent_to_statuses[current_parent] = []
-                    
+
                 if idx >= 2:
                     sub_val = row2[idx].strip().lower()
                     col_idx_to_metric[idx] = {"parent": current_parent, "sub": sub_val}
                     if current_parent not in parent_metrics:
                         parent_metrics.append(current_parent)
-                        
+
                     if sub_val in valid_statuses:
                         if sub_val not in parent_to_statuses[current_parent]:
                             parent_to_statuses[current_parent].append(sub_val)
@@ -1300,14 +1279,14 @@ def helpers_generate_excel_workbook(con, df_grid: pl.DataFrame, do_translate: bo
                 for parent in parent_metrics:
                     children = iku_mapping.get(parent, [])
                     valid_children = [c.strip() for c in children if c.strip() in df_filtered.columns]
-                    
+
                     if valid_children:
                         num_children = len(valid_children)
                         sum_expr = pl.sum_horizontal([pl.col(c).cast(pl.Float64, strict=False).fill_null(0) for c in valid_children])
                         exprs.append((sum_expr / num_children).alias(f"__iku_score_{parent}"))
                     else:
                         exprs.append(pl.lit(None, dtype=pl.Float64).alias(f"__iku_score_{parent}"))
-                
+
                 if exprs:
                     df_filtered = df_filtered.with_columns(exprs)
 
@@ -1315,7 +1294,7 @@ def helpers_generate_excel_workbook(con, df_grid: pl.DataFrame, do_translate: bo
                 agg_exprs = [pl.len().alias("JLH DESA")]
                 for parent in parent_metrics:
                     agg_exprs.append(pl.col(f"__iku_score_{parent}").mean().alias(f"__iku_avg_{parent}"))
-                    
+
                     if has_status:
                         # Dynamically count ONLY the statuses required by this parent's CSV headers
                         for status in parent_to_statuses.get(parent, []):
@@ -1345,7 +1324,7 @@ def helpers_generate_excel_workbook(con, df_grid: pl.DataFrame, do_translate: bo
                         parent = metric_info["parent"]
                         sub = metric_info["sub"]
                         t_total = sum(totals.get(f"__iku_{s.replace(' ', '_')}_{parent}", 0) for s in parent_to_statuses.get(parent, []))
-                        
+
                         if sub == "rata-rata":
                             avg_val = totals.get(f"__iku_avg_{parent}")
                             if avg_val is not None: val_to_show = round(float(avg_val), 2)
@@ -1364,7 +1343,7 @@ def helpers_generate_excel_workbook(con, df_grid: pl.DataFrame, do_translate: bo
                     total_row.append(val_to_show)
 
                 ws3.append(total_row)
-                
+
                 # Apply bold to TOTAL row and Number Format thousands
                 for col_idx, cell in enumerate(ws3[3], 1):
                     cell.font = Font(bold=True)
@@ -1384,7 +1363,7 @@ def helpers_generate_excel_workbook(con, df_grid: pl.DataFrame, do_translate: bo
                             parent = metric_info["parent"]
                             sub = metric_info["sub"]
                             t_total = sum(row_data.get(f"__iku_{s.replace(' ', '_')}_{parent}", 0) for s in parent_to_statuses.get(parent, []))
-                            
+
                             if sub == "rata-rata":
                                 avg_val = row_data.get(f"__iku_avg_{parent}")
                                 if avg_val is not None: val_to_show = round(float(avg_val), 2)
@@ -1402,9 +1381,9 @@ def helpers_generate_excel_workbook(con, df_grid: pl.DataFrame, do_translate: bo
                                     val_to_show = f"{(t_total / jlh_desa) * 100:.2f}%" if jlh_desa > 0 else "0.0%"
 
                         data_row.append(val_to_show)
-                    
+
                     ws3.append(data_row)
-                    
+
                 # Format Data Rows
                 for r in range(4, ws3.max_row + 1):
                     for cell in ws3[r]:
@@ -1424,7 +1403,7 @@ def helpers_background_task_generate_pre_render_excel(year: str):
     """
     Background task that generates two complete master_data db to
     Excel (All data) files for the given year.
-    
+
     Behavior:
     - Fetches ALL current active rows (valid_to IS NULL) ordered by ID_COL
     - Generates both versions via helpers_generate_excel_workbook:
@@ -1433,15 +1412,15 @@ def helpers_background_task_generate_pre_render_excel(year: str):
     - Writes atomically using .tmp + os.replace to prevent Nginx from serving partial files
     - Skips silently if master_data table does not exist or contains zero rows
     - Logs progress with timestamps (flush=True for immediate Docker visibility)
-    
+
     No return value.
     """
     start_time = time.time()
     # flush=True forces Docker to print immediately instead of buffering
     print(f"[{datetime.now()}]  Compiling background Master Excel for {year}...", flush=True)
-    
+
     con, _ = helpers_get_db_connection(year)
-    
+
     try:
         query = f'SELECT * EXCLUDE (valid_from, valid_to, commit_id, source_file) FROM master_data WHERE valid_to IS NULL ORDER BY "{ID_COL}" ASC'
         try:
@@ -1449,8 +1428,8 @@ def helpers_background_task_generate_pre_render_excel(year: str):
         except duckdb.CatalogException:
             print(f"[{datetime.now()}]  Table not built yet for {year}. Skipping.", flush=True)
             return # Skip if table not built yet
-        
-        if df_grid.height == 0: 
+
+        if df_grid.height == 0:
             print(f"[{datetime.now()}]  No data found for {year}. Skipping.", flush=True)
             return
 
@@ -1460,7 +1439,7 @@ def helpers_background_task_generate_pre_render_excel(year: str):
         wb_trans = helpers_generate_excel_workbook(con, df_grid, do_translate=True, params_dict={})
         file_path_trans = os.path.join(EXPORT_FOLDER, f"Export_Nasional_{year}_text.xlsx")
         temp_trans = f"{file_path_trans}.tmp"
-        
+
         print(f"[{datetime.now()}] Saving Translated file to disk...", flush=True)
 
         # Save to a temporary file first to prevent Nginx from serving an incomplete file
@@ -1475,7 +1454,7 @@ def helpers_background_task_generate_pre_render_excel(year: str):
         wb_raw = helpers_generate_excel_workbook(con, df_grid, do_translate=False, params_dict={})
         file_path_raw = os.path.join(EXPORT_FOLDER, f"Export_Nasional_{year}_skor.xlsx")
         temp_raw = f"{file_path_raw}.tmp"
-        
+
         # Explicit validation checks
         print(f"[{datetime.now()}] Saving Raw file to disk...", flush=True)
         wb_raw.save(temp_raw)
@@ -1499,7 +1478,7 @@ def helpers_background_task_generate_pre_render_excel(year: str):
     finally:
         con.close()
         # Cleanup any stuck temp files
-        for t in [f"{os.path.join(EXPORT_FOLDER, f'Export_Nasional_{year}_text.xlsx')}.tmp", 
+        for t in [f"{os.path.join(EXPORT_FOLDER, f'Export_Nasional_{year}_text.xlsx')}.tmp",
                   f"{os.path.join(EXPORT_FOLDER, f'Export_Nasional_{year}_skor.xlsx')}.tmp"]:
             if os.path.exists(t):
                 try: os.remove(t)
@@ -1529,12 +1508,12 @@ def helpers_get_or_create_intervensi_kegiatan(items: list[str]):
         except: pass
 
     for item in items:
-        # If we have specific logic in rekomendasi.json, map it. 
+        # If we have specific logic in rekomendasi.json, map it.
         # Otherwise create a generic placeholder.
         if item in recs:
             defaults[item] = recs[item]
         else:
-            # Generic Fallback Template that is WRONG. 
+            # Generic Fallback Template that is WRONG.
             # YOU NEED TO EDIT THE TEMPLATE
             # this below is when rekomendasi.json isn't filled
             defaults[item] = {
@@ -1579,7 +1558,7 @@ def helpers_calculate_dashboard_stats(df_data, structure, ordered_db_cols, templ
                 try:
                     # Select specific column as Series
                     s = df_data.select(pl.col(target_col).cast(pl.Int64, strict=False)).to_series()
-                    
+
                     avg = s.mean()
                     c1 = (s == 1).sum()
                     c2 = (s == 2).sum()
@@ -1587,7 +1566,7 @@ def helpers_calculate_dashboard_stats(df_data, structure, ordered_db_cols, templ
                     c4 = (s == 4).sum()
                     c5 = (s == 5).sum()
 
-                    if avg is not None: 
+                    if avg is not None:
                         stats["SKOR Rata-Rata"] = round(avg, 2)
                     if c1: stats["SKOR 1"] = c1
                     if c2: stats["SKOR 2"] = c2
@@ -1599,12 +1578,12 @@ def helpers_calculate_dashboard_stats(df_data, structure, ordered_db_cols, templ
                     narrative_parts = []
                     t_map = templates.get(row.get("ITEM", ""), {})
                     cnt_map = {1: c1, 2: c2, 3: c3, 4: c4, 5: c5}
-                    
+
                     for score in [1, 2, 3, 4, 5]:
                         if cnt_map[score] > 0 and t_map.get(str(score)):
                             # Format number with commas for text
                             narrative_parts.append(f"{cnt_map[score]:,} {t_map[str(score)]}")
-                    
+
                     if narrative_parts:
                         stats["INTERVENSI KEGIATAN"] = "\n".join(narrative_parts)
 
@@ -1632,12 +1611,12 @@ def helpers_render_dashboard_html(calculated_rows: list[dict]) -> str:
 
     # Define Column Indices mapping to ensure alignment between Header and Body
     # 0:NO, 1:DIM, 2:SUB, 3:IND, 4:ITEM, 5-10:SKOR, 11:INTERVENSI, 12-16:PELAKSANA
-    
+
     # --- BUILD HEADER (Static Structure based on your CSV layout) ---
     #add 'data-col-idx' and the 'resizer' div.
     html = ""
     html += """
-    <table class="iku-table table-auto w-full text-left text-xs text-slate-700 dark:text-slate-300 border-collapse" 
+    <table class="iku-table table-auto w-full text-left text-xs text-slate-700 dark:text-slate-300 border-collapse"
         style="table-layout: fixed; width: 100%;">
         <thead style="font-family: 'Atkinson Hyperlegible', sans-serif !important;">
             <tr>
@@ -1647,7 +1626,7 @@ def helpers_render_dashboard_html(calculated_rows: list[dict]) -> str:
                 <th class="col-dimensi relative" rowspan="2" data-col-idx="1" style="width: 40px; max-width: 100px;">
                     <span>DIMENSI</span><div class="resizer"></div>
                 </th>
-                <th class="col-sub_dimensi relative" rowspan="2" data-col-idx="2" 
+                <th class="col-sub_dimensi relative" rowspan="2" data-col-idx="2"
                     style="width: 40px; max-width: 200px;">
                     <span>SUB DIMENSI</span><div class="resizer"></div>
                 </th>
@@ -1658,7 +1637,7 @@ def helpers_render_dashboard_html(calculated_rows: list[dict]) -> str:
                     <span>ITEM</span><div class="resizer"></div>
                 </th>
                 <th colspan="6">SKOR</th>
-                <th class="col-intervensi relative" rowspan="2" data-col-idx="11" 
+                <th class="col-intervensi relative" rowspan="2" data-col-idx="11"
                     style="width: 500px; min-width: 300px;">
                     INTERVENSI<div class="resizer"></div>
                 </th>
@@ -1734,7 +1713,7 @@ def helpers_render_dashboard_html(calculated_rows: list[dict]) -> str:
                         if calculated_rows[i].get(p_key) != calculated_rows[j].get(p_key):
                             parents_match = False
                             break
-                    
+
                     if parents_match:
                         span += 1
                         row_spans[j][k] = -1 # Mark as "skip"
@@ -1743,27 +1722,27 @@ def helpers_render_dashboard_html(calculated_rows: list[dict]) -> str:
                         break
                 else:
                     break
-            
+
             row_spans[i][k] = span
             i = j # Jump forward
 
     # --- BUILD BODY HTML ---
     for i, row in enumerate(calculated_rows):
         html += "<tr>"
-        
+
         # Helper
         def make_td(content, idx, css_class="", rowspan=1, is_merged=False):
             # Combine passed class with merged-cell class
             cls = f"{css_class} {'merged-cell' if is_merged else ''}".strip()
-            
+
             # Default padding is 6px, but 'col-no' has !important padding:0 in CSS
             # add vertical-align: top to everything.
             style = "vertical-align: top;"
-            
+
             # Only add whitespace wrap if it's NOT the NO column (which is centered/tight)
             if "col-no" not in css_class:
                 style += " white-space: pre-wrap; padding: 6px;"
-            
+
             # File: middleware.py (Function: helpers_render_dashboard_html)
             # Vulnerability: You use f-strings to build HTML: f'>{content or ""}</td>'.
             # The Risk: If an attacker uploads an Excel file where the "Desa"
@@ -1773,7 +1752,7 @@ def helpers_render_dashboard_html(calculated_rows: list[dict]) -> str:
             return f'<td class="{cls}" data-col-idx="{idx}" rowspan="{rowspan}" style="{style}">{safe_content}</td>'
 
         # 0-3: Merged Columns (NO, DIM, SUB, IND)
-        for idx, key in enumerate(merge_keys): 
+        for idx, key in enumerate(merge_keys):
             span = row_spans[i][key]
             if span != -1:
                 # FIX: Pass the specific CSS class (e.g., 'col-no')
@@ -1824,7 +1803,7 @@ def helpers_render_iku_dashboard(
 
     """
     Renders HTML table for IKU Dashboard from filtered DataFrame.
-    
+
     Logic:
     - Loads table_structure_IKU.csv (semicolon-delimited) and iku_mapping.json
     - Determines grouping level from filters (Provinsi → Kabupaten → Kecamatan → Desa)
@@ -1835,7 +1814,7 @@ def helpers_render_iku_dashboard(
     - Applies heatmaps: green intensity for data, red-green hue for capaian %
     - Escapes wilayah names
     - Handles missing columns/files with error rows
-    
+
     Returns:
         str: full <thead> + <tbody> HTML (with data-col-idx, resizers, classes for styling)
     """
@@ -1863,7 +1842,7 @@ def helpers_render_iku_dashboard(
 
     # Determine grouping hierarchy based on override or fallback to active filters
     group_col = params_dict.get("group_by", "")
-    
+
     if not group_col:
         prov = params_dict.get("Provinsi", "")
         kab = params_dict.get("Kabupaten/ Kota", "")
@@ -1892,7 +1871,7 @@ def helpers_render_iku_dashboard(
     col_idx_to_metric = {}
     parent_metrics = []
     parent_to_statuses = {}
-    
+
     # Track the current parent to handle merged cells or repeated headers seamlessly
     current_parent = ""
     for idx, p_val in enumerate(row1):
@@ -1900,7 +1879,7 @@ def helpers_render_iku_dashboard(
             current_parent = p_val.strip()
             if current_parent not in parent_to_statuses:
                 parent_to_statuses[current_parent] = []
-            
+
         if idx >= 2: # Skip WILAYAH and JLH DESA
             sub_val = row2[idx].strip().lower()
             col_idx_to_metric[idx] = {
@@ -1909,7 +1888,7 @@ def helpers_render_iku_dashboard(
             }
             if current_parent not in parent_metrics:
                 parent_metrics.append(current_parent)
-                
+
             # Track which specific statuses this parent uses for dynamic Totals
             if sub_val in valid_statuses:
                 if sub_val not in parent_to_statuses[current_parent]:
@@ -1919,7 +1898,7 @@ def helpers_render_iku_dashboard(
     html = ""
     if not is_append:
         html += "<thead style=\"font-family: 'Atkinson Hyperlegible', sans-serif !important;\"><tr>"
-        
+
         colspans = []
         if row1:
             current_val = row1[0]
@@ -1979,7 +1958,7 @@ def helpers_render_iku_dashboard(
             for parent in parent_metrics:
                 children = iku_mapping.get(parent, [])
                 valid_children = [c.strip() for c in children if c.strip() in df_filtered.columns]
-                
+
                 if valid_children:
                     num_children = len(valid_children)
                     # Sum horizontally, treating missing/null as 0
@@ -1989,7 +1968,7 @@ def helpers_render_iku_dashboard(
                 else:
                     # If columns don't exist in DB, assign None
                     exprs.append(pl.lit(None, dtype=pl.Float64).alias(f"__iku_score_{parent}"))
-            
+
             # Apply to dataframe
             if exprs:
                 df_filtered = df_filtered.with_columns(exprs)
@@ -1999,7 +1978,7 @@ def helpers_render_iku_dashboard(
             agg_exprs = [pl.len().alias("JLH DESA")]
             for parent in parent_metrics:
                 agg_exprs.append(pl.col(f"__iku_score_{parent}").mean().alias(f"__iku_avg_{parent}"))
-                
+
                 if has_status:
                     # Dynamically count ONLY the statuses required by this parent's CSV headers
                     for status in parent_to_statuses.get(parent, []):
@@ -2029,10 +2008,10 @@ def helpers_render_iku_dashboard(
                     safe_status = status.replace(" ", "_")
                     totals[f"__iku_{safe_status}_{parent}"] = df_grouped[f"__iku_{safe_status}_{parent}"].sum()
                     col_maxes[f"__iku_{safe_status}_{parent}"] = df_grouped[f"__iku_{safe_status}_{parent}"].max()
-                    
+
                     # Accumulate for the parent's TOTAL heatmap
                     parent_total_series = parent_total_series + df_grouped[f"__iku_{safe_status}_{parent}"]
-                    
+
                 col_maxes[f"__iku_total_{parent}"] = parent_total_series.max()
 
             # Inject TOTAL Row HTML (Forced to precisely match header classes, no tailwind text coloring)
@@ -2055,14 +2034,14 @@ def helpers_render_iku_dashboard(
                 for idx in range(2, len(row2)):
                     metric_info = col_idx_to_metric.get(idx)
                     val_to_show = "-"
-                    
+
                     if metric_info:
                         parent = metric_info["parent"]
                         sub = metric_info["sub"]
-                        
+
                         # Dynamically sum all valid statuses mapped to THIS parent
                         t_total = sum(totals.get(f"__iku_{s.replace(' ', '_')}_{parent}", 0) for s in parent_to_statuses.get(parent, []))
-                        
+
                         if sub == "rata-rata":
                             avg_val = totals.get(f"__iku_avg_{parent}")
                             if avg_val is not None:
@@ -2097,7 +2076,7 @@ def helpers_render_iku_dashboard(
             for row_data in df_page.to_dicts():
                 html += "<tr class='dash-tr-hover'>"
                 jlh_desa = row_data.get("JLH DESA", 0)
-                
+
                 # Wilayah & Jumlah Desa Columns
                 for c_idx, c_name in enumerate(group_cols):
                     wilayah = row_data.get(c_name, "Unknown")
@@ -2109,17 +2088,17 @@ def helpers_render_iku_dashboard(
                     metric_info = col_idx_to_metric.get(idx)
                     val_to_show = "-"
                     inline_style = "" # Standard transparent default
-                    
+
                     if metric_info:
                         parent = metric_info["parent"]
                         sub = metric_info["sub"]
-                        
+
                         # Dynamically sum all valid statuses mapped to THIS parent
                         t_total = sum(row_data.get(f"__iku_{s.replace(' ', '_')}_{parent}", 0) for s in parent_to_statuses.get(parent, []))
-                        
+
                         raw_val = 0
                         max_val = 1
- 
+
                         if sub == "rata-rata":
                             avg_val = row_data.get(f"__iku_avg_{parent}")
                             if avg_val is not None:
@@ -2136,7 +2115,7 @@ def helpers_render_iku_dashboard(
                             val_to_show = f"{t_total:,}"
                             raw_val = t_total
                             max_val = col_maxes.get(f"__iku_total_{parent}", 1)
-                        
+
                         # Apply Background Heatmap Calculation
                         if "capaian" in sub:
                             if parent in IKU_TEMATIK_EXCEPTIONS:
@@ -2175,7 +2154,7 @@ def helpers_render_iku_dashboard(
 def _compute_iku_json_raw(year: str, metric_filter: str = None):
     """
     Public simplified IKU dashboard data generator (used by homepage).
-    
+
     Logic:
     - Loads table_structure_IKU.csv + iku_mapping.json
     - If metric_filter=None: returns only the list of available metrics
@@ -2185,7 +2164,7 @@ def _compute_iku_json_raw(year: str, metric_filter: str = None):
       - Aggregates: JLH DESA, rata_rata, and capaian % (based on status ≥4)
       - Groups exclusively by Provinsi
     - Fully safe, no authentication required
-    
+
     Returns:
         dict:
         - {"metrics": ["Parent1", "Parent2", ...]}          if no metric_filter
@@ -2233,20 +2212,20 @@ def _compute_iku_json_raw(year: str, metric_filter: str = None):
         # NO METRIC REQUESTED -> ONLY Return the list of metric names
         if not metric_filter:
             return {"metrics": parent_metrics}
-        
+
         # INVALID METRIC REQUESTED -> Return empty
         if metric_filter not in parent_metrics:
             return {metric_filter: []}
 
         # METRIC SPECIFIED -> Fetch only the specific data
         df = con.execute("SELECT * FROM master_data WHERE valid_to IS NULL").pl()
-        if df.height == 0 or "Provinsi" not in df.columns: 
+        if df.height == 0 or "Provinsi" not in df.columns:
             return {metric_filter: []}
 
         parent = metric_filter
         children = iku_mapping.get(parent, [])
         valid_children = [c.strip() for c in children if c.strip() in df.columns]
-        
+
         exprs = []
         if valid_children:
             sum_expr = pl.sum_horizontal(
@@ -2273,7 +2252,7 @@ def _compute_iku_json_raw(year: str, metric_filter: str = None):
         agg_exprs = [pl.len().alias("JLH DESA")]
         has_status = "Status ID" in df.columns
         agg_exprs.append(pl.col(f"__iku_score_{parent}").mean().alias(f"__iku_avg_{parent}"))
-        
+
         if has_status:
             # Dynamically count ONLY the statuses required by this parent's CSV headers
             for status in statuses_to_aggregate:
@@ -2295,7 +2274,7 @@ def _compute_iku_json_raw(year: str, metric_filter: str = None):
             jlh = row.get("JLH DESA", 0)
             avg = row.get(f"__iku_avg_{parent}")
             avg_val = avg if avg is not None else 0.0
-            
+
             # Use ALL 5 target_statuses for the sum, enforcing the correct Capaian math ratio
             t_total = sum(
                 row.get(f"__iku_{s.replace(' ', '_')}_{parent}", 0) for s in target_statuses
@@ -2458,7 +2437,7 @@ def helpers_generate_public_table_json(year: str):
                 year_data[metric] = result[metric]
 
         query_real_total = """
-            SELECT 
+            SELECT
                 Provinsi AS provinsi,
                 CAST(COUNT(*) AS INTEGER) AS total_desa,
                 CAST(SUM(CASE WHEN LOWER(TRIM("Status ID")) = 'mandiri' THEN 1 ELSE 0 END) AS INTEGER) AS mandiri,
@@ -2499,6 +2478,31 @@ def helpers_generate_public_table_json(year: str):
             year_data["metrics"].append("Total Desa dan Status Desa")
 
         year_data["rekomendasi_scores"] = _compute_rekomendasi_scores(year)
+
+        # Compute per-province KBI/KTI majority (village-level → province aggregated)
+        try:
+            con_kbi, _ = helpers_get_db_connection(year)
+            try:
+                kbi_rows = con_kbi.execute("""
+                    SELECT
+                        UPPER(TRIM(Provinsi)) AS provinsi,
+                        CASE
+                            WHEN SUM(CASE WHEN UPPER(TRIM("KBI - KTI")) = 'KBI' THEN 1 ELSE 0 END)
+                              >= SUM(CASE WHEN UPPER(TRIM("KBI - KTI")) = 'KTI' THEN 1 ELSE 0 END)
+                            THEN 'KBI' ELSE 'KTI'
+                        END AS kbi_kti
+                    FROM master_data
+                    WHERE valid_to IS NULL
+                      AND Provinsi IS NOT NULL AND TRIM(Provinsi) != ''
+                      AND "KBI - KTI" IS NOT NULL AND TRIM("KBI - KTI") != ''
+                    GROUP BY UPPER(TRIM(Provinsi))
+                """).fetchall()
+                year_data["kbi_kti_map"] = {row[0]: row[1] for row in kbi_rows}
+            finally:
+                con_kbi.close()
+        except Exception:
+            year_data["kbi_kti_map"] = {}
+
         existing[year] = year_data
 
         # Atomic write

@@ -5,6 +5,7 @@
   { "standard": "Kode Wilayah Administrasi Desa", "aliases": [] },
   { "standard": "Desa", "aliases": [] },
   { "standard": "Status ID", "aliases": ["STATUS ID 25"] },
+  { "standard": "KBI - KTI", "aliases": [] },
   { "standard": "Ketersediaan PAUD/ TK/ Sederajat di Desa", "aliases": ["SKOR Keberadaan PAUD/TK/Sederajat di Desa","Keberadaan PAUD/TK/Sederajat di Desa"] },
   { "standard": "Kemudahan Akses menuju PAUD/ TK/ Sederajat terdekat di Desa", "aliases": ["SKOR Kemudahan Akses menuju PAUD/TK/Sederajat terdekat di Desa"] },
   { "standard": "Angka Partisipasi Murni (APM) anak usia 3 - 6 tahun yang bersekolah PAUD/ TK/ Sederajat di desa", "aliases": ["SKOR Angka Partisipasi Murni (APM) anak usia 3 - 6 tahun yang bersekolah PAUD/TK/Sederajat di desa"] },

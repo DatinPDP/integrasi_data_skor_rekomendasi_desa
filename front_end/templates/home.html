@@ -139,9 +139,16 @@
       /* Controls Row */
       .controls-row {
         display: flex;
-        gap: 1rem;
+        gap: 10px;
         width: 100%;
         flex-wrap: wrap;
+      }
+
+      .controls-row > .dropdown-provinsi-button {
+        /* This forces the element to ignore its default min-width */
+        min-width: 0 !important; 
+        /* This ensures the element can shrink below its initial size */
+        flex-shrink: 1; 
       }
 
       /* Dropdown UI */
@@ -613,6 +620,7 @@
         <div
           @click.away="dropdownOpen = false; search = ''"
           class="dropdown-provinsi-button styled-flat-card"
+          style="flex: 5 1 50%;"
           x-data="{ dropdownOpen: false, search: '' }"
         >
           <div
@@ -676,6 +684,7 @@
         <div
           @click.away="dropdownOpen = false; search = ''"
           class="dropdown-provinsi-button styled-flat-card"
+          style="flex: 4 1 30%;"
           x-data="{ dropdownOpen: false, search: '' }"
         >
           <div
@@ -736,6 +745,40 @@
               class="p-3 text-sm text-slate-500 italic text-center"
               x-show="provinces.filter(p => p.toLowerCase().includes(search.toLowerCase())).length === 0"
             >Tidak ditemukan</div>
+          </div>
+        </div>
+
+        <!-- KBI - KTI Dropdown -->
+        <div
+          @click.away="dropdownOpen = false"
+          class="dropdown-provinsi-button styled-flat-card"
+          style="flex: 1 1 10%;"
+          x-data="{ dropdownOpen: false }"
+        >
+          <div
+            class="dropdown-indikator-button"
+            @click="dropdownOpen = !dropdownOpen"
+            style="display: flex; align-items: center; justify-content: center; overflow: hidden;"
+          >
+            <span
+              style="font-size: 1.25rem; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; display: block;" 
+              x-text="selectedKbiKti"
+              :title="selectedKbiKti"
+            ></span>
+          </div>
+          <div
+            class="dropdown-options-menu styled-flat-card"
+            x-show="dropdownOpen"
+            style="display: none;"
+            x-transition=""
+          >
+            <template x-for="opt in ['Semua', 'KBI', 'KTI']" :key="opt">
+              <div
+                class="dropdown-option-item"
+                @click="selectedKbiKti = opt; dropdownOpen = false;"
+                x-text="opt"
+              ></div>
+            </template>
           </div>
         </div>
       </div>
@@ -1068,6 +1111,8 @@
           allData: [],
           selectedMetric: "",
           selectedProvince: "total",
+          selectedKbiKti: "Semua",   // "KBI" | "KTI" | "Semua"
+          kbiKtiMap: {},             // { "PROVINSI_UPPER": "KBI" | "KTI" }
           tableTotals: null,
           nationalAverage: 0,
           cache: {},   // keyed by `year_${year}` → full year payload from server
@@ -1275,8 +1320,13 @@
 
             // Metric changes are now instant — all data already in cache
             this.$watch('selectedMetric', (val) => {
-              if (!val) {this.allData = []; this.tableTotals = null; return;}
+              if (!val) {this.allData = []; this.fullData = []; this.tableTotals = null; return;}
               this.fetchData(val);
+            });
+
+            // KBI/KTI filter — re-slice fullData and re-render map
+            this.$watch('selectedKbiKti', () => {
+              this.applyKbiKtiFilter();
             });
           },
 
@@ -1308,6 +1358,7 @@
               }
 
               const yearData = this.cache[cacheKey] || {};
+              this.kbiKtiMap = yearData.kbi_kti_map || {};
               this.metrics = (yearData.metrics || []).sort((a, b) => {
                 if (a.toLowerCase() === 'total desa dan status desa') return -1;
                 if (b.toLowerCase() === 'total desa dan status desa') return 1;
@@ -1488,12 +1539,18 @@
 
             this.geoJsonLayer = L.geoJSON(this.geoJsonData, {
               style: (feature) => {
+                const fprov = feature.properties.PROVINSI.toUpperCase();
+                const kbiFiltered = this.selectedKbiKti !== "Semua" &&
+                                    this.kbiKtiMap[fprov] !== this.selectedKbiKti;
+                if (kbiFiltered) {
+                  return { fillColor: '#e2e8f0', weight: 0.5, opacity: 0.4,
+                           color: '#cbd5e1', fillOpacity: 0.15 };
+                }
                 if (isDesa) {
                   // Filled via SVG gradient after layer is added — use neutral placeholder
                   return { fillColor: '#e2e8f0', weight: 1, opacity: 1,
                            color: 'white', fillOpacity: 0.85 };
                 }
-                const fprov  = feature.properties.PROVINSI.toUpperCase();
                 const val    = provValues[fprov];
                 const factor = (val !== undefined && maxVal > 0)
                   ? Math.max(0, Math.min(1, val / maxVal)) : 0;
@@ -1505,6 +1562,9 @@
 
               onEachFeature: (feature, layer) => {
                 const fprov = feature.properties.PROVINSI.toUpperCase();
+                const kbiFiltered = this.selectedKbiKti !== "Semua" &&
+                                    this.kbiKtiMap[fprov] !== this.selectedKbiKti;
+                if (kbiFiltered) return; // no tooltip or click for filtered provinces
 
                 if (isDesa) {
                   const row = desaMap[fprov];
@@ -1568,6 +1628,7 @@
 
           fetchData(metric) {
             this.allData = [];
+            this.fullData = [];
             this.tableTotals = null;
             this.provinces = ["total"];
             this.sortCol = null;
@@ -1577,7 +1638,7 @@
 
             // IKU metric data (for map + leaderboard + data table)
             const metricPayload = yearData[metric] || {data: [], totals: null};
-            this.allData = metricPayload.data || [];
+            this.fullData = metricPayload.data || [];   // raw, unfiltered
             this.tableTotals = metricPayload.totals || null;
 
             // Rekomendasi scores — province-keyed dict, already in cache, zero cost
@@ -1588,12 +1649,29 @@
               this.nationalAverage = parseFloat(String(cap).replace('%', '').trim());
             }
 
-            if (this.allData.length > 0) {
-              const provKey = Object.keys(this.allData[0]).find(k => k.toLowerCase().includes('provinsi'));
+            this.applyKbiKtiFilter();  // sets allData + provinces from fullData
+          },
+
+          // Filter fullData → allData by selectedKbiKti, rebuild provinces list
+          applyKbiKtiFilter() {
+            const filtered = (this.selectedKbiKti === "Semua" || !Object.keys(this.kbiKtiMap).length)
+              ? [...this.fullData]
+              : this.fullData.filter(row => {
+                  const provKey = Object.keys(row).find(k => k.toLowerCase().includes('provinsi'));
+                  if (!provKey) return true;
+                  return this.kbiKtiMap[row[provKey].toUpperCase()] === this.selectedKbiKti;
+                });
+
+            this.allData = filtered;
+
+            if (filtered.length > 0) {
+              const provKey = Object.keys(filtered[0]).find(k => k.toLowerCase().includes('provinsi'));
               if (provKey) {
-                const provs = [...new Set(this.allData.map(d => d[provKey]))];
+                const provs = [...new Set(filtered.map(d => d[provKey]))];
                 this.provinces = ["total", ...provs.sort()];
               }
+            } else {
+              this.provinces = ["total"];
             }
 
             if (!this.provinces.includes(this.selectedProvince)) {
