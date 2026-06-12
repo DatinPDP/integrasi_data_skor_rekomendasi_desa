@@ -76,3 +76,6 @@ next-env.d.ts
 # Misc
 .DS_Store
 *.pem
+
+# Auth users
+.config/auth_users.json
