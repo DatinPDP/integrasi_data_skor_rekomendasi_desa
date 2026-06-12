@@ -1,50 +1,19 @@
-<!DOCTYPE html>
-<html
-  lang="en"
-  x-data="PublicApp()"
->
-
-  <head>
-    <meta charset="utf-8" />
+<!DOCTYPE html><html lang="en" x-data="PublicApp()"><head>
+    <meta charset="utf-8">
     <title>Dashboard Sistem Pengukuran Indikator Kinerja Utama (SIPIKU)</title>
-    <link
-      href="https://fonts.googleapis.com"
-      rel="preconnect"
-    />
-    <link
-      crossorigin=""
-      href="https://fonts.gstatic.com"
-      rel="preconnect"
-    />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&display=swap"
-      rel="stylesheet"
-    >
-    <link
-      href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap"
-      rel="stylesheet"
-    >
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&amp;display=swap" rel="stylesheet">
 
-    <link
-      href="./static/css/output.css"
-      rel="stylesheet"
-    >
+    <link href="./static/css/output.css" rel="stylesheet">
 
-    <link
-      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
 
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-    <script
-      defer
-      src="/static/js/alpine.min.js"
-    ></script>
+    <script defer="" src="/static/js/alpine.min.js"></script>
 
     <style>
       /* Global Layout */
@@ -146,9 +115,9 @@
 
       .controls-row > .dropdown-provinsi-button {
         /* This forces the element to ignore its default min-width */
-        min-width: 0 !important; 
+        min-width: 0 !important;
         /* This ensures the element can shrink below its initial size */
-        flex-shrink: 1; 
+        flex-shrink: 1;
       }
 
       /* Dropdown UI */
@@ -602,430 +571,182 @@
   <body>
     <nav class="floating-top-navigation-bar">
       <div class="brand-logo-and-title">
-        <img
-          src="/static/images/logo.svg"
-          class="brand-logo-image"
-          alt="Logo"
-        >
+        <img src="/static/images/logo.svg" class="brand-logo-image" alt="Logo">
         <h1 class="brand-title-text">Dashboard Sistem Pengukuran Indikator Kinerja Utama (SIPIKU)</h1>
       </div>
-      <a
-        href="/login"
-        class="login-action-button"
-      >Login</a>
+      <a href="/login" class="login-action-button">Login</a>
     </nav>
     <main class="main-content-wrapper fade-in-on-load">
       <div class="controls-row">
         <!-- Metric Dropdown -->
-        <div
-          @click.away="dropdownOpen = false; search = ''"
-          class="dropdown-provinsi-button styled-flat-card"
-          style="flex: 5 1 50%;"
-          x-data="{ dropdownOpen: false, search: '' }"
-        >
-          <div
-            class="dropdown-indikator-button"
-            @click="dropdownOpen = !dropdownOpen; if(dropdownOpen) $nextTick(() => $refs.searchMetric.focus());"
-          >
+        <div @click.away="dropdownOpen = false; search = ''" class="dropdown-provinsi-button styled-flat-card" style="flex: 5 1 50%;" x-data="{ dropdownOpen: false, search: '' }">
+          <div class="dropdown-indikator-button" @click="dropdownOpen = !dropdownOpen; if(dropdownOpen) $nextTick(() => $refs.searchMetric.focus());">
             <span x-text="selectedMetric ? (selectedMetric.toLowerCase() === 'total desa dan status desa' ? selectedMetric.toUpperCase() : selectedMetric) : '-- Pilih Indikator --'"></span>
-            <svg
-              width="20"
-              height="20"
-              fill="none"
-              stroke="#64748b"
-              stroke-width="2"
-              viewbox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M19 9l-7 7-7-7"
-              ></path>
+            <svg width="20" height="20" fill="none" stroke="#64748b" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"></path>
             </svg>
           </div>
 
-          <div
-            class="dropdown-options-menu styled-flat-card"
-            x-show="dropdownOpen"
-            style="display: none;"
-            x-transition=""
-          >
-            <div
-              class="sticky top-0 bg-white p-2 border-b border-slate-200 z-10"
-              @click.stop
-            >
-              <input
-                type="text"
-                x-model="search"
-                x-ref="searchMetric"
-                class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                placeholder="Cari indikator..."
-              >
+          <div class="dropdown-options-menu styled-flat-card" x-show="dropdownOpen" style="display: none;" x-transition="">
+            <div class="sticky top-0 bg-white p-2 border-b border-slate-200 z-10" @click.stop="">
+              <input type="text" x-model="search" x-ref="searchMetric" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" placeholder="Cari indikator...">
             </div>
 
-            <template
-              x-for="metric in metrics.filter(m => m.toLowerCase().includes(search.toLowerCase()))"
-              :key="metric"
-            >
-              <div
-                class="dropdown-option-item"
-                @click="selectedMetric = metric; dropdownOpen = false; search = '';"
-                x-text="metric.toLowerCase() === 'total desa dan status desa' ? metric.toUpperCase() : metric"
-              ></div>
+            <template x-for="metric in metrics.filter(m => m.toLowerCase().includes(search.toLowerCase()))" :key="metric">
+              <div class="dropdown-option-item" @click="selectedMetric = metric; dropdownOpen = false; search = '';" x-text="metric.toLowerCase() === 'total desa dan status desa' ? metric.toUpperCase() : metric"></div>
             </template>
 
-            <div
-              class="p-3 text-sm text-slate-500 italic text-center"
-              x-show="metrics.filter(m => m.toLowerCase().includes(search.toLowerCase())).length === 0"
-            >Tidak ditemukan</div>
+            <div class="p-3 text-sm text-slate-500 italic text-center" x-show="metrics.filter(m => m.toLowerCase().includes(search.toLowerCase())).length === 0">Tidak ditemukan</div>
           </div>
         </div>
         <!-- Province Dropdown -->
-        <div
-          @click.away="dropdownOpen = false; search = ''"
-          class="dropdown-provinsi-button styled-flat-card"
-          style="flex: 4 1 30%;"
-          x-data="{ dropdownOpen: false, search: '' }"
-        >
-          <div
-            @click="dropdownOpen = !dropdownOpen; if(dropdownOpen) $nextTick(() => $refs.searchProv.focus());"
-            class="dropdown-indikator-button"
-            style="font-size: 1.5rem; letter-spacing: 0.5px;"
-          >
-            <span
-              x-text="selectedProvince === 'total' ? 'Semua Provinsi' : (selectedProvince ? 'Provinsi ' + toProperCase(selectedProvince) : '-- Pilih Provinsi --')"
-              </span
-            >
-              <svg
-                fill="none"
-                height="20"
-                stroke="#64748b"
-                stroke-width="2"
-                viewbox="0 0 24 24"
-                width="20"
-              >
-                <path
-                  d="M19 9l-7 7-7-7"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                ></path>
+        <div @click.away="dropdownOpen = false; search = ''" class="dropdown-provinsi-button styled-flat-card" style="flex: 4 1 30%;" x-data="{ dropdownOpen: false, search: '' }">
+          <div @click="dropdownOpen = !dropdownOpen; if(dropdownOpen) $nextTick(() => $refs.searchProv.focus());" class="dropdown-indikator-button" style="font-size: 1.5rem; letter-spacing: 0.5px;">
+            <span x-text="selectedProvince === 'total' ? 'Semua Provinsi' : (selectedProvince ? 'Provinsi ' + toProperCase(selectedProvince) : '-- Pilih Provinsi --')" <="" span="">
+              <svg fill="none" height="20" stroke="#64748b" stroke-width="2" viewBox="0 0 24 24" width="20">
+                <path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round"></path>
               </svg>
-          </div>
-          <div
-            class="dropdown-options-menu styled-flat-card"
-            style="display: none;"
-            x-show="dropdownOpen"
-            x-transition=""
-          >
-            <div
-              class="sticky top-0 bg-white p-2 border-b border-slate-200 z-10"
-              @click.stop
-            >
-              <input
-                type="text"
-                x-model="search"
-                x-ref="searchProv"
-                class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                placeholder="Cari provinsi..."
-              >
+          </span></div>
+          <div class="dropdown-options-menu styled-flat-card" style="display: none;" x-show="dropdownOpen" x-transition="">
+            <div class="sticky top-0 bg-white p-2 border-b border-slate-200 z-10" @click.stop="">
+              <input type="text" x-model="search" x-ref="searchProv" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" placeholder="Cari provinsi...">
             </div>
 
-            <template
-              :key="prov"
-              x-for="prov in provinces.filter(p => p.toLowerCase().includes(search.toLowerCase()))"
-            >
-              <div
-                @click="selectedProvince = prov; dropdownOpen = false; search = '';"
-                class="dropdown-option-item"
-                x-text="toProperCase(prov)"
-              ></div>
+            <template :key="prov" x-for="prov in provinces.filter(p => p.toLowerCase().includes(search.toLowerCase()))">
+              <div @click="selectedProvince = prov; dropdownOpen = false; search = '';" class="dropdown-option-item" x-text="toProperCase(prov)"></div>
             </template>
 
-            <div
-              class="p-3 text-sm text-slate-500 italic text-center"
-              x-show="provinces.filter(p => p.toLowerCase().includes(search.toLowerCase())).length === 0"
-            >Tidak ditemukan</div>
+            <div class="p-3 text-sm text-slate-500 italic text-center" x-show="provinces.filter(p => p.toLowerCase().includes(search.toLowerCase())).length === 0">Tidak ditemukan</div>
           </div>
         </div>
 
         <!-- KBI - KTI Dropdown -->
-        <div
-          @click.away="dropdownOpen = false"
-          class="dropdown-provinsi-button styled-flat-card"
-          style="flex: 1 1 10%;"
-          x-data="{ dropdownOpen: false }"
-        >
-          <div
-            class="dropdown-indikator-button"
-            @click="dropdownOpen = !dropdownOpen"
-            style="display: flex; align-items: center; justify-content: center; overflow: hidden;"
-          >
-            <span
-              style="font-size: 1.25rem; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; display: block;" 
-              x-text="selectedKbiKti"
-              :title="selectedKbiKti"
-            ></span>
+        <div @click.away="dropdownOpen = false" class="dropdown-provinsi-button styled-flat-card" style="flex: 1 1 10%;" x-data="{ dropdownOpen: false }">
+          <div class="dropdown-indikator-button" @click="dropdownOpen = !dropdownOpen" style="display: flex; align-items: center; justify-content: center; overflow: hidden;">
+            <span style="font-size: 1.25rem; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; display: block;" x-text="selectedKbiKti" :title="selectedKbiKti"></span>
           </div>
-          <div
-            class="dropdown-options-menu styled-flat-card"
-            x-show="dropdownOpen"
-            style="display: none;"
-            x-transition=""
-          >
+          <div class="dropdown-options-menu styled-flat-card" x-show="dropdownOpen" style="display: none;" x-transition="">
             <template x-for="opt in ['Semua', 'KBI', 'KTI']" :key="opt">
-              <div
-                class="dropdown-option-item"
-                @click="selectedKbiKti = opt; dropdownOpen = false;"
-                x-text="opt"
-              ></div>
+              <div class="dropdown-option-item" @click="selectedKbiKti = opt; dropdownOpen = false;" x-text="opt"></div>
             </template>
           </div>
         </div>
       </div>
-      <div
-        class="loading-indicator-text"
-        x-show="isLoading"
-      >
+      <div class="loading-indicator-text" x-show="isLoading">
         Memuat Data...
       </div>
       <!-- Report Card Infographic -->
-      <template x-if="!isLoading && selectedMetric && selectedProvinceData">
+      <template x-if="!isLoading &amp;&amp; selectedMetric &amp;&amp; selectedProvinceData">
         <div class="report-card-section styled-flat-card fade-in-on-load">
           <div class="report-card-header">
             <div style="display: flex; flex-direction: column; flex: 1;">
               <div class="report-card-title-container">
                 <h2 class="report-card-subtitle">Report Provinsi</h2>
-                <h1
-                  class="report-card-title"
-                  x-text="toProperCase(selectedProvince)"
-                ></h1>
+                <h1 class="report-card-title" x-text="toProperCase(selectedProvince)"></h1>
               </div>
             </div>
 
             <div style="display: flex; gap: 1rem; align-items: flex-start;">
-              <div
-                class="achievement-score-box"
-                style="position: relative; cursor: pointer; user-select: none;"
-                @click="yearDropdownOpen = !yearDropdownOpen"
-                @click.away="yearDropdownOpen = false"
-                x-data="{ yearDropdownOpen: false }"
-              >
+              <div class="achievement-score-box" style="position: relative; cursor: pointer; user-select: none;" @click="yearDropdownOpen = !yearDropdownOpen" @click.away="yearDropdownOpen = false" x-data="{ yearDropdownOpen: false }">
                 <div class="score-label">Tahun</div>
-                <div
-                  class="score-value"
-                  x-text="year"
-                  style="color: #0f172a;"
-                ></div>
+                <div class="score-value" x-text="year" style="color: #0f172a;"></div>
 
-                <div
-                  class="dropdown-options-menu styled-flat-card"
-                  x-show="yearDropdownOpen"
-                  style="display: none; position: absolute; top: 100%; left: 0; right: 0; z-index: 50; padding: 0.5rem 0; min-width: 100%;"
-                >
-                  <template
-                    x-for="y in [...dynamicYears].sort((a,b) => b - a)"
-                    :key="y"
-                  >
-                    <div
-                      class="dropdown-option-item"
-                      style="text-align: center; padding: 0.75rem;"
-                      @click="setYear(Number(y)); yearDropdownOpen = false"
-                      x-text="y"
-                      :style="year == y ? 'background-color: #f1f5f9; font-weight: bold; color: #2563eb;' : ''"
-                    ></div>
+                <div class="dropdown-options-menu styled-flat-card" x-show="yearDropdownOpen" style="display: none; position: absolute; top: 100%; left: 0; right: 0; z-index: 50; padding: 0.5rem 0; min-width: 100%;">
+                  <template x-for="y in [...dynamicYears].sort((a,b) => b - a)" :key="y">
+                    <div class="dropdown-option-item" style="text-align: center; padding: 0.75rem;" @click="setYear(Number(y)); yearDropdownOpen = false" x-text="y" :style="year == y ? 'background-color: #f1f5f9; font-weight: bold; color: #2563eb;' : ''"></div>
                   </template>
                 </div>
               </div>
 
-              <div
-                class="achievement-score-box"
-                x-show="selectedMetric !== 'Total Desa dan Status Desa'"
-              >
+              <div class="achievement-score-box" x-show="selectedMetric !== 'Total Desa dan Status Desa'">
                 <div class="score-label">Capaian</div>
-                <div
-                  class="score-value"
-                  x-text="selectedProvinceData.capaian ? String(selectedProvinceData.capaian).replace('%', '').trim() + '%' : '-'"
-                ></div>
+                <div class="score-value" x-text="selectedProvinceData.capaian ? String(selectedProvinceData.capaian).replace('%', '').trim() + '%' : '-'"></div>
               </div>
             </div>
           </div>
 
-          <div
-            id="map"
-            x-init="initMap()"
-            style="height: 500px; width: 100%; z-index: 1; border-radius: 8px;"
-          ></div>
+          <div id="map" x-init="initMap()" style="height: 500px; width: 100%; z-index: 1; border-radius: 8px;"></div>
 
           <div class="village-status-grid">
             <div class="status-block mandiri">
-              <div
-                class="status-count"
-                x-text="selectedProvinceData.mandiri || 0"
-              ></div>
+              <div class="status-count" x-text="selectedProvinceData.mandiri || 0"></div>
               <div class="status-name">Desa Mandiri</div>
             </div>
             <div class="status-block maju">
-              <div
-                class="status-count"
-                x-text="selectedProvinceData.maju || 0"
-              ></div>
+              <div class="status-count" x-text="selectedProvinceData.maju || 0"></div>
               <div class="status-name">Desa Maju</div>
             </div>
             <div class="status-block berkembang">
-              <div
-                class="status-count"
-                x-text="selectedProvinceData.berkembang || 0"
-              ></div>
+              <div class="status-count" x-text="selectedProvinceData.berkembang || 0"></div>
               <div class="status-name">Desa Berkembang</div>
             </div>
             <div class="status-block tertinggal">
-              <div
-                class="status-count"
-                x-text="selectedProvinceData.tertinggal || 0"
-              ></div>
+              <div class="status-count" x-text="selectedProvinceData.tertinggal || 0"></div>
               <div class="status-name">Desa Tertinggal</div>
             </div>
             <div class="status-block sangat-tertinggal">
-              <div
-                class="status-count"
-                x-text="selectedProvinceData.sangat_tertinggal || 0"
-              ></div>
+              <div class="status-count" x-text="selectedProvinceData.sangat_tertinggal || 0"></div>
               <div class="status-name">Desa Sangat Tertinggal</div>
             </div>
           </div>
         </div>
       </template>
       <!-- Leaderboards -->
-      <div
-        class="leaderboard-grid fade-in-on-load"
-        x-show="!isLoading && selectedMetric && allData.length > 0 && selectedMetric !== 'Total Desa dan Status Desa'"
-      >
+      <div class="leaderboard-grid fade-in-on-load" x-show="!isLoading &amp;&amp; selectedMetric &amp;&amp; allData.length > 0 &amp;&amp; selectedMetric !== 'Total Desa dan Status Desa'">
         <div class="leaderboard-section styled-flat-card">
           <h3 class="leaderboard-title">Peringkat Nasional: <span x-text="selectedMetric"></span></h3>
           <div class="leaderboard-list">
-            <template
-              :key="index"
-              x-for="(prov, index) in topProvinces"
-            >
-              <div
-                class="leaderboard-item"
-                x-data="{ expanded: false }"
-                @click="expanded = !expanded"
-                title="Klik untuk lihat nama penuh"
-              >
-                <span
-                  class="leaderboard-rank"
-                  x-text="`#${index + 1}`"
-                ></span>
-                <span
-                  class="leaderboard-name"
-                  :class="expanded ? '' : 'truncate-text'"
-                  x-text="toProperCase(prov.name)"
-                ></span>
-                <span
-                  class="leaderboard-score"
-                  x-text="`${prov.score}%`"
-                ></span>
+            <template :key="index" x-for="(prov, index) in topProvinces">
+              <div class="leaderboard-item" x-data="{ expanded: false }" @click="expanded = !expanded" title="Klik untuk lihat nama penuh">
+                <span class="leaderboard-rank" x-text="`#${index + 1}`"></span>
+                <span class="leaderboard-name" :class="expanded ? '' : 'truncate-text'" x-text="toProperCase(prov.name)"></span>
+                <span class="leaderboard-score" x-text="`${prov.score}%`"></span>
               </div>
             </template>
-            <div
-              class="empty-state-message"
-              style="display: none;"
-              x-show="topProvinces.length === 0"
-            >Belum ada data</div>
+            <div class="empty-state-message" style="display: none;" x-show="topProvinces.length === 0">Belum ada data</div>
           </div>
         </div>
         <div class="leaderboard-section styled-flat-card">
-          <h3 class="leaderboard-title">Indikator Tertinggi Provinsi: <span
-              x-text="selectedProvince !== 'total' ? toProperCase(selectedProvince) : 'Nasional'"
-            ></span><br><br></h3>
+          <h3 class="leaderboard-title">Indikator Tertinggi Provinsi: <span x-text="selectedProvince !== 'total' ? toProperCase(selectedProvince) : 'Nasional'"></span><br><br></h3>
           <div class="leaderboard-list">
-            <template
-              :key="index"
-              x-for="(strength, index) in provinceStrengths"
-            >
-              <div
-                class="leaderboard-item"
-                x-data="{ expanded: false }"
-                @click="expanded = !expanded"
-                title="Klik untuk lihat nama penuh"
-              >
-                <span
-                  class="leaderboard-rank"
-                  x-text="`#${index + 1}`"
-                ></span>
-                <span
-                  class="leaderboard-name"
-                  :class="expanded ? '' : 'truncate-text'"
-                  x-text="strength.metric"
-                ></span>
-                <span
-                  class="leaderboard-score"
-                  x-text="`${strength.score}%`"
-                ></span>
+            <template :key="index" x-for="(strength, index) in provinceStrengths">
+              <div class="leaderboard-item" x-data="{ expanded: false }" @click="expanded = !expanded" title="Klik untuk lihat nama penuh">
+                <span class="leaderboard-rank" x-text="`#${index + 1}`"></span>
+                <span class="leaderboard-name" :class="expanded ? '' : 'truncate-text'" x-text="strength.metric"></span>
+                <span class="leaderboard-score" x-text="`${strength.score}%`"></span>
               </div>
             </template>
-            <div
-              class="empty-state-message"
-              style="display: none;"
-              x-show="provinceStrengths.length === 0"
-            >Belum ada data indikator</div>
+            <div class="empty-state-message" style="display: none;" x-show="provinceStrengths.length === 0">Belum ada data indikator</div>
           </div>
         </div>
       </div>
       <!-- Data Table -->
-      <div
-        class="table-render-container styled-flat-card fade-in-on-load"
-        x-show="!isLoading && allData && allData.length > 0"
-      >
+      <div class="table-render-container styled-flat-card fade-in-on-load" x-show="!isLoading &amp;&amp; allData &amp;&amp; allData.length > 0">
         <table class="dashboard-data-table">
           <thead>
             <tr class="table-header-row">
-              <template
-                x-for="col in Object.keys(allData[0] || {})"
-                :key="col"
-              >
+              <template x-for="col in Object.keys(allData[0] || {})" :key="col">
                 <th @click="sortBy(col)">
                   <div style="display: flex; align-items: center; justify-content: space-between;">
                     <span x-text="col.replace(/_/g, ' ')"></span>
-                    <span
-                      x-show="sortCol === col"
-                      x-text="sortAsc ? '▲' : '▼'"
-                      style="font-size: 0.7em; margin-left: 0.5rem; color: #64748b;"
-                    ></span>
+                    <span x-show="sortCol === col" x-text="sortAsc ? '▲' : '▼'" style="font-size: 0.7em; margin-left: 0.5rem; color: #64748b;"></span>
                   </div>
                 </th>
               </template>
             </tr>
             <template x-if="tableTotals">
               <tr class="table-totals-row">
-                <template
-                  x-for="col in Object.keys(allData[0] || {})"
-                  :key="col"
-                >
-                  <td
-                    class="table-data-cell"
-                    x-text="String(col).toLowerCase().includes('capaian') && tableTotals[col] ? String(tableTotals[col]).replace('%', '').trim() + ' %' : (tableTotals[col] || '-')"
-                  ></td>
+                <template x-for="col in Object.keys(allData[0] || {})" :key="col">
+                  <td class="table-data-cell" x-text="String(col).toLowerCase().includes('capaian') &amp;&amp; tableTotals[col] ? String(tableTotals[col]).replace('%', '').trim() + ' %' : (tableTotals[col] || '-')"></td>
                 </template>
               </tr>
             </template>
           </thead>
           <tbody>
-            <template
-              x-for="(row, index) in sortedData"
-              :key="index"
-            >
+            <template x-for="(row, index) in sortedData" :key="index">
               <tr>
-                <template
-                  x-for="col in Object.keys(allData[0] || {})"
-                  :key="col"
-                >
-                  <td
-                    class="table-data-cell"
-                    :style="getHeatmapStyle(col, row[col])"
-                    x-text="String(col).toLowerCase().includes('capaian') ? String(row[col]).replace('%', '').trim() + ' %' : (String(col).toLowerCase().includes('provinsi') ? toProperCase(row[col]) : row[col])"
-                  >
+                <template x-for="col in Object.keys(allData[0] || {})" :key="col">
+                  <td class="table-data-cell" :style="getHeatmapStyle(col, row[col])" x-text="String(col).toLowerCase().includes('capaian') ? String(row[col]).replace('%', '').trim() + ' %' : (String(col).toLowerCase().includes('provinsi') ? toProperCase(row[col]) : row[col])">
                   </td>
                 </template>
               </tr>
@@ -1035,38 +756,21 @@
       </div>
 
       <!-- Rekomendasi Table -->
-      <div
-        class="rekomendasi-table styled-flat-card fade-in-on-load"
-        x-show="!!tableSkeleton"
-        style="display:none;"
-      >
-        <div
-          style="padding:1.25rem 1.5rem 0.75rem;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;"
-        >
+      <div class="rekomendasi-table styled-flat-card fade-in-on-load" x-show="!!tableSkeleton" style="display:none;">
+        <div style="padding:1.25rem 1.5rem 0.75rem;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;">
           <div>
             <h3 style="margin:0;font-size:1rem;font-weight:700;color:#1e293b;">Rekomendasi Intervensi Kegiatan</h3>
             <p style="margin:0.25rem 0 0;font-size:0.8rem;color:#64748b;">
-              Menampilkan data: <span
-                style="font-weight:600;"
-                x-text="selectedProvince === 'total' ? 'Semua Provinsi (Nasional)' : 'Provinsi ' + toProperCase(selectedProvince)"
-              ></span>
+              Menampilkan data: <span style="font-weight:600;" x-text="selectedProvince === 'total' ? 'Semua Provinsi (Nasional)' : 'Provinsi ' + toProperCase(selectedProvince)"></span>
             </p>
           </div>
         </div>
         <div style="margin-left:12px;max-height:600px;overflow-y:auto;overflow-x:auto;">
-          <table
-            style="table-layout:fixed;width:100%;border-collapse:collapse;font-family:'Atkinson Hyperlegible',sans-serif;"
-          >
+          <table style="table-layout:fixed;width:100%;border-collapse:collapse;font-family:'Atkinson Hyperlegible',sans-serif;">
             <thead>
               <tr>
-                <template
-                  x-for="(header, i) in (tableSkeleton ? tableSkeleton.headers : [])"
-                  :key="i"
-                >
-                  <th
-                    x-text="header"
-                    class="rek-th relative"
-                    :style="[
+                <template x-for="(header, i) in (tableSkeleton ? tableSkeleton.headers : [])" :key="i">
+                  <th x-text="header" class="rek-th relative" :style="[
                         'width: 40px; min-width: 40px;',          /* NO */
                         'width: 80px; max-width: 100px;',         /* DIMENSI */
                         'width: 120px; max-width: 200px;',        /* SUB DIMENSI */
@@ -1078,8 +782,7 @@
                         'width: 200px; min-width: 150px;',        /* KABUPATEN */
                         'width: 200px; min-width: 150px;',        /* DESA */
                         'width: 200px; min-width: 150px;'         /* LAINNYA */
-                      ][i]"
-                  >
+                      ][i]">
                   </th>
                 </template>
               </tr>
@@ -1089,644 +792,13 @@
         </div>
       </div>
 
-      <div
-        class="empty-state-message styled-flat-card"
-        style="display: none;"
-        x-show="!isLoading && (!selectedMetric || allData.length === 0)"
-      >
+      <div class="empty-state-message styled-flat-card" style="display: none;" x-show="!isLoading &amp;&amp; (!selectedMetric || allData.length === 0)">
         Tidak ada data untuk indikator atau tahun ini.
       </div>
 
     </main>
-    <script>
-      function PublicApp() {
-        return {
-          year: new Date().getFullYear() - 1,
-          dynamicYears: [],
-          tabColors: ['#667b99', '#7589a4', '#8596ae', '#94a3b8', '#a3b0c2'],
-          isLoading: false,
-          metrics: [],
-          provinces: [],
-          fullData: [],
-          allData: [],
-          selectedMetric: "",
-          selectedProvince: "total",
-          selectedKbiKti: "Semua",   // "KBI" | "KTI" | "Semua"
-          kbiKtiMap: {},             // { "PROVINSI_UPPER": "KBI" | "KTI" }
-          tableTotals: null,
-          nationalAverage: 0,
-          cache: {},   // keyed by `year_${year}` → full year payload from server
-          sortCol: null,
-          sortAsc: true,
-          map: null,
-          geoJsonLayer: null,
-          geoJsonData: null,
-          rekomendasiData: {},
-          tableSkeleton: null,
-          interventionMapping: {},
-          proportionalMarkers: null, // Add this for the map
+    <script>(function(_0x40e370,_0x5d9ce4){const _0x20a527=_0x1aa4,_0xddf8d3=_0x40e370();while(!![]){try{const _0x3ced7b=-parseInt(_0x20a527(0x224))/0x1*(parseInt(_0x20a527(0x16e))/0x2)+parseInt(_0x20a527(0x1cf))/0x3*(parseInt(_0x20a527(0x291))/0x4)+parseInt(_0x20a527(0x282))/0x5+parseInt(_0x20a527(0x278))/0x6*(parseInt(_0x20a527(0x258))/0x7)+parseInt(_0x20a527(0x1e4))/0x8*(-parseInt(_0x20a527(0x286))/0x9)+-parseInt(_0x20a527(0x210))/0xa*(-parseInt(_0x20a527(0x275))/0xb)+parseInt(_0x20a527(0x1f0))/0xc*(-parseInt(_0x20a527(0x28c))/0xd);if(_0x3ced7b===_0x5d9ce4)break;else _0xddf8d3['push'](_0xddf8d3['shift']());}catch(_0x5a170d){_0xddf8d3['push'](_0xddf8d3['shift']());}}}(_0x57f0,0x2a9e3));function PublicApp(){const _0x4803ae=_0x1aa4,_0x32194b={'dLqvv':function(_0x3518e1,_0x2c7ec4){return _0x3518e1===_0x2c7ec4;},'JQUsB':'Semua\x20Provinsi','WNtUf':function(_0x2a9bd4,_0x3fb416){return _0x2a9bd4===_0x3fb416;},'EczSe':_0x4803ae(0x273),'zcYNT':_0x4803ae(0x228),'myzlQ':_0x4803ae(0x207),'eMYPa':_0x4803ae(0x1c6),'ZBPNG':'Mandiri','nVTHm':'Tertinggal','LKkHf':_0x4803ae(0x211),'SkPFL':_0x4803ae(0x280),'bWFxR':_0x4803ae(0x1aa),'HyJfg':'Capaian','Amtnc':_0x4803ae(0x240),'qQBcx':_0x4803ae(0x221),'sTJYV':_0x4803ae(0x196),'xEfNI':_0x4803ae(0x1ef),'ZYzVQ':function(_0x506808,_0x2677b4){return _0x506808(_0x2677b4);},'LHdmz':function(_0x21c056,_0x5748f0){return _0x21c056===_0x5748f0;},'hiMDQ':function(_0x330e86,_0x275929){return _0x330e86===_0x275929;},'EPOLh':function(_0x29961b,_0x3c28d7){return _0x29961b(_0x3c28d7);},'sdMNs':'total','ehMIL':function(_0x5d5cf1,_0x532829){return _0x5d5cf1(_0x532829);},'bfkEi':function(_0x5d21ce,_0x2285d3){return _0x5d21ce(_0x2285d3);},'xswjp':function(_0x3e030d,_0x1d9f36){return _0x3e030d||_0x1d9f36;},'OBEAZ':function(_0x572892,_0x4b1422){return _0x572892-_0x4b1422;},'IiwIB':function(_0x1886ed,_0x5243a4){return _0x1886ed(_0x5243a4);},'GDGhp':function(_0x1fe6fd,_0x568c7d){return _0x1fe6fd||_0x568c7d;},'QbjDi':function(_0x1625d2,_0x3eeb70){return _0x1625d2(_0x3eeb70);},'tBCeh':function(_0x49c480,_0x1b129a){return _0x49c480||_0x1b129a;},'DKBVG':function(_0x270cff,_0x29fe37){return _0x270cff<_0x29fe37;},'HNsKW':function(_0x2549d9,_0x2798ac){return _0x2549d9===_0x2798ac;},'RXqBD':function(_0x360b90,_0x22739d){return _0x360b90(_0x22739d);},'KRykp':function(_0x4058e2,_0x4ced72){return _0x4058e2(_0x4ced72);},'vEyRj':function(_0x541ae6,_0x31481b){return _0x541ae6>_0x31481b;},'EERqe':_0x4803ae(0x209),'KZwAG':function(_0x4a549f,_0x1daec1){return _0x4a549f===_0x1daec1;},'qAtUC':function(_0x206d1d,_0x46272c){return _0x206d1d===_0x46272c;},'ZLkGC':function(_0x33edd2,_0x24f438){return _0x33edd2(_0x24f438);},'ULleW':function(_0x26dc93,_0x3ea7f8){return _0x26dc93/_0x3ea7f8;},'MPnnf':function(_0x3a71a0,_0x401c93){return _0x3a71a0-_0x401c93;},'JfhbL':function(_0x4cc324,_0x29ed2f){return _0x4cc324>=_0x29ed2f;},'vgldg':_0x4803ae(0x180),'MxXej':function(_0x26f3c7,_0x5f107){return _0x26f3c7(_0x5f107);},'qZDfx':_0x4803ae(0x267),'lvlPU':'Failed\x20to\x20load\x20static\x20JSON:','dUyVg':_0x4803ae(0x243),'kqHkN':'selectedKbiKti','lbXvA':_0x4803ae(0x22b),'cGvdC':function(_0x316c75,_0x14dc85){return _0x316c75==_0x14dc85;},'PNADb':_0x4803ae(0x215),'LezDX':function(_0x468a66,_0x36c894){return _0x468a66(_0x36c894);},'saRie':function(_0x302b54,_0x55cd72){return _0x302b54>_0x55cd72;},'xonPw':_0x4803ae(0x23d),'AUwFo':function(_0x3bb7fe,_0x13fbb2){return _0x3bb7fe*_0x13fbb2;},'RNaHJ':_0x4803ae(0x17e),'qOYTi':_0x4803ae(0x1a2),'HPGDR':_0x4803ae(0x25f),'XRYac':_0x4803ae(0x269),'vuEyN':_0x4803ae(0x200),'PQNFc':_0x4803ae(0x25d),'GeGfM':_0x4803ae(0x1cd),'GXXWt':'100%','Gonmd':_0x4803ae(0x1d2),'TOoLL':_0x4803ae(0x1a8),'utMeX':_0x4803ae(0x19e),'YzGCs':_0x4803ae(0x277),'RmOXH':_0x4803ae(0x1fe),'swAxA':_0x4803ae(0x1eb),'JVVbs':'map','DnygW':_0x4803ae(0x22a),'umRTS':_0x4803ae(0x1f1),'TjiAw':_0x4803ae(0x1b1),'mbODb':'allData','FxBdX':'selectedProvince','HqyIV':function(_0x23342b,_0x296675){return _0x23342b>_0x296675;},'aKIio':function(_0x159461,_0x29b1f3){return _0x159461!==_0x29b1f3;},'VxetJ':_0x4803ae(0x1f8),'SZsNL':function(_0x1a62ed,_0x4cb465){return _0x1a62ed!==_0x4cb465;},'vxiLG':_0x4803ae(0x1a6),'Xdfgv':'<br/>','cUeCf':function(_0x15ac76,_0x34b526){return _0x15ac76+_0x34b526;},'Ukvph':'id-ID','yPXzs':_0x4803ae(0x21f),'jaQpw':_0x4803ae(0x1ed),'QWiNn':function(_0x26b16b,_0x8e437f){return _0x26b16b!==_0x8e437f;},'llFbU':function(_0x58a612,_0x27c410){return _0x58a612!==_0x27c410;},'Jfqdg':_0x4803ae(0x23c),'exBWI':_0x4803ae(0x250),'HlibO':function(_0x5e3425,_0x194abd,_0x1fb0f0,_0x2a5949){return _0x5e3425(_0x194abd,_0x1fb0f0,_0x2a5949);},'jgfVl':_0x4803ae(0x25e),'addab':function(_0x2b8766,_0x22aec7){return _0x2b8766===_0x22aec7;},'xQzmB':_0x4803ae(0x292),'dznOY':_0x4803ae(0x1d8),'RtmtD':_0x4803ae(0x20a),'sbHuu':_0x4803ae(0x263),'tyyjC':_0x4803ae(0x19c),'QBgpd':'rekomendasi_scores','tzfwg':'capaian','ffFjh':function(_0x1e5d18,_0x1ee9cd){return _0x1e5d18>_0x1ee9cd;},'KyXKp':function(_0x59338e,_0x3b748e){return _0x59338e===_0x3b748e;},'qCTvM':_0x4803ae(0x24e),'KqYnM':_0x4803ae(0x218),'zbrvZ':function(_0x246c78,_0x3eab84){return _0x246c78(_0x3eab84);},'ByNZc':_0x4803ae(0x1e5),'LDzMU':_0x4803ae(0x1d7),'CMwbj':function(_0x23edbc,_0x5f142f){return _0x23edbc-_0x5f142f;},'kyOhB':'#667b99','FvAeX':_0x4803ae(0x1c3)};return{'year':_0x32194b[_0x4803ae(0x1c9)](new Date()[_0x4803ae(0x171)](),0x1),'dynamicYears':[],'tabColors':[_0x32194b[_0x4803ae(0x28e)],_0x4803ae(0x213),'#8596ae',_0x32194b['FvAeX'],_0x4803ae(0x1b5)],'isLoading':![],'metrics':[],'provinces':[],'fullData':[],'allData':[],'selectedMetric':'','selectedProvince':_0x32194b['sdMNs'],'selectedKbiKti':_0x32194b['VxetJ'],'kbiKtiMap':{},'tableTotals':null,'nationalAverage':0x0,'cache':{},'sortCol':null,'sortAsc':!![],'map':null,'geoJsonLayer':null,'geoJsonData':null,'rekomendasiData':{},'tableSkeleton':null,'interventionMapping':{},'proportionalMarkers':null,'toProperCase'(_0x3718e3){const _0x5d47cd=_0x4803ae;if(!_0x3718e3)return'';if(_0x32194b[_0x5d47cd(0x1b2)](_0x3718e3[_0x5d47cd(0x26e)](),_0x5d47cd(0x20c)))return _0x32194b[_0x5d47cd(0x23b)];return _0x3718e3[_0x5d47cd(0x26e)]()['replace'](/\b\w/g,_0x47c82c=>_0x47c82c['toUpperCase']());},get 'selectedProvinceData'(){const _0x4bfdb8=_0x4803ae,_0x1d700d={'KCPHi':function(_0x34ddd1,_0x58dcf4){return _0x34ddd1===_0x58dcf4;}};if(!this[_0x4bfdb8(0x243)]||!this['selectedProvince']||_0x32194b['WNtUf'](this[_0x4bfdb8(0x1ca)][_0x4bfdb8(0x1f6)],0x0))return null;let _0x545aea;if(this[_0x4bfdb8(0x1d0)]===_0x4bfdb8(0x20c)&&this[_0x4bfdb8(0x24a)]){const _0x16f5a5=_0x32194b[_0x4bfdb8(0x1c1)]['split']('|');let _0x2a6031=0x0;while(!![]){switch(_0x16f5a5[_0x2a6031++]){case'0':_0x545aea[_0x4bfdb8(0x207)]=_0x545aea[_0x32194b['zcYNT']]||_0x545aea[_0x32194b[_0x4bfdb8(0x19b)]]||0x0;continue;case'1':_0x545aea={...this['tableTotals']};continue;case'2':_0x545aea[_0x4bfdb8(0x221)]=_0x545aea[_0x32194b[_0x4bfdb8(0x272)]]||_0x545aea[_0x4bfdb8(0x221)]||0x0;continue;case'3':_0x545aea[_0x4bfdb8(0x196)]=_0x545aea[_0x32194b[_0x4bfdb8(0x251)]]||_0x545aea['mandiri']||0x0;continue;case'4':_0x545aea['tertinggal']=_0x545aea[_0x32194b[_0x4bfdb8(0x18f)]]||_0x545aea[_0x32194b[_0x4bfdb8(0x1f2)]]||0x0;continue;case'5':_0x545aea[_0x4bfdb8(0x280)]=_0x545aea[_0x4bfdb8(0x1ef)]||_0x545aea[_0x32194b['SkPFL']]||_0x545aea[_0x32194b[_0x4bfdb8(0x26d)]]||0x0;continue;case'6':_0x545aea[_0x4bfdb8(0x1bf)]=_0x545aea[_0x32194b[_0x4bfdb8(0x26c)]]||_0x545aea['capaian']||0x0;continue;}break;}}else{const _0x3a7295=this[_0x4bfdb8(0x1ca)][_0x4bfdb8(0x1a0)](_0x470fb8=>{const _0x324d54=_0x4bfdb8,_0x3140b3=Object[_0x324d54(0x1ce)](_0x470fb8)['find'](_0x58bf7b=>_0x58bf7b[_0x324d54(0x26e)]()['includes'](_0x324d54(0x209)));return _0x3140b3&&_0x1d700d[_0x324d54(0x265)](_0x470fb8[_0x3140b3],this['selectedProvince']);});if(_0x3a7295){const _0x1c98c=_0x32194b[_0x4bfdb8(0x1b3)][_0x4bfdb8(0x27b)]('|');let _0x34d9ea=0x0;while(!![]){switch(_0x1c98c[_0x34d9ea++]){case'0':_0x545aea[_0x4bfdb8(0x207)]=_0x545aea[_0x32194b[_0x4bfdb8(0x245)]]||_0x545aea[_0x32194b[_0x4bfdb8(0x19b)]]||0x0;continue;case'1':_0x545aea['tertinggal']=_0x545aea[_0x32194b['nVTHm']]||_0x545aea[_0x32194b[_0x4bfdb8(0x1f2)]]||0x0;continue;case'2':_0x545aea[_0x4bfdb8(0x1bf)]=_0x545aea[_0x32194b[_0x4bfdb8(0x26c)]]||_0x545aea[_0x4bfdb8(0x1bf)]||0x0;continue;case'3':_0x545aea['maju']=_0x545aea[_0x32194b[_0x4bfdb8(0x272)]]||_0x545aea[_0x32194b[_0x4bfdb8(0x283)]]||0x0;continue;case'4':_0x545aea[_0x4bfdb8(0x196)]=_0x545aea[_0x32194b[_0x4bfdb8(0x251)]]||_0x545aea[_0x32194b['sTJYV']]||0x0;continue;case'5':_0x545aea[_0x4bfdb8(0x280)]=_0x545aea[_0x32194b[_0x4bfdb8(0x1dd)]]||_0x545aea[_0x32194b[_0x4bfdb8(0x1e7)]]||_0x545aea[_0x32194b[_0x4bfdb8(0x26d)]]||0x0;continue;case'6':_0x545aea={..._0x3a7295};continue;}break;}}}return _0x545aea;},get 'topProvinces'(){const _0xe20c13=_0x4803ae;if(_0x32194b[_0xe20c13(0x1d1)](this['allData']['length'],0x0))return[];return this[_0xe20c13(0x1ca)][_0xe20c13(0x235)](_0x19a4ec=>{const _0x49cc91=_0xe20c13,_0x32db30=Object[_0x49cc91(0x1ce)](_0x19a4ec)[_0x49cc91(0x1a0)](_0x3cad88=>_0x3cad88[_0x49cc91(0x26e)]()[_0x49cc91(0x28d)](_0x49cc91(0x209))),_0xfb00d7=Object[_0x49cc91(0x1ce)](_0x19a4ec)[_0x49cc91(0x1a0)](_0x30b8cc=>_0x30b8cc['toLowerCase']()[_0x49cc91(0x28d)](_0x49cc91(0x1bf)));return{'name':_0x19a4ec[_0x32db30],'score':_0x32194b['ZYzVQ'](parseFloat,_0x32194b['ZYzVQ'](String,_0x19a4ec[_0xfb00d7]||0x0)['replace']('%','')['trim']())};})[_0xe20c13(0x28b)]((_0x1716e2,_0x443036)=>_0x443036['score']-_0x1716e2['score']);},get 'provinceStrengths'(){const _0x450bd0=_0x4803ae,_0x1981e0={'XwhAy':function(_0x409b48,_0x2b2724){const _0x5b521c=_0x1aa4;return _0x32194b[_0x5b521c(0x18e)](_0x409b48,_0x2b2724);},'KBMjU':function(_0x371ee2,_0x512f12){const _0x2ac35e=_0x1aa4;return _0x32194b[_0x2ac35e(0x1e9)](_0x371ee2,_0x512f12);},'UnNuk':function(_0x481893,_0x305cc6){const _0x4291c5=_0x1aa4;return _0x32194b[_0x4291c5(0x18e)](_0x481893,_0x305cc6);},'UFbdx':function(_0x389c16,_0x5374dc){const _0xf0294c=_0x1aa4;return _0x32194b[_0xf0294c(0x1ff)](_0x389c16,_0x5374dc);}},_0x56f238=this[_0x450bd0(0x16f)][_0x450bd0(0x1e8)+this[_0x450bd0(0x176)]];if(!_0x56f238||!_0x56f238[_0x450bd0(0x19a)])return[];const _0x3e8017=[];return!this['selectedProvince']||this[_0x450bd0(0x1d0)]===_0x32194b[_0x450bd0(0x22c)]?_0x56f238[_0x450bd0(0x19a)][_0x450bd0(0x25a)](_0xe5b605=>{const _0x18ea23=_0x450bd0,_0x123cf1=_0x56f238[_0xe5b605];if(_0x123cf1&&_0x123cf1[_0x18ea23(0x1cb)]){const _0x428c80=Object[_0x18ea23(0x1ce)](_0x123cf1[_0x18ea23(0x1cb)])[_0x18ea23(0x1a0)](_0x4d5ec2=>_0x4d5ec2[_0x18ea23(0x26e)]()['includes'](_0x18ea23(0x1bf)));_0x428c80&&_0x3e8017[_0x18ea23(0x1fc)]({'metric':_0xe5b605,'score':parseFloat(_0x1981e0[_0x18ea23(0x18b)](String,_0x123cf1[_0x18ea23(0x1cb)][_0x428c80]||0x0)[_0x18ea23(0x236)]('%','')[_0x18ea23(0x19d)]())});}}):_0x56f238[_0x450bd0(0x19a)][_0x450bd0(0x25a)](_0x586f26=>{const _0x3f0545=_0x450bd0,_0x3acc96={'JYOpz':function(_0x3839cf,_0x4b3f25){const _0x53625f=_0x1aa4;return _0x1981e0[_0x53625f(0x24f)](_0x3839cf,_0x4b3f25);}},_0x1ce10b=_0x56f238[_0x586f26];if(_0x1ce10b&&_0x1ce10b[_0x3f0545(0x1b6)]){const _0x20c182=_0x1ce10b['data']['find'](_0x31e982=>{const _0x3291ad=_0x3f0545,_0xa1684f=Object['keys'](_0x31e982)[_0x3291ad(0x1a0)](_0x316c6f=>_0x316c6f[_0x3291ad(0x26e)]()[_0x3291ad(0x28d)]('provinsi'));return _0xa1684f&&_0x3acc96[_0x3291ad(0x1e2)](_0x31e982[_0xa1684f],this['selectedProvince']);});if(_0x20c182){const _0xeb3f07=Object[_0x3f0545(0x1ce)](_0x20c182)[_0x3f0545(0x1a0)](_0x3115be=>_0x3115be[_0x3f0545(0x26e)]()[_0x3f0545(0x28d)](_0x3f0545(0x1bf)));_0xeb3f07&&_0x3e8017[_0x3f0545(0x1fc)]({'metric':_0x586f26,'score':_0x1981e0[_0x3f0545(0x182)](parseFloat,_0x1981e0[_0x3f0545(0x21c)](String,_0x20c182[_0xeb3f07]||0x0)[_0x3f0545(0x236)]('%','')['trim']())});}}}),_0x3e8017[_0x450bd0(0x28b)]((_0x366968,_0x336cd5)=>_0x336cd5['score']-_0x366968['score']);},'sortBy'(_0x4af7fb){const _0x3eb210=_0x4803ae;_0x32194b['LHdmz'](this[_0x3eb210(0x1db)],_0x4af7fb)?this['sortAsc']=!this['sortAsc']:(this['sortCol']=_0x4af7fb,this[_0x3eb210(0x21e)]=!![]);},get 'sortedData'(){const _0x2ef7dd=_0x4803ae;if(!this[_0x2ef7dd(0x1db)])return this[_0x2ef7dd(0x1ca)];return[...this[_0x2ef7dd(0x1ca)]][_0x2ef7dd(0x28b)]((_0x5eab40,_0x3c12ee)=>{const _0x17647d=_0x2ef7dd;let _0x362396=_0x5eab40[this[_0x17647d(0x1db)]],_0x57e550=_0x3c12ee[this[_0x17647d(0x1db)]],_0x18fe1c=_0x32194b[_0x17647d(0x274)](parseFloat,String(_0x362396||'')[_0x17647d(0x236)](/,/g,'')['replace']('%','')[_0x17647d(0x19d)]()),_0x4cbd63=_0x32194b[_0x17647d(0x1ff)](parseFloat,_0x32194b['bfkEi'](String,_0x32194b[_0x17647d(0x271)](_0x57e550,''))[_0x17647d(0x236)](/,/g,'')[_0x17647d(0x236)]('%','')[_0x17647d(0x19d)]());if(!isNaN(_0x18fe1c)&&!_0x32194b[_0x17647d(0x1ff)](isNaN,_0x4cbd63))return this['sortAsc']?_0x32194b[_0x17647d(0x238)](_0x18fe1c,_0x4cbd63):_0x32194b[_0x17647d(0x238)](_0x4cbd63,_0x18fe1c);_0x362396=_0x32194b['IiwIB'](String,_0x32194b[_0x17647d(0x173)](_0x362396,''))[_0x17647d(0x26e)](),_0x57e550=_0x32194b[_0x17647d(0x1ae)](String,_0x32194b[_0x17647d(0x206)](_0x57e550,''))[_0x17647d(0x26e)]();if(_0x32194b['DKBVG'](_0x362396,_0x57e550))return this['sortAsc']?-0x1:0x1;if(_0x362396>_0x57e550)return this['sortAsc']?0x1:-0x1;return 0x0;});},get 'colStats'(){const _0x213ad3=_0x4803ae,_0x45e387={};if(!this[_0x213ad3(0x1ca)]||_0x32194b[_0x213ad3(0x1d1)](this[_0x213ad3(0x1ca)]['length'],0x0))return _0x45e387;const _0x4ee887=Object['keys'](this[_0x213ad3(0x1ca)][0x0]);return _0x4ee887[_0x213ad3(0x25a)](_0x58b125=>{const _0xef3e07=_0x213ad3,_0x22d764={'EMXNa':function(_0x2a82b2,_0x30f752){const _0x140c1f=_0x1aa4;return _0x32194b[_0x140c1f(0x1d4)](_0x2a82b2,_0x30f752);},'Kwaoi':function(_0x36c723,_0x2cd61a){return _0x32194b['RXqBD'](_0x36c723,_0x2cd61a);},'bImeS':function(_0x15a4de,_0x5a1e1e){const _0x299e57=_0x1aa4;return _0x32194b[_0x299e57(0x1c7)](_0x15a4de,_0x5a1e1e);},'NsYky':function(_0x11c69b,_0x101cd8){const _0x4ec9ea=_0x1aa4;return _0x32194b[_0x4ec9ea(0x256)](_0x11c69b,_0x101cd8);},'yaTlL':function(_0x12a234,_0x57686b){const _0x29d450=_0x1aa4;return _0x32194b[_0x29d450(0x261)](_0x12a234,_0x57686b);}};if(_0x58b125[_0xef3e07(0x26e)]()['includes'](_0x32194b[_0xef3e07(0x223)]))return;let _0x45bbf0=Infinity,_0x117c8e=-Infinity,_0x3fe090=![];this[_0xef3e07(0x1ca)][_0xef3e07(0x25a)](_0x24569f=>{const _0x3c62c3=_0xef3e07;let _0x317dd2=_0x24569f[_0x58b125];if(_0x22d764[_0x3c62c3(0x254)](_0x317dd2,null)||_0x317dd2===undefined)return;let _0x2ce49c=_0x22d764[_0x3c62c3(0x234)](parseFloat,_0x22d764[_0x3c62c3(0x27f)](String,_0x317dd2)['replace'](/,/g,'')[_0x3c62c3(0x236)]('%','')[_0x3c62c3(0x19d)]());if(!_0x22d764[_0x3c62c3(0x234)](isNaN,_0x2ce49c)){_0x3fe090=!![];if(_0x22d764[_0x3c62c3(0x1ab)](_0x2ce49c,_0x45bbf0))_0x45bbf0=_0x2ce49c;if(_0x22d764[_0x3c62c3(0x20d)](_0x2ce49c,_0x117c8e))_0x117c8e=_0x2ce49c;}}),_0x3fe090&&(_0x45e387[_0x58b125]={'min':_0x45bbf0,'max':_0x117c8e});}),_0x45e387;},'getHeatmapStyle'(_0x55c490,_0x406233){const _0x18bd0a=_0x4803ae,_0x5e78f8=this[_0x18bd0a(0x1dc)][_0x55c490];if(!_0x5e78f8||_0x32194b[_0x18bd0a(0x17b)](_0x5e78f8[_0x18bd0a(0x232)],_0x5e78f8['max']))return'';if(_0x406233===null||_0x32194b[_0x18bd0a(0x264)](_0x406233,undefined))return'';let _0x197d83=_0x32194b[_0x18bd0a(0x1c7)](parseFloat,_0x32194b[_0x18bd0a(0x1c4)](String,_0x406233)[_0x18bd0a(0x236)](/,/g,'')['replace']('%','')['trim']());if(_0x32194b[_0x18bd0a(0x237)](isNaN,_0x197d83))return'';const _0x981784=_0x32194b['ULleW'](_0x32194b[_0x18bd0a(0x1a5)](_0x197d83,_0x5e78f8['min']),_0x32194b[_0x18bd0a(0x1a5)](_0x5e78f8[_0x18bd0a(0x178)],_0x5e78f8['min']));return _0x18bd0a(0x22d)+_0x981784+_0x18bd0a(0x217);},async 'init'(){const _0x4b49e0=_0x4803ae,_0x423fda=new Date()['getFullYear']();for(let _0x1d8985=_0x423fda;_0x32194b[_0x4b49e0(0x27e)](_0x1d8985,0x7e9);_0x1d8985--){this[_0x4b49e0(0x248)]['push'](_0x32194b[_0x4b49e0(0x1c7)](String,_0x1d8985));}await this[_0x4b49e0(0x1b9)]();try{const [_0x107509,_0x46e2eb]=await Promise[_0x4b49e0(0x1c5)]([fetch(_0x32194b[_0x4b49e0(0x17d)]),_0x32194b['MxXej'](fetch,_0x32194b[_0x4b49e0(0x276)])]);this[_0x4b49e0(0x1f5)]=await _0x107509[_0x4b49e0(0x27c)](),this[_0x4b49e0(0x21d)]=await _0x46e2eb[_0x4b49e0(0x27c)]();}catch(_0x49ca5c){console['error'](_0x32194b[_0x4b49e0(0x21b)],_0x49ca5c);}this[_0x4b49e0(0x1b4)](_0x32194b['dUyVg'],_0x365e1c=>{const _0x186c19=_0x4b49e0;if(!_0x365e1c){this['allData']=[],this[_0x186c19(0x1bb)]=[],this[_0x186c19(0x24a)]=null;return;}this[_0x186c19(0x231)](_0x365e1c);}),this[_0x4b49e0(0x1b4)](_0x32194b[_0x4b49e0(0x26a)],()=>{const _0x135ebb=_0x4b49e0;this[_0x135ebb(0x242)]();});},async 'setYear'(_0x2a5997){const _0x88a914=_0x4803ae,_0x2d1369=_0x32194b[_0x88a914(0x241)][_0x88a914(0x27b)]('|');let _0x20e917=0x0;while(!![]){switch(_0x2d1369[_0x20e917++]){case'0':this[_0x88a914(0x176)]=_0x2a5997;continue;case'1':if(_0x32194b[_0x88a914(0x1c0)](this[_0x88a914(0x176)],_0x2a5997))return;continue;case'2':this[_0x88a914(0x1d0)]=_0x32194b[_0x88a914(0x22c)];continue;case'3':this[_0x88a914(0x1ca)]=[];continue;case'4':this[_0x88a914(0x21e)]=!![];continue;case'5':this['selectedMetric']='';continue;case'6':this[_0x88a914(0x24a)]=null;continue;case'7':await this[_0x88a914(0x1b9)]();continue;case'8':this[_0x88a914(0x1db)]=null;continue;}break;}},async 'loadMetricsForYear'(){const _0x416ad8=_0x4803ae;this[_0x416ad8(0x1de)]=!![];const _0x435499=_0x416ad8(0x1e8)+this[_0x416ad8(0x176)];try{if(!this[_0x416ad8(0x16f)][_0x435499]){const _0x2642bf=await _0x32194b[_0x416ad8(0x27d)](fetch,'/public/dashboard/iku/'+this[_0x416ad8(0x176)]);_0x2642bf['ok']&&(this[_0x416ad8(0x16f)][_0x435499]=await _0x2642bf[_0x416ad8(0x27c)]());}const _0x1f06b1=this['cache'][_0x435499]||{};this[_0x416ad8(0x1f3)]=_0x1f06b1['kbi_kti_map']||{},this[_0x416ad8(0x19a)]=(_0x1f06b1[_0x416ad8(0x19a)]||[])[_0x416ad8(0x28b)]((_0x17eca7,_0x595bbf)=>{const _0x21278e=_0x416ad8;if(_0x17eca7[_0x21278e(0x26e)]()===_0x32194b[_0x21278e(0x284)])return-0x1;if(_0x595bbf[_0x21278e(0x26e)]()===_0x21278e(0x215))return 0x1;return 0x0;}),_0x32194b[_0x416ad8(0x181)](this[_0x416ad8(0x19a)][_0x416ad8(0x1f6)],0x0)&&((!this[_0x416ad8(0x243)]||!this['metrics'][_0x416ad8(0x28d)](this['selectedMetric']))&&(this[_0x416ad8(0x243)]=this[_0x416ad8(0x19a)][0x0]),this['fetchData'](this[_0x416ad8(0x243)]),_0x32194b[_0x416ad8(0x1b2)](this[_0x416ad8(0x243)],_0x32194b[_0x416ad8(0x18c)])&&this[_0x416ad8(0x249)](()=>this['updateMapVisuals']()));}catch(_0x52d81e){console[_0x416ad8(0x204)](_0x52d81e);}finally{this[_0x416ad8(0x1de)]=![];}},'updateMapVisuals'(){},'_applyGradientFills'(_0x396072,_0x3afb95){const _0x5473de=_0x4803ae,_0x55d523={'xAqMF':function(_0x12e86d,_0x1254f4){const _0x1ca33b=_0x1aa4;return _0x32194b[_0x1ca33b(0x1a9)](_0x12e86d,_0x1254f4);},'QTqYb':function(_0x4fd43b,_0x280e39){return _0x32194b['ULleW'](_0x4fd43b,_0x280e39);},'HrPsA':_0x32194b[_0x5473de(0x287)],'QPENU':_0x32194b[_0x5473de(0x260)],'SpbPy':_0x32194b[_0x5473de(0x1d5)],'GiUow':_0x32194b[_0x5473de(0x1da)],'LMNqI':_0x32194b[_0x5473de(0x252)],'lYGvc':_0x32194b['PQNFc'],'koFNu':_0x32194b[_0x5473de(0x1fb)],'vZVMG':_0x5473de(0x192),'JuHGZ':_0x32194b['GXXWt'],'wQSee':_0x32194b['Gonmd'],'QXqdt':_0x32194b['TOoLL'],'IsQDY':_0x32194b[_0x5473de(0x1ec)]},_0x2534db=this[_0x5473de(0x235)][_0x5473de(0x208)]()[_0x5473de(0x190)],_0x4e8afb=_0x2534db?_0x2534db['querySelector'](_0x32194b[_0x5473de(0x189)]):null;if(!_0x4e8afb)return;let _0x5a32e6=_0x4e8afb[_0x5473de(0x191)](_0x32194b[_0x5473de(0x1e3)]);!_0x5a32e6&&(_0x5a32e6=document[_0x5473de(0x1ee)](_0x32194b['vuEyN'],_0x32194b['RmOXH']),_0x4e8afb[_0x5473de(0x197)](_0x5a32e6,_0x4e8afb[_0x5473de(0x1a4)])),Array[_0x5473de(0x193)](_0x5a32e6[_0x5473de(0x23f)](_0x32194b['swAxA']))[_0x5473de(0x25a)](_0x3d2c62=>_0x3d2c62[_0x5473de(0x262)]()),this[_0x5473de(0x184)]['eachLayer'](_0x54f25b=>{const _0x4c2fcf=_0x5473de;if(!_0x54f25b[_0x4c2fcf(0x1a1)]||!_0x54f25b['_path'])return;const _0x46352d=_0x54f25b[_0x4c2fcf(0x1a1)]['properties']['PROVINSI'][_0x4c2fcf(0x25b)](),_0x3f12d8=_0x396072[_0x46352d];if(!_0x3f12d8||!_0x3f12d8[_0x4c2fcf(0x179)])return;const _0x7da89d='sipiku-grad-'+_0x54f25b['feature'][_0x4c2fcf(0x247)][_0x4c2fcf(0x233)],_0x33a1e4=[{'count':_0x3f12d8[_0x4c2fcf(0x196)]||0x0,'color':_0x3afb95[_0x4c2fcf(0x196)]},{'count':_0x3f12d8[_0x4c2fcf(0x221)]||0x0,'color':_0x3afb95[_0x4c2fcf(0x221)]},{'count':_0x3f12d8['berkembang']||0x0,'color':_0x3afb95[_0x4c2fcf(0x207)]},{'count':_0x3f12d8[_0x4c2fcf(0x211)]||0x0,'color':_0x3afb95[_0x4c2fcf(0x211)]},{'count':_0x3f12d8[_0x4c2fcf(0x280)]||0x0,'color':_0x3afb95[_0x55d523[_0x4c2fcf(0x23a)]]}][_0x4c2fcf(0x28b)]((_0xaacd9f,_0x57a4bb)=>_0x57a4bb['count']-_0xaacd9f[_0x4c2fcf(0x24b)])[_0x4c2fcf(0x1fa)](_0x37509e=>_0x37509e[_0x4c2fcf(0x24b)]>0x0),_0x51abca=document[_0x4c2fcf(0x1ee)](_0x55d523[_0x4c2fcf(0x177)],_0x55d523[_0x4c2fcf(0x194)]);_0x51abca[_0x4c2fcf(0x1bc)]('id',_0x7da89d),_0x51abca[_0x4c2fcf(0x1bc)]('x1','0%'),_0x51abca[_0x4c2fcf(0x1bc)]('y1','0%'),_0x51abca[_0x4c2fcf(0x1bc)]('x2',_0x55d523[_0x4c2fcf(0x1ad)]),_0x51abca[_0x4c2fcf(0x1bc)]('y2','0%'),_0x51abca[_0x4c2fcf(0x1bc)](_0x55d523[_0x4c2fcf(0x253)],_0x55d523['QXqdt']);let _0x54d5b4=0x0;_0x33a1e4[_0x4c2fcf(0x25a)](_0x196bf8=>{const _0x51cf50=_0x4c2fcf,_0x52c502=_0x55d523[_0x51cf50(0x205)](_0x55d523[_0x51cf50(0x1ac)](_0x196bf8['count'],_0x3f12d8[_0x51cf50(0x179)]),0x64),_0x4d861e=document['createElementNS']('http://www.w3.org/2000/svg',_0x55d523[_0x51cf50(0x188)]);_0x4d861e[_0x51cf50(0x1bc)](_0x55d523[_0x51cf50(0x1b0)],_0x54d5b4+'%'),_0x4d861e['setAttribute'](_0x55d523[_0x51cf50(0x170)],_0x196bf8['color']),_0x4d861e[_0x51cf50(0x1bc)](_0x51cf50(0x25d),_0x55d523[_0x51cf50(0x18d)]),_0x51abca[_0x51cf50(0x268)](_0x4d861e),_0x54d5b4+=_0x52c502;const _0x2c83c8=document[_0x51cf50(0x1ee)](_0x55d523[_0x51cf50(0x177)],_0x55d523[_0x51cf50(0x188)]);_0x2c83c8[_0x51cf50(0x1bc)](_0x55d523['QPENU'],_0x54d5b4+'%'),_0x2c83c8[_0x51cf50(0x1bc)](_0x55d523[_0x51cf50(0x170)],_0x196bf8['color']),_0x2c83c8['setAttribute'](_0x55d523[_0x51cf50(0x199)],'0.82'),_0x51abca['appendChild'](_0x2c83c8);}),_0x5a32e6[_0x4c2fcf(0x268)](_0x51abca),_0x54f25b['_path'][_0x4c2fcf(0x1bc)](_0x4c2fcf(0x27a),'url(#'+_0x7da89d+')'),_0x54f25b['_path'][_0x4c2fcf(0x1bc)](_0x55d523['IsQDY'],_0x55d523['GiUow']);});},'initMap'(){const _0x117062=_0x4803ae;this[_0x117062(0x235)]=L[_0x117062(0x235)](_0x32194b[_0x117062(0x22f)])[_0x117062(0x229)]([-2.5489,118.0149],0x5),L[_0x117062(0x28a)](_0x32194b[_0x117062(0x290)],{'maxZoom':0x12,'attribution':_0x32194b['umRTS']})[_0x117062(0x1cc)](this[_0x117062(0x235)]),_0x32194b[_0x117062(0x18e)](fetch,_0x32194b['TjiAw'])['then'](_0x1894ce=>_0x1894ce[_0x117062(0x27c)]())[_0x117062(0x219)](_0x1ded55=>{const _0x11bcba=_0x117062;this[_0x11bcba(0x174)]=_0x1ded55,this['renderMapLayer']();})[_0x117062(0x1e1)](_0x2bcedb=>console[_0x117062(0x204)]('Failed\x20to\x20load\x20province\x20boundaries:',_0x2bcedb)),this['$watch'](_0x32194b[_0x117062(0x20e)],()=>this['renderMapLayer']()),this['$watch'](_0x32194b[_0x117062(0x220)],_0x48e98f=>this['focusMap'](_0x48e98f));},'renderMapLayer'(){const _0x29a6cc=_0x4803ae,_0xc5ec08={'hREDt':function(_0x5c93a0,_0x578d0e){const _0x5ee55f=_0x1aa4;return _0x32194b[_0x5ee55f(0x257)](_0x5c93a0,_0x578d0e);},'PAMVU':_0x32194b[_0x29a6cc(0x28f)],'kirpw':function(_0x136a23,_0x46c536){return _0x32194b['llFbU'](_0x136a23,_0x46c536);},'eHNcn':'#e2e8f0','BxYzU':_0x32194b[_0x29a6cc(0x1ba)],'QbOZy':_0x32194b['exBWI'],'TZaUE':function(_0x3c32a2,_0x437432){return _0x3c32a2!==_0x437432;},'BwVKt':function(_0x3c08bd,_0x435cc7,_0x4fcaba,_0x7aff14){return _0x32194b['HlibO'](_0x3c08bd,_0x435cc7,_0x4fcaba,_0x7aff14);},'vMkhX':_0x32194b[_0x29a6cc(0x281)]};if(!this['geoJsonData']||!this[_0x29a6cc(0x235)])return;if(this[_0x29a6cc(0x184)])this[_0x29a6cc(0x235)][_0x29a6cc(0x26b)](this['geoJsonLayer']);if(!this[_0x29a6cc(0x1ca)]||this[_0x29a6cc(0x1ca)][_0x29a6cc(0x1f6)]===0x0)return;const _0x21dfdd=_0x32194b[_0x29a6cc(0x244)](this['selectedMetric'],_0x29a6cc(0x23d)),_0x10a49f={'mandiri':_0x29a6cc(0x18a),'maju':_0x32194b[_0x29a6cc(0x1d9)],'berkembang':_0x32194b[_0x29a6cc(0x25c)],'tertinggal':_0x32194b[_0x29a6cc(0x279)],'sangat-tertinggal':_0x32194b['sbHuu']},_0x540aac=Object[_0x29a6cc(0x1ce)](this[_0x29a6cc(0x1ca)][0x0])[_0x29a6cc(0x1a0)](_0x120791=>_0x120791[_0x29a6cc(0x26e)]()['includes']('provinsi'));let _0x2a40f7=0x0;const _0x324a44={},_0x2c9c74={};this[_0x29a6cc(0x1ca)][_0x29a6cc(0x25a)](_0x4c67f3=>{const _0x51fe81=_0x29a6cc;if(!_0x4c67f3[_0x540aac])return;const _0x4d4c6e=_0x4c67f3[_0x540aac][_0x51fe81(0x25b)]();if(_0x21dfdd)_0x2c9c74[_0x4d4c6e]=_0x4c67f3;else{const _0x31fe36=Object['keys'](_0x4c67f3)['find'](_0x146f78=>_0x146f78[_0x51fe81(0x26e)]()[_0x51fe81(0x28d)](_0x51fe81(0x1bf)))||Object[_0x51fe81(0x1ce)](_0x4c67f3)['pop'](),_0x5c3044=_0x32194b[_0x51fe81(0x27d)](parseFloat,String(_0x4c67f3[_0x31fe36]||'')[_0x51fe81(0x236)](/[^0-9.-]+/g,''));if(!isNaN(_0x5c3044)){_0x324a44[_0x4d4c6e]=_0x5c3044;if(_0x32194b['HqyIV'](_0x5c3044,_0x2a40f7))_0x2a40f7=_0x5c3044;}}});const _0x59a386=(_0x468b2b,_0x1a01cc,_0x293c8e)=>{const _0x3ec602=_0x29a6cc,_0x7239bc=_0x468b2b[_0x3ec602(0x21a)](0x1)[_0x3ec602(0x1b7)](/.{2}/g)[_0x3ec602(0x235)](_0x557ccd=>parseInt(_0x557ccd,0x10)),_0x37c5bc=_0x1a01cc[_0x3ec602(0x21a)](0x1)[_0x3ec602(0x1b7)](/.{2}/g)[_0x3ec602(0x235)](_0x558681=>parseInt(_0x558681,0x10));return'#'+_0x7239bc[_0x3ec602(0x235)]((_0x5ce8fc,_0x118778)=>Math[_0x3ec602(0x20f)](_0x5ce8fc+_0x293c8e*(_0x37c5bc[_0x118778]-_0x5ce8fc))[_0x3ec602(0x1e6)](0x10)['padStart'](0x2,'0'))[_0x3ec602(0x24d)]('');};this[_0x29a6cc(0x184)]=L['geoJSON'](this['geoJsonData'],{'style':_0x32cadd=>{const _0x1c3814=_0x29a6cc,_0x54a041=_0x32cadd[_0x1c3814(0x247)][_0x1c3814(0x1bd)][_0x1c3814(0x25b)](),_0x8fe159=_0xc5ec08[_0x1c3814(0x201)](this[_0x1c3814(0x255)],_0xc5ec08[_0x1c3814(0x285)])&&_0xc5ec08[_0x1c3814(0x20b)](this[_0x1c3814(0x1f3)][_0x54a041],this[_0x1c3814(0x255)]);if(_0x8fe159)return{'fillColor':_0xc5ec08['eHNcn'],'weight':0.5,'opacity':0.4,'color':_0xc5ec08[_0x1c3814(0x1d6)],'fillOpacity':0.15};if(_0x21dfdd)return{'fillColor':_0x1c3814(0x175),'weight':0x1,'opacity':0x1,'color':_0xc5ec08['QbOZy'],'fillOpacity':0.85};const _0x4ca299=_0x324a44[_0x54a041],_0x4389ae=_0xc5ec08[_0x1c3814(0x1af)](_0x4ca299,undefined)&&_0x2a40f7>0x0?Math['max'](0x0,Math['min'](0x1,_0x4ca299/_0x2a40f7)):0x0;return{'fillColor':_0xc5ec08[_0x1c3814(0x1be)](_0x59a386,_0xc5ec08[_0x1c3814(0x1f4)],_0x1c3814(0x1d3),_0x4389ae),'weight':0x1,'opacity':0x1,'color':_0xc5ec08[_0x1c3814(0x1f7)],'fillOpacity':0.8};},'onEachFeature':(_0x4cdec4,_0x53829f)=>{const _0x370681=_0x29a6cc,_0x5e1d48={'XQRTk':function(_0x1ca3a4,_0x1bd9c5){const _0x53d5c2=_0x1aa4;return _0x32194b[_0x53d5c2(0x1a9)](_0x1ca3a4,_0x1bd9c5);},'ykRjy':function(_0x4ab941,_0x32ca0f){const _0x2e6475=_0x1aa4;return _0x32194b[_0x2e6475(0x185)](_0x4ab941,_0x32ca0f);}},_0x95859f=_0x4cdec4['properties'][_0x370681(0x1bd)]['toUpperCase'](),_0x13c543=_0x32194b['aKIio'](this[_0x370681(0x255)],_0x32194b[_0x370681(0x28f)])&&_0x32194b[_0x370681(0x17c)](this['kbiKtiMap'][_0x95859f],this[_0x370681(0x255)]);if(_0x13c543)return;if(_0x21dfdd){const _0x2c1839=_0x2c9c74[_0x95859f];if(_0x2c1839&&_0x32194b[_0x370681(0x261)](_0x2c1839[_0x370681(0x179)],0x0)){const _0x327ea4=[{'label':_0x32194b[_0x370681(0x251)],'count':_0x2c1839[_0x370681(0x196)]||0x0},{'label':_0x32194b[_0x370681(0x272)],'count':_0x2c1839[_0x370681(0x221)]||0x0},{'label':_0x32194b[_0x370681(0x245)],'count':_0x2c1839[_0x370681(0x207)]||0x0},{'label':_0x32194b[_0x370681(0x18f)],'count':_0x2c1839['tertinggal']||0x0},{'label':_0x32194b['vxiLG'],'count':_0x2c1839['sangat_tertinggal']||0x0}]['sort']((_0x3dc265,_0x3546c4)=>_0x3546c4[_0x370681(0x24b)]-_0x3dc265[_0x370681(0x24b)]),_0x420ba0=_0x327ea4[_0x370681(0x1fa)](_0x449a96=>_0x449a96[_0x370681(0x24b)]>0x0)[_0x370681(0x235)](_0x32b2f2=>{const _0x1db860=_0x370681,_0x46030b=_0x5e1d48[_0x1db860(0x239)](_0x5e1d48[_0x1db860(0x212)](_0x32b2f2[_0x1db860(0x24b)],_0x2c1839[_0x1db860(0x179)]),0x64)[_0x1db860(0x1df)](0x1);return _0x32b2f2['label']+':\x20'+_0x32b2f2[_0x1db860(0x24b)]['toLocaleString']('id-ID')+'\x20('+_0x46030b+'%)';})['join'](_0x32194b[_0x370681(0x1c2)]);_0x53829f[_0x370681(0x214)](_0x32194b['cUeCf'](_0x370681(0x259)+_0x4cdec4[_0x370681(0x247)][_0x370681(0x1bd)]+_0x370681(0x26f),_0x370681(0x183)+_0x2c1839[_0x370681(0x179)][_0x370681(0x1a7)](_0x32194b[_0x370681(0x226)])+_0x370681(0x288)+_0x420ba0),{'sticky':!![]});}}else{const _0x5859bf=_0x324a44[_0x95859f];_0x53829f[_0x370681(0x214)](_0x370681(0x259)+_0x4cdec4[_0x370681(0x247)][_0x370681(0x1bd)]+'</b><br/>Value:\x20'+(_0x32194b['SZsNL'](_0x5859bf,undefined)?_0x5859bf:_0x32194b[_0x370681(0x1fd)]),{'sticky':!![]});}_0x53829f['on'](_0x32194b[_0x370681(0x19f)],()=>{const _0x18f1e6=_0x370681,_0x40ff82=this[_0x18f1e6(0x227)][_0x18f1e6(0x1a0)](_0x4dbc3c=>_0x4dbc3c[_0x18f1e6(0x25b)]()===_0x95859f);if(_0x40ff82)this[_0x18f1e6(0x1d0)]=_0x40ff82;});}})[_0x29a6cc(0x1cc)](this[_0x29a6cc(0x235)]);if(_0x21dfdd)this[_0x29a6cc(0x289)](_0x2c9c74,_0x10a49f);},'focusMap'(_0x376fe8){const _0x35974b=_0x4803ae;if(!this[_0x35974b(0x235)]||!this[_0x35974b(0x184)])return;if(!_0x376fe8||_0x32194b[_0x35974b(0x264)](_0x376fe8,_0x32194b[_0x35974b(0x22c)])||_0x376fe8[_0x35974b(0x26e)]()===_0x32194b[_0x35974b(0x270)]){this['map']['setView']([-2.5489,118.0149],0x5);return;}this[_0x35974b(0x184)]['eachLayer'](_0x4170c7=>{const _0x5bd44d=_0x35974b;_0x32194b[_0x5bd44d(0x1d1)](_0x4170c7[_0x5bd44d(0x1a1)][_0x5bd44d(0x247)]['PROVINSI']['toUpperCase'](),_0x376fe8[_0x5bd44d(0x25b)]())&&this[_0x5bd44d(0x235)]['fitBounds'](_0x4170c7[_0x5bd44d(0x246)]());});},'fetchData'(_0x11ac05){const _0x5b18f7=_0x4803ae;this[_0x5b18f7(0x1ca)]=[],this[_0x5b18f7(0x1bb)]=[],this[_0x5b18f7(0x24a)]=null,this[_0x5b18f7(0x227)]=[_0x32194b[_0x5b18f7(0x22c)]],this[_0x5b18f7(0x1db)]=null,this['sortAsc']=!![];const _0x37bad1=this[_0x5b18f7(0x16f)][_0x5b18f7(0x1e8)+this['year']]||{},_0x17ae0a=_0x37bad1[_0x11ac05]||{'data':[],'totals':null};this[_0x5b18f7(0x1bb)]=_0x17ae0a['data']||[],this[_0x5b18f7(0x24a)]=_0x17ae0a[_0x5b18f7(0x1cb)]||null,this[_0x5b18f7(0x17a)]=_0x37bad1[_0x32194b[_0x5b18f7(0x1b8)]]||{};if(this[_0x5b18f7(0x24a)]){let _0x1b0290=this['tableTotals'][_0x32194b[_0x5b18f7(0x26c)]]||this[_0x5b18f7(0x24a)][_0x32194b[_0x5b18f7(0x187)]]||0x0;this['nationalAverage']=_0x32194b[_0x5b18f7(0x198)](parseFloat,String(_0x1b0290)[_0x5b18f7(0x236)]('%','')[_0x5b18f7(0x19d)]());}this[_0x5b18f7(0x242)]();},'applyKbiKtiFilter'(){const _0x246d6a=_0x4803ae,_0x3bdb40=this['selectedKbiKti']===_0x32194b[_0x246d6a(0x28f)]||!Object[_0x246d6a(0x1ce)](this['kbiKtiMap'])[_0x246d6a(0x1f6)]?[...this['fullData']]:this['fullData']['filter'](_0xb57ee7=>{const _0x209dcc=_0x246d6a,_0x184aa8=Object['keys'](_0xb57ee7)[_0x209dcc(0x1a0)](_0x3b6ee9=>_0x3b6ee9[_0x209dcc(0x26e)]()[_0x209dcc(0x28d)](_0x209dcc(0x209)));if(!_0x184aa8)return!![];return this[_0x209dcc(0x1f3)][_0xb57ee7[_0x184aa8]['toUpperCase']()]===this[_0x209dcc(0x255)];});this[_0x246d6a(0x1ca)]=_0x3bdb40;if(_0x32194b[_0x246d6a(0x1f9)](_0x3bdb40[_0x246d6a(0x1f6)],0x0)){const _0x2a8df2=Object[_0x246d6a(0x1ce)](_0x3bdb40[0x0])[_0x246d6a(0x1a0)](_0x177a9f=>_0x177a9f[_0x246d6a(0x26e)]()[_0x246d6a(0x28d)](_0x246d6a(0x209)));if(_0x2a8df2){const _0x3ebf60=[...new Set(_0x3bdb40[_0x246d6a(0x235)](_0x36cee1=>_0x36cee1[_0x2a8df2]))];this[_0x246d6a(0x227)]=[_0x32194b['sdMNs'],..._0x3ebf60[_0x246d6a(0x28b)]()];}}else this[_0x246d6a(0x227)]=[_0x32194b[_0x246d6a(0x22c)]];!this[_0x246d6a(0x227)][_0x246d6a(0x28d)](this[_0x246d6a(0x1d0)])&&(this[_0x246d6a(0x1d0)]='total');},get 'rekomendasiProvData'(){const _0x383752=_0x4803ae;if(!this['rekomendasiData'])return{};if(_0x32194b['KyXKp'](this['selectedProvince'],_0x383752(0x20c)))return this[_0x383752(0x17a)][_0x383752(0x20c)]||{};return this[_0x383752(0x17a)][this[_0x383752(0x1d0)]]||this[_0x383752(0x17a)][this[_0x383752(0x1d0)][_0x383752(0x25b)]()]||this[_0x383752(0x17a)][_0x32194b[_0x383752(0x22c)]]||{};},get 'rekomendasiTableHTML'(){const _0x55d576=_0x4803ae;if(!this[_0x55d576(0x1f5)]||!this[_0x55d576(0x1f5)][_0x55d576(0x17f)])return'';const _0x3f7064=this['rekomendasiProvData'],_0x1e0f51=this[_0x55d576(0x21d)]||{};let _0x58d32d='';for(const _0x8d1b84 of this['tableSkeleton'][_0x55d576(0x17f)]){_0x58d32d+=_0x32194b['qCTvM'];for(const _0x11a769 of _0x8d1b84){const _0x287043=_0x32194b[_0x55d576(0x1a3)](_0x11a769[_0x55d576(0x203)],0x1)?'\x20rowspan=\x22'+_0x11a769[_0x55d576(0x203)]+'\x22':'',_0x35632f=_0x11a769[_0x55d576(0x266)]>0x1?_0x55d576(0x230)+_0x11a769[_0x55d576(0x266)]+'\x22':'';let _0x2cfefb='';if(_0x11a769[_0x55d576(0x202)]===_0x55d576(0x1ea))_0x2cfefb=_0x11a769[_0x55d576(0x23e)]||'';else{if(_0x32194b[_0x55d576(0x1d1)](_0x11a769[_0x55d576(0x202)],_0x32194b[_0x55d576(0x225)])){const _0x21cc8b=_0x1e0f51[_0x11a769[_0x55d576(0x1c8)]]||{},_0x549de5=_0x3f7064[_0x11a769[_0x55d576(0x1c8)]]||{},_0x129e57=[];for(const [_0x5532fc,_0x16f36e]of Object[_0x55d576(0x24c)](_0x21cc8b)){if(!_0x16f36e)continue;const _0x17a246=_0x549de5[_0x5532fc];if(!_0x17a246)continue;_0x129e57[_0x55d576(0x1fc)](_0x32194b[_0x55d576(0x1e0)](Number,_0x17a246)[_0x55d576(0x1a7)](_0x32194b[_0x55d576(0x226)])+'\x20'+_0x16f36e);}_0x2cfefb=_0x129e57['join']('\x0a');}}const _0x1a3b59=_0x2cfefb['replace'](/&/g,_0x32194b[_0x55d576(0x172)])[_0x55d576(0x236)](/</g,_0x32194b[_0x55d576(0x216)])[_0x55d576(0x236)](/>/g,_0x55d576(0x222));_0x58d32d+=_0x55d576(0x195)+_0x287043+_0x35632f+'\x20class=\x22rek-cell\x22>'+_0x1a3b59+_0x55d576(0x22e);}_0x58d32d+=_0x55d576(0x186);}return _0x58d32d;}};}function _0x1aa4(_0x532e3c,_0x44475d){_0x532e3c=_0x532e3c-0x16e;const _0x57f036=_0x57f0();let _0x1aa433=_0x57f036[_0x532e3c];if(_0x1aa4['dCRWFe']===undefined){var _0x3788a9=function(_0x11ff89){const _0x3e98ab='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let _0x8fc9c9='',_0x382157='';for(let _0x540c16=0x0,_0xbda4f,_0x257da1,_0x3e38e3=0x0;_0x257da1=_0x11ff89['charAt'](_0x3e38e3++);~_0x257da1&&(_0xbda4f=_0x540c16%0x4?_0xbda4f*0x40+_0x257da1:_0x257da1,_0x540c16++%0x4)?_0x8fc9c9+=String['fromCharCode'](0xff&_0xbda4f>>(-0x2*_0x540c16&0x6)):0x0){_0x257da1=_0x3e98ab['indexOf'](_0x257da1);}for(let _0x35099b=0x0,_0x1d92fa=_0x8fc9c9['length'];_0x35099b<_0x1d92fa;_0x35099b++){_0x382157+='%'+('00'+_0x8fc9c9['charCodeAt'](_0x35099b)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(_0x382157);};_0x1aa4['WTqHJS']=_0x3788a9,_0x1aa4['sacVZH']={},_0x1aa4['dCRWFe']=!![];}const _0x7a3b8b=_0x57f036[0x0],_0x3c321f=_0x532e3c+_0x7a3b8b,_0x120c6d=_0x1aa4['sacVZH'][_0x3c321f];return!_0x120c6d?(_0x1aa433=_0x1aa4['WTqHJS'](_0x1aa433),_0x1aa4['sacVZH'][_0x3c321f]=_0x1aa433):_0x1aa433=_0x120c6d,_0x1aa433;}function _0x57f0(){const _0x2d9677=['ywXS','twfQDq','s1j5A3a','AxrLBv9Uyw1L','q013yMO','ywXSrgf0yq','Dg90ywXZ','ywrKvg8','C2fUz2f0lxrLCNrPBMDNywW','A2v5CW','mZLhAvPQugi','C2vSzwn0zwrqCM92Aw5Jzq','teHKBxO','z3jHzgLLBNrvBML0CW','i2eYzte4zq','se5Zs1C','sfbhrfi','qNHzELu','jMX0oW','i2vHyJmWoa','Eff6Bui','wfjzywm','C29YDenVBa','y29Su3rHDhm','EevMtKK','AxnmB2fKAw5N','Dg9gAxHLza','EMjYDLO','y2f0y2G','sLLpChO','uM1pweG','og5JqxvWCG','jMfTCdS','Dg9tDhjPBMC','u2TqrKW','EwvHCL8','AgLnrfe','Dgv4Da','BgLUzwfYr3jHzgLLBNrBAwrEpsjZAxbPA3uTz3jHzc0Ixq','DxrnzvG','y2XPy2S','y3jLyxrLrwXLBwvUDe5t','u2fUz2f0x1rLCNrPBMDNywW','mtjTC2D0rMC','WQKGt3bLBLn0CMvLDe1HCa','teTRsgy','A2jPs3rPtwfW','DK1RAfG','DgfIBgvtA2vSzxrVBG','BgvUz3rO','uwjpwNK','u2vTDwe','zMzgAMG','zMLSDgvY','r2vhzK0','ChvZAa','EvbyENm','zgvMCW','rvbptgG','Ahr0CdOVl3D3DY53mY5VCMCVmJaWmc9ZDMC','Afjfrhq','DhLWzq','CM93C3bHBG','zxjYB3i','EefXtuy','DejdzwG','yMvYA2vTyMfUzW','z2v0ugfUzxm','ChjVDMLUC2K','i2y5nZmXnG','A2LYChC','Dg90ywW','EwfuBeW','Bwjprgi','CM91BMq','mtbtu0Lpv0K','DgvYDgLUz2DHBa','EwTsANK','iZC1odLHna','yMLUzfrVB2X0Axa','Dg90ywWGzgvZysbKyw4GC3rHDhvZigrLC2e','ter6tvu','ktSGy29SB3i6icmXzti5m2i7','zhLUyw1Py19Zy29Yzq','DgHLBG','C2XPy2u','BhzSufu','vuzIzhG','Aw50zxj2zw50Aw9UtwfWCgLUzW','C29YDefZyW','tI9b','rNHczfG','BwfQDq','jMD0oW','ruvsCwu','mJG2C3zuwK9T','s3fzBK0','vwT2CgG','ChjVDMLUy2vZ','qMvYA2vTyMfUzW','C2v0vMLLDW','Ahr0Chm6lY97C30UDgLSzs5VCgvUC3rYzwv0BwfWlM9YzY97EN0VE3H9l3T5Fs5WBMC','mxWWFdv8mNWZFdz8ohW0FdC','C2rntNm','yMfJA2DYB3vUzc1JB2XVCJOGCMDIysGXnJiSidiYnsWGmtqYlca','pc90zd4','sLzwyNm','ignVBhnWyw49iG','zMv0y2HeyxrH','BwLU','s09erv9quK9w','s3DHB2K','BwfW','CMvWBgfJzq','wKXRr0m','t0jfqvO','wffsvgS','A29gtNu','sLfvC0i','i2nIzdvLmq','vg90ywWGrgvZysbKyw4Gu3rHDhvZierLC2e','DMfSDwu','CxvLCNLtzwXLy3rVCKfSBa','nNWYFdr8m3WWFdf8nq','BgjyDKe','yxbWBhLlyMLlDgLgAwX0zxi','C2vSzwn0zwrnzxrYAwm','ywrKywi','EMnztLq','z2v0qM91BMrZ','ChjVCgvYDgLLCW','zhLUyw1Py1LLyxjZ','jg5LEhruAwnR','DgfIBgvuB3rHBhm','y291BNq','zw50CMLLCW','AM9PBG','phrYpG','s0jnALu','D2HPDgu','wKjqtKC','DNvfEu4','D1ftzwu','ru1ytMe','C2vSzwn0zwrlyMLlDgK','reTcvKC','uvDPtM4','mZe1n0ziEMHbvq','pgi+','zM9YrwfJAa','Dg9vChbLCKnHC2u','zhPUt1K','C3rVCc1VCgfJAxr5','i2uXogvHmG','C3rVCc1JB2XVCG','Cu9zvgK','DKv5uMO','CMvTB3zL','i2vMndq0na','Cuf0vum','s0nqsgK','y29SC3bHBG','l3n0yxrPyY9PBNrLCNzLBNnPx2TLz2LHDgfUx21HChbPBMDFChvIBgLJlMPZB24','yxbWzw5Kq2HPBgq','mc44mG','A3fiA04','CMvTB3zLtgf5zxi','shLkzMC','yLDgEfi','Dg9mB3DLCKnHC2u','pc9IpJXICI8+','DhL5AKm','Ehn3ANa','zu1zuge','mxW2Fdn8mNWWFdr8nq','zwHnsuW','mZeYmJe0mw1XzfrZCW','CvPezNG','C3zN','mta3ne1WBxfLDW','uNrTDeq','zMLSBa','C3bSAxq','ANnVBG','tgv6rfG','sMzOyKW','yKLTzvm','C2fUz2f0x3rLCNrPBMDNywW','AMDMvMW','mti0nZiYnxLKzKH0Aq','Cvfcy3G','ue5brgi','uefnvLu','ota5mtG5Auz6sK1O','uK5HseO','igrLC2e8yNiVpG','x2fWCgX5r3jHzgLLBNrgAwXSCW','DgLSzuXHEwvY','C29YDa','mtiZnZe0nwfyu0n1DW','Aw5JBhvKzxm','A3LpAei','vNHLDeO','rg55z1C','mJe0mJr1ALbsEg8','iZG0y2mXnG','mJe4oeT4z2DNBa','y2fJAgu','u3bIuhK','z2v0rNvSBfLLyxi','qNLowMm','r0rhAha','z2vVsNnVBKrHDge','i2uYztHMma','EwvHCG','te1oCuK','Bwf4','Dg90ywXFzgvZyq','CMvRB21LBMrHC2LeyxrH','s1P3quC','u1PZtKW','DMDSzgC','C3rVCa','CM93CW','l3n0yxrPyY90ywjSzv9ZA2vSzxrVBI5QC29U','C2fsAwu','vw5oDwS','vg90ywW6ia','z2vVsNnVBKXHEwvY','vuXSzvC','pc90CJ4','DhPMD2C','shjqC0e','wxPhq3m','iZe2ytm0yq','whDOqxK','Eg9UuhC','r2LvB3C','wLL6vLe','BLzusg0','B3zLCMXHEvbHBMu','CxvLCNLtzwXLy3rVCG','BgLUzwfYr3jHzgLLBNq','zNjVBq','DLPwtuC','phrK','BwfUzgLYAq','Aw5Zzxj0qMvMB3jL','txHyzwO','BfLhDMm','Bwv0CMLJCW','BxL6Bfe','C2vTDweGChjVDMLUC2K','DhjPBq','zMLSBc1VCgfJAxr5','AMfrChC','zMLUza','zMvHDhvYzq','B2zMC2v0','shf5svy','zMLYC3rdAgLSza','tvbUBMy','u2fUz2f0ifrLCNrPBMDNywW','Dg9mB2nHBgvtDhjPBMC','B2jQzwn0qM91BMrPBMDcB3G','qvv3rM8','C2fUz2f0ihrLCNrPBMDNywW','tNnzA3K','uvrXwwi','sNvir1O','uwjQrgK','vfPHvuu','uvbftLu','l3n0yxrPyY9PBMrVBMvZAwfUx3bYB3zPBMnLlMPZB24','zeXXDNy','qw10BMm','jhDHDgnO','i2eZyJbJmG','zgf0yq','Bwf0y2G','uujNCgq','Bg9Hze1LDhjPy3ngB3jzzwfY','sMzXzgC','zNvSBerHDge','C2v0qxr0CMLIDxrL','ufjpvKLou0K','qNDws3q','y2fWywLHBG','y0D2zem','rwn6u2u','wgrMz3y','iZK0ytnIoa','yMzRrwK'];_0x57f0=function(){return _0x2d9677;};return _0x57f0();}</script>
+  
 
-          toProperCase(str) {
-            if (!str) return "";
-            if (str.toLowerCase() === "total") return "Semua Provinsi";
-            return str.toLowerCase().replace(/\b\w/g, char => char.toUpperCase());
-          },
 
-          get selectedProvinceData() {
-            if (!this.selectedMetric || !this.selectedProvince || this.allData.length === 0) return null;
-
-            let provData;
-            if (this.selectedProvince === 'total' && this.tableTotals) {
-              provData = {...this.tableTotals};
-              // Map column names to expected fields if it's the totals row
-              provData.capaian = provData['Capaian'] || provData['capaian'] || 0;
-              provData.mandiri = provData['Mandiri'] || provData['mandiri'] || 0;
-              provData.maju = provData['Maju'] || provData['maju'] || 0;
-              provData.berkembang = provData['Berkembang'] || provData['berkembang'] || 0;
-              provData.tertinggal = provData['Tertinggal'] || provData['tertinggal'] || 0;
-              provData.sangat_tertinggal = provData['Sangat_Tertinggal'] || provData['sangat_tertinggal'] || provData['sangat tertinggal'] || 0;
-            } else {
-              const foundData = this.allData.find(d => {
-                const provKey = Object.keys(d).find(k => k.toLowerCase().includes('provinsi'));
-                return provKey && d[provKey] === this.selectedProvince;
-              });
-              if (foundData) {
-                provData = {...foundData}; // Clone object to prevent mutating allData and destroying the table columns
-                provData.capaian = provData['Capaian'] || provData['capaian'] || 0;
-
-                provData.mandiri = provData['Mandiri'] || provData['mandiri'] || 0;
-                provData.maju = provData['Maju'] || provData['maju'] || 0;
-                provData.berkembang = provData['Berkembang'] || provData['berkembang'] || 0;
-                provData.tertinggal = provData['Tertinggal'] || provData['tertinggal'] || 0;
-                provData.sangat_tertinggal = provData['Sangat_Tertinggal'] || provData['sangat_tertinggal'] || provData['sangat tertinggal'] || 0;
-              }
-            }
-            return provData;
-          },
-
-          get topProvinces() {
-            if (this.allData.length === 0) return [];
-
-            return this.allData
-              .map(d => {
-                const provKey = Object.keys(d).find(k => k.toLowerCase().includes('provinsi'));
-                const capKey = Object.keys(d).find(k => k.toLowerCase().includes('capaian'));
-                return {
-                  name: d[provKey],
-                  score: parseFloat(String(d[capKey] || 0).replace('%', '').trim())
-                };
-              })
-              .sort((a, b) => b.score - a.score);
-          },
-
-          get provinceStrengths() {
-            const yearData = this.cache[`year_${this.year}`];
-            if (!yearData || !yearData.metrics) return [];
-
-            const strengths = [];
-
-            if (!this.selectedProvince || this.selectedProvince === 'total') {
-              yearData.metrics.forEach(metricName => {
-                const metricData = yearData[metricName];
-                if (metricData && metricData.totals) {
-                  const capKey = Object.keys(metricData.totals).find(k => k.toLowerCase().includes('capaian'));
-                  if (capKey) {
-                    strengths.push({
-                      metric: metricName,
-                      score: parseFloat(String(metricData.totals[capKey] || 0).replace('%', '').trim())
-                    });
-                  }
-                }
-              });
-            } else {
-              yearData.metrics.forEach(metricName => {
-                const metricData = yearData[metricName];
-                if (metricData && metricData.data) {
-                  const provData = metricData.data.find(d => {
-                    const provKey = Object.keys(d).find(k => k.toLowerCase().includes('provinsi'));
-                    return provKey && d[provKey] === this.selectedProvince;
-                  });
-
-                  if (provData) {
-                    const capKey = Object.keys(provData).find(k => k.toLowerCase().includes('capaian'));
-                    if (capKey) {
-                      strengths.push({
-                        metric: metricName,
-                        score: parseFloat(String(provData[capKey] || 0).replace('%', '').trim())
-                      });
-                    }
-                  }
-                }
-              });
-            }
-
-            return strengths.sort((a, b) => b.score - a.score);
-          },
-
-          // Sorting Logic
-          sortBy(col) {
-            if (this.sortCol === col) {
-              this.sortAsc = !this.sortAsc;
-            } else {
-              this.sortCol = col;
-              this.sortAsc = true;
-            }
-          },
-
-          get sortedData() {
-            if (!this.sortCol) return this.allData;
-            return [...this.allData].sort((a, b) => {
-              let valA = a[this.sortCol];
-              let valB = b[this.sortCol];
-
-              let numA = parseFloat(String(valA || '').replace(/,/g, '').replace('%', '').trim());
-              let numB = parseFloat(String(valB || '').replace(/,/g, '').replace('%', '').trim());
-
-              if (!isNaN(numA) && !isNaN(numB)) {
-                return this.sortAsc ? numA - numB : numB - numA;
-              }
-
-              valA = String(valA || '').toLowerCase();
-              valB = String(valB || '').toLowerCase();
-              if (valA < valB) return this.sortAsc ? -1 : 1;
-              if (valA > valB) return this.sortAsc ? 1 : -1;
-              return 0;
-            });
-          },
-
-          // Heatmap Stats Cache
-          get colStats() {
-            const stats = {};
-            if (!this.allData || this.allData.length === 0) return stats;
-            const cols = Object.keys(this.allData[0]);
-
-            cols.forEach(col => {
-              if (col.toLowerCase().includes('provinsi')) return;
-
-              let min = Infinity, max = -Infinity;
-              let isNumeric = false;
-
-              this.allData.forEach(row => {
-                let val = row[col];
-                if (val === null || val === undefined) return;
-                let num = parseFloat(String(val).replace(/,/g, '').replace('%', '').trim());
-                if (!isNaN(num)) {
-                  isNumeric = true;
-                  if (num < min) min = num;
-                  if (num > max) max = num;
-                }
-              });
-
-              if (isNumeric) {
-                stats[col] = {min, max};
-              }
-            });
-            return stats;
-          },
-
-          getHeatmapStyle(col, val) {
-            const stats = this.colStats[col];
-            if (!stats || stats.min === stats.max) return '';
-            if (val === null || val === undefined) return '';
-
-            let numVal = parseFloat(String(val).replace(/,/g, '').replace('%', '').trim());
-            if (isNaN(numVal)) return '';
-
-            const ratio = (numVal - stats.min) / (stats.max - stats.min);
-
-            // Transparent (0) to Green (#a2e18e) (1) mapping
-            // Alpha controls the opacity of the green so lowest is transparent and highest is green
-            return `background-color: rgba(162, 225, 142, ${ratio}); color: #1e293b;`;
-          },
-
-          async init() {
-            // Generate Years from current year down to 2025
-            const currentActualYear = new Date().getFullYear();
-            for (let y = currentActualYear; y >= 2025; y--) {
-              this.dynamicYears.push(String(y));
-            }
-
-            await this.loadMetricsForYear();
-
-            // Load static lookup files once (skeleton + intervention mapping)
-            try {
-              const [skelRes, intRes] = await Promise.all([
-                fetch('/static/table_skeleton.json'),
-                fetch('/static/intervensi_kegiatan_mapping_public.json')
-              ]);
-              this.tableSkeleton = await skelRes.json();
-              this.interventionMapping = await intRes.json();
-            } catch (e) {console.error('Failed to load static JSON:', e);}
-
-            // Metric changes are now instant — all data already in cache
-            this.$watch('selectedMetric', (val) => {
-              if (!val) {this.allData = []; this.fullData = []; this.tableTotals = null; return;}
-              this.fetchData(val);
-            });
-
-            // KBI/KTI filter — re-slice fullData and re-render map
-            this.$watch('selectedKbiKti', () => {
-              this.applyKbiKtiFilter();
-            });
-          },
-
-          async setYear(selectedYear) {
-            if (this.year == selectedYear) return;
-
-            this.year = selectedYear;
-            this.selectedMetric = "";
-            this.selectedProvince = "total";
-            this.allData = [];
-            this.tableTotals = null;
-            this.sortCol = null;
-            this.sortAsc = true;
-
-            await this.loadMetricsForYear();
-          },
-
-          async loadMetricsForYear() {
-            this.isLoading = true;
-            const cacheKey = `year_${this.year}`;
-
-            try {
-              // One fetch per year — server returns full pre-rendered payload
-              if (!this.cache[cacheKey]) {
-                const res = await fetch(`/public/dashboard/iku/${this.year}`);
-                if (res.ok) {
-                  this.cache[cacheKey] = await res.json();
-                }
-              }
-
-              const yearData = this.cache[cacheKey] || {};
-              this.kbiKtiMap = yearData.kbi_kti_map || {};
-              this.metrics = (yearData.metrics || []).sort((a, b) => {
-                if (a.toLowerCase() === 'total desa dan status desa') return -1;
-                if (b.toLowerCase() === 'total desa dan status desa') return 1;
-                return 0;
-              });
-
-              // Auto-select first metric to bypass empty state
-              if (this.metrics.length > 0) {
-                // If the user previously selected the map metric, keep it selected
-                if (!this.selectedMetric || !this.metrics.includes(this.selectedMetric)) {
-                  this.selectedMetric = this.metrics[0];
-                }
-                this.fetchData(this.selectedMetric);  // synchronous — no await needed
-
-                if (this.selectedMetric === 'Total Desa dan Status Desa') {
-                  this.$nextTick(() => this.updateMapVisuals());
-                }
-              }
-            } catch (e) {console.error(e);}
-            finally {this.isLoading = false;}
-          },
-
-          // Gradient fills are applied directly in renderMapLayer() via _applyGradientFills().
-          // This shim is kept so the existing loadMetricsForYear() call remains valid.
-          updateMapVisuals() { /* no-op */ },
-
-          // ── SVG gradient fill for "Total Desa dan Status Desa" ───────────────────
-          // Each province polygon is filled with a hard-stop left→right linearGradient
-          // whose colour-band widths are proportional to the village-status counts.
-          // Colours come from the existing .status-block.* CSS border-top values.
-          _applyGradientFills(desaMap, statusColors) {
-            const overlayPane = this.map.getPanes().overlayPane;
-            const svgEl = overlayPane ? overlayPane.querySelector('svg') : null;
-            if (!svgEl) return;
-
-            // Ensure <defs> exists inside Leaflet's SVG overlay
-            let defs = svgEl.querySelector('defs');
-            if (!defs) {
-              defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-              svgEl.insertBefore(defs, svgEl.firstChild);
-            }
-            // Remove stale gradients from previous renders
-            Array.from(defs.querySelectorAll('linearGradient[id^="sipiku-grad-"]'))
-              .forEach(el => el.remove());
-
-            this.geoJsonLayer.eachLayer(layer => {
-              if (!layer.feature || !layer._path) return;
-
-              const fprov = layer.feature.properties.PROVINSI.toUpperCase();
-              const row = desaMap[fprov];
-              if (!row || !row.total_desa) return;
-
-              const gradId = `sipiku-grad-${layer.feature.properties.KODE_PROV}`;
-
-              // Sort statuses descending – highest share goes to the left/west
-              const statuses = [
-                { count: row.mandiri         || 0, color: statusColors.mandiri },
-                { count: row.maju            || 0, color: statusColors.maju },
-                { count: row.berkembang      || 0, color: statusColors.berkembang },
-                { count: row.tertinggal      || 0, color: statusColors.tertinggal },
-                { count: row.sangat_tertinggal || 0, color: statusColors['sangat-tertinggal'] }
-              ].sort((a, b) => b.count - a.count).filter(s => s.count > 0);
-
-              // Build linearGradient with hard colour stops (no blending at edges)
-              const grad = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
-              grad.setAttribute('id', gradId);
-              grad.setAttribute('x1', '0%');
-              grad.setAttribute('y1', '0%');
-              grad.setAttribute('x2', '100%');
-              grad.setAttribute('y2', '0%');
-              // objectBoundingBox → percentages relative to each province's own bounding box
-              grad.setAttribute('gradientUnits', 'objectBoundingBox');
-
-              let pctSoFar = 0;
-              statuses.forEach(s => {
-                const pct = (s.count / row.total_desa) * 100;
-
-                // Hard stop: two stops at the same offset create a sharp boundary
-                const stopA = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
-                stopA.setAttribute('offset', `${pctSoFar}%`);
-                stopA.setAttribute('stop-color', s.color);
-                stopA.setAttribute('stop-opacity', '0.82');
-                grad.appendChild(stopA);
-
-                pctSoFar += pct;
-
-                const stopB = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
-                stopB.setAttribute('offset', `${pctSoFar}%`);
-                stopB.setAttribute('stop-color', s.color);
-                stopB.setAttribute('stop-opacity', '0.82');
-                grad.appendChild(stopB);
-              });
-
-              defs.appendChild(grad);
-
-              // Override the Leaflet-painted fill with our gradient
-              layer._path.setAttribute('fill', `url(#${gradId})`);
-              layer._path.setAttribute('fill-opacity', '0.82');
-            });
-          },
-
-          //Maps leaflet
-          initMap() {
-
-            // Initialize map centered on Indonesia
-            this.map = L.map('map').setView([-2.5489, 118.0149], 5);
-
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-              maxZoom: 18,
-              attribution: '© OpenStreetMap'
-            }).addTo(this.map);
-
-            // Fetch static GeoJSON once
-            fetch('/static/indonesian_province.json')
-              .then(res => res.json())
-              .then(data => {
-                this.geoJsonData = data;
-                this.renderMapLayer();
-              })
-              .catch(err => console.error("Failed to load province boundaries:", err));
-
-            // Watch for data changes to recalculate colors
-            this.$watch('allData', () => this.renderMapLayer());
-
-            // Watch for province dropdown changes to zoom
-            this.$watch('selectedProvince', (prov) => this.focusMap(prov));
-          },
-
-          renderMapLayer() {
-            if (!this.geoJsonData || !this.map) return;
-            if (this.geoJsonLayer) this.map.removeLayer(this.geoJsonLayer);
-            if (!this.allData || this.allData.length === 0) return;
-
-            const isDesa = this.selectedMetric === 'Total Desa dan Status Desa';
-
-            // CSS .status-block.* border-top colours
-            const statusColors = {
-              mandiri:          '#16a34a',
-              maju:             '#84cc16',
-              berkembang:       '#eab308',
-              tertinggal:       '#f97316',
-              'sangat-tertinggal': '#ef4444'
-            };
-
-            const provKey = Object.keys(this.allData[0])
-              .find(k => k.toLowerCase().includes('provinsi'));
-
-            // Build lookup: province-name → row  (for both metric types)
-            let maxVal = 0;
-            const provValues = {};   // non-desa: name → capaian value
-            const desaMap    = {};   // desa:     name → full row
-
-            this.allData.forEach(row => {
-              if (!row[provKey]) return;
-              const pName = row[provKey].toUpperCase();
-
-              if (isDesa) {
-                desaMap[pName] = row;
-              } else {
-                const valKey = Object.keys(row).find(k => k.toLowerCase().includes('capaian'))
-                  || Object.keys(row).pop();
-                const val = parseFloat(String(row[valKey] || '').replace(/[^0-9.-]+/g, ''));
-                if (!isNaN(val)) {
-                  provValues[pName] = val;
-                  if (val > maxVal) maxVal = val;
-                }
-              }
-            });
-
-            // Helper to blend between low (#e18ea2) and high (#a2e18e) colors
-            const interpolateColor = (c1, c2, f) => {
-              const h1 = c1.slice(1).match(/.{2}/g).map(x => parseInt(x, 16));
-              const h2 = c2.slice(1).match(/.{2}/g).map(x => parseInt(x, 16));
-              return '#' + h1.map((c, i) =>
-                Math.round(c + f * (h2[i] - c)).toString(16).padStart(2, '0')
-              ).join('');
-            };
-
-            this.geoJsonLayer = L.geoJSON(this.geoJsonData, {
-              style: (feature) => {
-                const fprov = feature.properties.PROVINSI.toUpperCase();
-                const kbiFiltered = this.selectedKbiKti !== "Semua" &&
-                                    this.kbiKtiMap[fprov] !== this.selectedKbiKti;
-                if (kbiFiltered) {
-                  return { fillColor: '#e2e8f0', weight: 0.5, opacity: 0.4,
-                           color: '#cbd5e1', fillOpacity: 0.15 };
-                }
-                if (isDesa) {
-                  // Filled via SVG gradient after layer is added — use neutral placeholder
-                  return { fillColor: '#e2e8f0', weight: 1, opacity: 1,
-                           color: 'white', fillOpacity: 0.85 };
-                }
-                const val    = provValues[fprov];
-                const factor = (val !== undefined && maxVal > 0)
-                  ? Math.max(0, Math.min(1, val / maxVal)) : 0;
-                return {
-                  fillColor: interpolateColor('#e18ea2', '#a2e18e', factor),
-                  weight: 1, opacity: 1, color: 'white', fillOpacity: 0.8
-                };
-              },
-
-              onEachFeature: (feature, layer) => {
-                const fprov = feature.properties.PROVINSI.toUpperCase();
-                const kbiFiltered = this.selectedKbiKti !== "Semua" &&
-                                    this.kbiKtiMap[fprov] !== this.selectedKbiKti;
-                if (kbiFiltered) return; // no tooltip or click for filtered provinces
-
-                if (isDesa) {
-                  const row = desaMap[fprov];
-                  if (row && row.total_desa > 0) {
-                    const sorted = [
-                      { label: 'Mandiri',          count: row.mandiri          || 0 },
-                      { label: 'Maju',             count: row.maju             || 0 },
-                      { label: 'Berkembang',       count: row.berkembang       || 0 },
-                      { label: 'Tertinggal',       count: row.tertinggal       || 0 },
-                      { label: 'Sangat Tertinggal',count: row.sangat_tertinggal|| 0 }
-                    ].sort((a, b) => b.count - a.count);
-
-                    const lines = sorted
-                      .filter(s => s.count > 0)
-                      .map(s => {
-                        const pct = ((s.count / row.total_desa) * 100).toFixed(1);
-                        return `${s.label}: ${s.count.toLocaleString('id-ID')} (${pct}%)`;
-                      }).join('<br/>');
-
-                    layer.bindTooltip(
-                      `<b>${feature.properties.PROVINSI}</b><br/>` +
-                      `Total: ${row.total_desa.toLocaleString('id-ID')} desa<br/>${lines}`,
-                      { sticky: true }
-                    );
-                  }
-                } else {
-                  const val = provValues[fprov];
-                  layer.bindTooltip(
-                    `<b>${feature.properties.PROVINSI}</b><br/>Value: ${val !== undefined ? val : 'N/A'}`,
-                    { sticky: true }
-                  );
-                }
-
-                layer.on('click', () => {
-                  const matchedProv = this.provinces.find(p => p.toUpperCase() === fprov);
-                  if (matchedProv) this.selectedProvince = matchedProv;
-                });
-              }
-            }).addTo(this.map);
-
-            // Paint each province polygon with a proportional hard-stop SVG gradient
-            if (isDesa) this._applyGradientFills(desaMap, statusColors);
-          },
-
-          focusMap(province) {
-            if (!this.map || !this.geoJsonLayer) return;
-
-            if (!province || province === "total" || province.toLowerCase() === "semua provinsi") {
-              // Zoom out to whole Indonesia
-              this.map.setView([-2.5489, 118.0149], 5);
-              return;
-            }
-
-            // Find the specific layer by property and zoom to its bounds
-            this.geoJsonLayer.eachLayer(layer => {
-              if (layer.feature.properties.PROVINSI.toUpperCase() === province.toUpperCase()) {
-                this.map.fitBounds(layer.getBounds());
-              }
-            });
-          },
-
-          fetchData(metric) {
-            this.allData = [];
-            this.fullData = [];
-            this.tableTotals = null;
-            this.provinces = ["total"];
-            this.sortCol = null;
-            this.sortAsc = true;
-
-            const yearData = this.cache[`year_${this.year}`] || {};
-
-            // IKU metric data (for map + leaderboard + data table)
-            const metricPayload = yearData[metric] || {data: [], totals: null};
-            this.fullData = metricPayload.data || [];   // raw, unfiltered
-            this.tableTotals = metricPayload.totals || null;
-
-            // Rekomendasi scores — province-keyed dict, already in cache, zero cost
-            this.rekomendasiData = yearData["rekomendasi_scores"] || {};
-
-            if (this.tableTotals) {
-              let cap = this.tableTotals['Capaian'] || this.tableTotals['capaian'] || 0;
-              this.nationalAverage = parseFloat(String(cap).replace('%', '').trim());
-            }
-
-            this.applyKbiKtiFilter();  // sets allData + provinces from fullData
-          },
-
-          // Filter fullData → allData by selectedKbiKti, rebuild provinces list
-          applyKbiKtiFilter() {
-            const filtered = (this.selectedKbiKti === "Semua" || !Object.keys(this.kbiKtiMap).length)
-              ? [...this.fullData]
-              : this.fullData.filter(row => {
-                  const provKey = Object.keys(row).find(k => k.toLowerCase().includes('provinsi'));
-                  if (!provKey) return true;
-                  return this.kbiKtiMap[row[provKey].toUpperCase()] === this.selectedKbiKti;
-                });
-
-            this.allData = filtered;
-
-            if (filtered.length > 0) {
-              const provKey = Object.keys(filtered[0]).find(k => k.toLowerCase().includes('provinsi'));
-              if (provKey) {
-                const provs = [...new Set(filtered.map(d => d[provKey]))];
-                this.provinces = ["total", ...provs.sort()];
-              }
-            } else {
-              this.provinces = ["total"];
-            }
-
-            if (!this.provinces.includes(this.selectedProvince)) {
-              this.selectedProvince = "total";
-            }
-          },
-
-          // Rekomendasi table — reactive to selectedProvince, zero network calls
-          get rekomendasiProvData() {
-            if (!this.rekomendasiData) return {};
-            if (this.selectedProvince === 'total') return this.rekomendasiData['total'] || {};
-            return this.rekomendasiData[this.selectedProvince]
-              || this.rekomendasiData[this.selectedProvince.toUpperCase()]
-              || this.rekomendasiData['total']
-              || {};
-          },
-
-          get rekomendasiTableHTML() {
-            if (!this.tableSkeleton || !this.tableSkeleton.rows) return '';
-            const provData = this.rekomendasiProvData;
-            const mapping = this.interventionMapping || {};
-            let html = '';
-            for (const rowCells of this.tableSkeleton.rows) {
-              html += '<tr>';
-              for (const cell of rowCells) {
-                const rs = cell.rowspan > 1 ? ` rowspan="${cell.rowspan}"` : '';
-                const cs = cell.colspan > 1 ? ` colspan="${cell.colspan}"` : '';
-                let content = '';
-                if (cell.type === 'text') {
-                  content = cell.value || '';
-                } else if (cell.type === 'dynamic_score') {
-                  const itemMap = mapping[cell.item_name] || {};
-                  const scoreData = provData[cell.item_name] || {};
-                  const lines = [];
-                  for (const [score, text] of Object.entries(itemMap)) {
-                    if (!text) continue;
-                    const count = scoreData[score];
-                    if (!count) continue;
-                    lines.push(`${Number(count).toLocaleString('id-ID')} ${text}`);
-                  }
-                  content = lines.join('\n');
-                }
-                const escaped = content
-                  .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                html += `<td${rs}${cs} class="rek-cell">${escaped}</td>`;
-              }
-              html += '</tr>';
-            }
-            return html;
-          },
-
-        }
-      }
-
-    </script>
-  </body>
-
-</html>
+</body></html>
